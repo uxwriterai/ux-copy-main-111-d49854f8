@@ -47,15 +47,17 @@ export function SidebarFooterButtons() {
           </>
         )}
       </Button>
-      <div className="w-full flex justify-center">
-        <Badge 
-          variant="secondary" 
-          className="text-xs cursor-pointer transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          onClick={showLoginDialog}
-        >
-          Free Credits: {credits}
-        </Badge>
-      </div>
+      {!isCollapsed && (
+        <div className="w-full flex justify-center">
+          <Badge 
+            variant="outline" 
+            className="bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border cursor-pointer transition-colors px-4 py-1"
+            onClick={showLoginDialog}
+          >
+            {credits} credits left
+          </Badge>
+        </div>
+      )}
     </>
   )
 }
