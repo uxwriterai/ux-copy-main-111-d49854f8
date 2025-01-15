@@ -26,6 +26,60 @@ const Index = () => {
     toast.success('Image uploaded successfully');
   };
 
+  const parseGeminiResponse = (text: string): Suggestion[] => {
+    try {
+      // Split the response into lines and filter out empty lines
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      // Find lines that look like complete JSON objects
+      const jsonLines = lines.filter(line => 
+        (line.trim().startsWith('{') && line.trim().endsWith('}')) ||
+        (line.trim().startsWith('{') && line.trim().endsWith('},'))
+      );
+
+      // Parse each JSON line and validate the structure
+      const parsedSuggestions = jsonLines.map(line => {
+        try {
+          // Remove trailing comma if present
+          const cleanLine = line.trim().endsWith(',') 
+            ? line.slice(0, -1) 
+            : line;
+          
+          const suggestion = JSON.parse(cleanLine);
+          
+          // Validate the suggestion structure
+          if (!suggestion.element || 
+              !suggestion.position?.x || 
+              !suggestion.position?.y || 
+              !suggestion.original || 
+              !suggestion.improved || 
+              !suggestion.explanation) {
+            console.log('Invalid suggestion structure:', suggestion);
+            return null;
+          }
+
+          // Ensure position values are within bounds
+          return {
+            ...suggestion,
+            position: {
+              x: Math.min(100, Math.max(0, suggestion.position.x)),
+              y: Math.min(100, Math.max(0, suggestion.position.y))
+            }
+          };
+        } catch (e) {
+          console.log('Failed to parse suggestion line:', line, e);
+          return null;
+        }
+      }).filter((s): s is Suggestion => s !== null);
+
+      console.log('Successfully parsed suggestions:', parsedSuggestions);
+      return parsedSuggestions.slice(0, MAX_SUGGESTIONS);
+    } catch (e) {
+      console.error('Error parsing Gemini response:', e);
+      return [];
+    }
+  };
+
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
       if (image.size > 4 * 1024 * 1024) {
@@ -56,18 +110,11 @@ const Index = () => {
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
 
-        Format each suggestion exactly as:
-        {
-          "element": "element type",
-          "position": {"x": number, "y": number},
-          "original": "original text",
-          "improved": "improved text",
-          "explanation": "brief explanation"
-        }
+        Format each suggestion as a complete, valid JSON object on a single line:
+        {"element": "element type", "position": {"x": number, "y": number}, "original": "original text", "improved": "improved text", "explanation": "brief explanation"}
 
-        Ensure coordinates are precise percentages between 0-100.
-        Return exactly one JSON object per line.
-        Validate all suggestions have all required fields.
+        Ensure each suggestion is a complete JSON object on its own line.
+        All coordinates must be percentages between 0-100.
       `;
 
       const response = await fetch(
@@ -104,38 +151,17 @@ const Index = () => {
       }
 
       const suggestionsText = data.candidates[0].content.parts[0].text;
-      const parsedSuggestions = suggestionsText
-        .split('\n')
-        .filter(line => line.trim())
-        .map(line => {
-          try {
-            const suggestion = JSON.parse(line);
-            return {
-              ...suggestion,
-              position: {
-                x: Math.min(100, Math.max(0, suggestion.position.x)),
-                y: Math.min(100, Math.max(0, suggestion.position.y))
-              }
-            };
-          } catch (e) {
-            console.error('Failed to parse suggestion:', line);
-            return null;
-          }
-        })
-        .filter((s): s is Suggestion => 
-          s !== null && 
-          typeof s.element === 'string' &&
-          typeof s.original === 'string' &&
-          typeof s.improved === 'string' &&
-          typeof s.explanation === 'string' &&
-          typeof s.position?.x === 'number' &&
-          typeof s.position?.y === 'number'
-        )
-        .slice(0, MAX_SUGGESTIONS);
+      console.log('Raw Gemini response:', suggestionsText);
+      
+      const parsedSuggestions = parseGeminiResponse(suggestionsText);
+      
+      if (parsedSuggestions.length === 0) {
+        throw new Error('No valid suggestions could be parsed from the response');
+      }
 
       setSuggestions(parsedSuggestions);
       setShowResults(true);
-      toast.success('Analysis complete!');
+      toast.success(`Analysis complete! Found ${parsedSuggestions.length} suggestions.`);
     } catch (error) {
       console.error('Error analyzing UI:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to analyze UI');
