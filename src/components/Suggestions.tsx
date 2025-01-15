@@ -40,25 +40,22 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
 
     // Create markers
     const markers = suggestions.map((suggestion, index) => {
-      // Create marker
-      const marker = new markerjs2.CalloutMarker();
+      // Create marker with required parameters (width, height, tipPosition)
+      const marker = new markerjs2.CalloutMarker(100, 100, { x: 0.5, y: 0.5 });
       
       // Convert percentage to actual pixels
       const rect = imageRef.current!.getBoundingClientRect();
       const xPos = (suggestion.position.x / 100) * rect.width;
       const yPos = (suggestion.position.y / 100) * rect.height;
       
-      // Set marker properties
-      marker.properties = {
-        left: xPos,
-        top: yPos,
-        width: 100,
-        height: 100,
-        strokeColor: '#2563eb',
-        strokeWidth: 2,
-        caption: `${index + 1}`,
-        tipPosition: { x: 0.5, y: 0.5 }
-      };
+      // Set marker state
+      marker.left = xPos;
+      marker.top = yPos;
+      marker.width = 100;
+      marker.height = 100;
+      marker.strokeColor = '#2563eb';
+      marker.strokeWidth = 2;
+      marker.captionText = `${index + 1}`;
       
       return marker;
     });
@@ -66,11 +63,11 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
     // Set up marker area
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageType = 'image/png';
-    markerArea.settings.displayMode = markerjs2.DisplayMode.Preview;
+    markerArea.settings.displayMode = 'preview';
     
     // Add markers to marker area
     markers.forEach(marker => {
-      markerArea.addMarker(marker);
+      markerArea.markers.push(marker);
     });
 
     // Show the marker area
