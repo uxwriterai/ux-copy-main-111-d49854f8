@@ -28,15 +28,18 @@ interface SuggestionsProps {
 
 export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsProps) => {
   const [annotations, setAnnotations] = useState([]);
-  const [activeAnnotation, setActiveAnnotation] = useState(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Convert suggestions to annotation format
+    if (!suggestions || !suggestions.length) return;
+
+    // Convert suggestions to annotation format with proper position calculations
     const newAnnotations = suggestions.map((suggestion, index) => ({
       geometry: {
         type: 'POINT',
-        x: suggestion.position?.x ? suggestion.position.x / 100 : 0, // Add fallback value
-        y: suggestion.position?.y ? suggestion.position.y / 100 : 0, // Add fallback value
+        // Ensure x and y are between 0 and 1 for relative positioning
+        x: Math.min(Math.max((suggestion.position?.x || 50) / 100, 0), 1),
+        y: Math.min(Math.max((suggestion.position?.y || 50) / 100, 0), 1),
       },
       data: {
         ...suggestion,
@@ -47,23 +50,24 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
   }, [suggestions]);
 
   const renderMarker = ({ geometry, data }: any) => {
-    // Add safety check for geometry
-    if (!geometry) {
-      console.error('Geometry is undefined for marker');
-      return null;
-    }
+    if (!geometry) return null;
+
+    // Calculate position as percentage
+    const xPos = `${geometry.x * 100}%`;
+    const yPos = `${geometry.y * 100}%`;
 
     return (
       <Popover>
         <PopoverTrigger asChild>
           <button
-            className={`absolute p-2 w-6 h-6 flex items-center justify-center rounded-full 
+            className="absolute p-2 w-6 h-6 flex items-center justify-center rounded-full 
               bg-primary text-primary-foreground hover:bg-primary/90
-              shadow-lg cursor-pointer text-sm font-medium transform hover:scale-110 transition-all`}
+              shadow-lg cursor-pointer text-sm font-medium transform hover:scale-110 transition-all"
             style={{
-              left: `${(geometry.x || 0) * 100}%`,
-              top: `${(geometry.y || 0) * 100}%`,
+              left: xPos,
+              top: yPos,
               transform: 'translate(-50%, -50%)',
+              zIndex: 50
             }}
           >
             {data.index + 1}
@@ -121,7 +125,7 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={containerRef}>
       <div className="relative border rounded-lg overflow-hidden bg-white shadow-md">
         <Annotation
           src={imageUrl}
