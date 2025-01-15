@@ -13,6 +13,22 @@ export function SidebarFooterButtons() {
 
   return (
     <>
+      {!isCollapsed && (
+        <div className="w-full flex justify-center mb-2">
+          <Badge 
+            variant="outline" 
+            className={cn(
+              "cursor-pointer transition-colors px-4 py-1",
+              credits === 0 
+                ? "bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/50" 
+                : "bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border"
+            )}
+            onClick={showLoginDialog}
+          >
+            {credits} credits left
+          </Badge>
+        </div>
+      )}
       <Button 
         variant="ghost" 
         className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
@@ -47,17 +63,6 @@ export function SidebarFooterButtons() {
           </>
         )}
       </Button>
-      {!isCollapsed && (
-        <div className="w-full flex justify-center">
-          <Badge 
-            variant="outline" 
-            className="bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border cursor-pointer transition-colors px-4 py-1"
-            onClick={showLoginDialog}
-          >
-            {credits} credits left
-          </Badge>
-        </div>
-      )}
     </>
   )
 }
