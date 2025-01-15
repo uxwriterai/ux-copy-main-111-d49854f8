@@ -8,6 +8,7 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useCredits } from '@/contexts/CreditsContext';
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -18,6 +19,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const { useCredit } = useCredits();
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
@@ -78,6 +80,11 @@ const Index = () => {
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
+      // Check and use a credit before proceeding
+      if (!useCredit()) {
+        throw new Error('No credits remaining');
+      }
+
       if (image.size > 4 * 1024 * 1024) {
         throw new Error('Image size must be less than 4MB');
       }
