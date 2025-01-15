@@ -13,12 +13,29 @@ export const generateHeroCopy = async (formData: any): Promise<HeroCopyVariant[]
 
   const prompt = `Create 3 compelling hero section copy variants based on the following details:
 
-Context: ${formData.context}
+CONTEXT ANALYSIS:
 Industry: ${formData.industry}
-Brand Tone: ${formData.tone}
-Primary Goal: ${formData.goal}
+- Consider industry-specific terminology and trends
+- Address common pain points in the ${formData.industry} sector
+- Highlight unique value propositions for this industry
+
 Target Audience: ${formData.targetAudience}
-${formData.additionalNotes ? `Additional Notes: ${formData.additionalNotes}` : ''}
+- Use language that resonates with ${formData.targetAudience}
+- Address specific needs and aspirations of this audience
+- Consider their level of expertise and familiarity with the subject
+
+Brand Tone: ${formData.tone}
+- Maintain a ${formData.tone} voice throughout all copy
+- Adapt formal/informal language based on this tone
+- Ensure consistency in messaging style
+
+Primary Goal: ${formData.goal}
+- Focus copy on achieving ${formData.goal}
+- Include elements that drive towards this specific outcome
+- Structure CTAs to support this goal
+
+Context Details: ${formData.context}
+${formData.additionalNotes ? `Additional Requirements: ${formData.additionalNotes}` : ''}
 
 Guidelines for each variant:
 
@@ -48,9 +65,9 @@ CTA (2-5 words):
 
 Each variant should:
 1. Be unique in approach but consistent in message
-2. Match the specified brand tone
-3. Speak directly to the target audience
-4. Support the primary business goal
+2. Match the specified ${formData.tone} tone
+3. Speak directly to ${formData.targetAudience}
+4. Support the ${formData.goal} goal
 5. Be immediately clear and impactful
 
 Format your response exactly like this, without any asterisks or other formatting:
@@ -76,7 +93,6 @@ CTA: [CTA text]`;
     
     // Parse the response into separate variants
     const variants = response
-      .replace(/\*\*/g, '') // Remove any asterisks
       .split(/Variant \d+/)  // Split by "Variant X" pattern
       .filter(block => block.trim()) // Remove empty blocks
       .map(block => {
