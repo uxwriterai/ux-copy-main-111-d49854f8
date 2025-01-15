@@ -40,7 +40,6 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
 
     markerArea.uiStyleSettings.hideToolbar = true;
     markerArea.uiStyleSettings.hideToolbox = true;
-    markerArea.settings.renderAtNaturalSize = true;
     markerArea.settings.defaultFillColor = '#000000';
     markerArea.settings.defaultStrokeColor = '#000000';
 
@@ -55,18 +54,17 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
       const yPos = (suggestion.position.y / 100) * rect.height;
 
       // Create a marker
-      const marker = new markerjs3.CalloutMarker({
-        strokeColor: '#000000',
-        fillColor: '#000000',
-        strokeWidth: 2,
-        captionText: `${index + 1}`,
-        x: xPos - 50,
-        y: yPos - 50,
-        width: 100,
-        height: 100
-      });
+      const marker = new markerjs3.CalloutMarker();
+      marker.width = 100;
+      marker.height = 100;
+      marker.x = xPos - 50;
+      marker.y = yPos - 50;
+      marker.strokeColor = '#000000';
+      marker.fillColor = '#000000';
+      marker.strokeWidth = 2;
+      marker.captionText = `${index + 1}`;
       
-      markerArea.addMarker(marker);
+      markerArea.addMarkerToState(marker);
     });
 
     // Add click handlers to markers
