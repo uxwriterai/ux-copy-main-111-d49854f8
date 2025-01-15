@@ -56,13 +56,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const getTitleAndDescription = () => {
     if (view === "sign_in") {
       return {
-        title: "Welcome back!",
-        description: "Sign in to your account to access your UX writing tools and saved content."
+        title: "Welcome back to your UX studio!",
+        description: "Sign in to continue crafting compelling copy and creating delightful user experiences."
       }
     }
     return {
-      title: "Create an account",
-      description: "Join us to unlock powerful UX writing tools and start creating better content today."
+      title: "Join our UX writing community",
+      description: "Create an account to access AI-powered tools that will help you write better microcopy, landing pages, and more."
     }
   }
 
