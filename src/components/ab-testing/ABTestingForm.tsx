@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
 import { ComparisonResult } from "./ComparisonResult";
 import { analyzeABTest } from "@/services/geminiService";
+import { ArrowLeft } from "lucide-react";
 
 interface ABTestVariation {
   image?: File;
@@ -18,6 +19,7 @@ export const ABTestingForm = () => {
   const [results, setResults] = useState<string | null>(null);
   const [variationA, setVariationA] = useState<ABTestVariation>({ text: "" });
   const [variationB, setVariationB] = useState<ABTestVariation>({ text: "" });
+  const [showResults, setShowResults] = useState(false);
 
   const handleImageUpload = (variation: "A" | "B") => (file: File) => {
     if (variation === "A") {
@@ -35,6 +37,7 @@ export const ABTestingForm = () => {
     try {
       const result = await analyzeABTest(variationA, variationB);
       setResults(result);
+      setShowResults(true);
       toast.success("Analysis complete!");
     } catch (error) {
       console.error("Error analyzing variations:", error);
@@ -43,6 +46,31 @@ export const ABTestingForm = () => {
       setIsLoading(false);
     }
   };
+
+  const handleRestart = () => {
+    setShowResults(false);
+    setResults(null);
+    setVariationA({ text: "" });
+    setVariationB({ text: "" });
+  };
+
+  if (showResults && results) {
+    return (
+      <div className="space-y-8">
+        <div className="flex justify-between items-center mb-8">
+          <Button 
+            variant="outline" 
+            onClick={handleRestart}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Start Over
+          </Button>
+        </div>
+        <ComparisonResult analysis={results} />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -91,8 +119,6 @@ export const ABTestingForm = () => {
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Analyzing..." : "Compare Variations"}
       </Button>
-
-      {results && <ComparisonResult analysis={results} />}
     </form>
   );
 };
