@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import ReactMarkdown from 'react-markdown';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ComparisonResultProps {
   analysis: string;
@@ -46,8 +47,36 @@ export const ComparisonResult = ({ analysis }: ComparisonResultProps) => {
   const scoresA = getScores('A');
   const scoresB = getScores('B');
 
+  // Extract detailed analysis sections
+  const getDetailedAnalysis = () => {
+    const sections = {
+      strengths: [] as string[],
+      weaknesses: [] as string[],
+      suggestions: [] as string[]
+    };
+
+    const lines = analysis.split('\n');
+    let currentSection = '';
+
+    lines.forEach(line => {
+      if (line.includes('### Strengths')) {
+        currentSection = 'strengths';
+      } else if (line.includes('### Weaknesses')) {
+        currentSection = 'weaknesses';
+      } else if (line.includes('### Suggestions')) {
+        currentSection = 'suggestions';
+      } else if (line.startsWith('-') && currentSection) {
+        sections[currentSection as keyof typeof sections].push(line.replace('-', '').trim());
+      }
+    });
+
+    return sections;
+  };
+
+  const analysis_sections = getDetailedAnalysis();
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fadeIn">
       <Card>
         <CardHeader>
           <CardTitle>Scores Comparison</CardTitle>
@@ -139,9 +168,61 @@ export const ComparisonResult = ({ analysis }: ComparisonResultProps) => {
         </CardContent>
       </Card>
 
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Key Strengths</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-4 space-y-2">
+              {analysis_sections.strengths.map((strength, index) => (
+                <li key={index} className="text-sm text-muted-foreground">{strength}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Areas for Improvement</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-4 space-y-2">
+              {analysis_sections.weaknesses.map((weakness, index) => (
+                <li key={index} className="text-sm text-muted-foreground">{weakness}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Detailed Analysis</CardTitle>
+          <CardTitle>Improvement Suggestions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px]">#</TableHead>
+                <TableHead>Suggestion</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {analysis_sections.suggestions.map((suggestion, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{index + 1}</TableCell>
+                  <TableCell>{suggestion}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Full Analysis</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="prose prose-sm max-w-none dark:prose-invert">
