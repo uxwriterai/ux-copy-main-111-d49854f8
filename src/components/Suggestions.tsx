@@ -40,27 +40,38 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
 
     // Create markers
     const markers = suggestions.map((suggestion, index) => {
-      const marker = new markerjs2.CalloutMarker();
+      // Create marker with required parameters (width, height, tipPosition)
+      const marker = new markerjs2.CalloutMarker(100, 100, { x: 0.5, y: 0.5 });
       
       // Convert percentage to actual pixels
       const rect = imageRef.current!.getBoundingClientRect();
       const xPos = (suggestion.position.x / 100) * rect.width;
       const yPos = (suggestion.position.y / 100) * rect.height;
       
-      // Set marker properties using the correct API
-      marker.left = xPos;
-      marker.top = yPos;
-      marker.strokeColor = '#2563eb';
-      marker.caption = `${index + 1}`;
+      // Set marker properties using the marker's methods
+      marker.addState({
+        typeName: 'CalloutMarker',
+        state: {
+          left: xPos,
+          top: yPos,
+          width: 100,
+          height: 100,
+          strokeColor: '#2563eb',
+          strokeWidth: 2,
+          caption: `${index + 1}`,
+          tipPosition: { x: 0.5, y: 0.5 }
+        }
+      });
       
       return marker;
     });
 
-    // Set the state with markers
-    markerArea.settings.markers = markers;
-    markerArea.settings.displayMode = 'preview';
+    // Set up marker area
+    markerArea.targetRoot = markerArea.target.parentElement!;
+    markerArea.addMarkersToState(markers);
+    markerArea.uiStyleSettings.displayMode = 'preview';
 
-    // Render markers
+    // Show the marker area
     markerArea.show();
 
     // Add click handlers to markers
