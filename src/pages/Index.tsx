@@ -5,7 +5,8 @@ import {
   SplitSquareVertical,
   Wand2,
   Type,
-  FileX
+  FileX,
+  Layout
 } from "lucide-react"
 
 const tools = [
@@ -32,6 +33,12 @@ const tools = [
     description: "Create engaging empty state messages that guide users",
     icon: FileX,
     route: "/empty-state"
+  },
+  {
+    title: "Hero Copy Generator",
+    description: "Create compelling hero sections with headlines, taglines, and CTAs",
+    icon: Layout,
+    route: "/hero-copy"
   }
 ]
 
