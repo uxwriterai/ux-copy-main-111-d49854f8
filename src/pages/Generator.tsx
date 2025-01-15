@@ -1,3 +1,5 @@
+import { ABTestingForm } from "@/components/ab-testing/ABTestingForm";
+
 const Generator = () => {
   return (
     <div className="container max-w-6xl py-12">
@@ -5,15 +7,13 @@ const Generator = () => {
         <div className="flex-1">
           <h1 className="text-4xl font-bold text-foreground">A/B Testing Copy Generator</h1>
           <p className="text-lg text-muted-foreground mt-2">
-            Generate A/B test variations for your UX copy
+            Compare and evaluate design or copy variations with AI-powered insights
           </p>
         </div>
       </div>
-      <div className="text-center text-muted-foreground py-12">
-        Coming soon...
-      </div>
+      <ABTestingForm />
     </div>
-  )
-}
+  );
+};
 
-export default Generator
+export default Generator;

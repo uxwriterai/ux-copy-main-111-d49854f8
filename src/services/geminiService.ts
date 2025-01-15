@@ -46,3 +46,44 @@ Format your response as a numbered list with exactly 3 variants, one per line:
     throw new Error("Failed to generate microcopy. Please try again.");
   }
 };
+
+interface ABTestVariation {
+  image?: File;
+  text: string;
+}
+
+export const analyzeABTest = async (variationA: ABTestVariation, variationB: ABTestVariation) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const prompt = `Analyze these two content variations and provide a detailed comparison:
+
+Variation A:
+${variationA.text}
+
+Variation B:
+${variationB.text}
+
+Please evaluate both variations based on:
+1. Clarity and Readability
+2. Engagement and Appeal
+3. Effectiveness for Target Audience
+4. Call-to-Action Strength
+5. Overall Impact
+
+For each variation, provide:
+1. A score out of 10 for each criterion
+2. Specific strengths and weaknesses
+3. Suggested improvements
+
+Finally, recommend which variation is better and explain why.
+
+Format your response in a clear, structured way with headings and bullet points.`;
+
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (error) {
+    console.error("Error in analyzeABTest:", error);
+    throw new Error("Failed to analyze A/B test variations");
+  }
+};
