@@ -43,44 +43,33 @@ const Index = () => {
       console.log('Image converted to base64');
 
       const prompt = `
-        Analyze this UI screenshot and provide precise UX copy improvement suggestions.
-        For each UI element, provide extremely accurate positioning data:
-
-        Instructions for coordinate calculation:
-        1. Treat the image as a 100x100 coordinate grid
-        2. Calculate x coordinate (0-100) as percentage from left edge
-        3. Calculate y coordinate (0-100) as percentage from top edge
-        4. Position should target the CENTER of each UI element
-        5. Be extremely precise - measure positions carefully
-        6. Double-check all coordinates before including them
-        7. Ensure coordinates are always within 0-100 range
-        8. For text elements, target the beginning of the text
-        9. For buttons and interactive elements, target their center point
-        10. For headings, target the start of the text
-
-        For each element provide:
+        Analyze this UI screenshot and provide UX copy improvement suggestions.
+        For each UI element you find, provide:
         1. Element type (e.g., heading, button, label)
         2. Original text content
         3. Improved version of the text
         4. Brief explanation of improvements
-        5. Precise position coordinates using format: x:42,y:73
+        5. Position of the element in the image:
+           - Specify x coordinate as percentage (0-100) from left edge
+           - Specify y coordinate as percentage (0-100) from top edge
+           - Be very precise with positioning to ensure markers appear exactly on the elements
 
         Format each suggestion exactly like this example:
         Element Type | Original Text | Improved Text | Explanation | x:42,y:73
 
-        Context for improvements:
+        Important:
+        - Provide coordinates that will place markers directly on the UI elements
+        - Use precise percentage values (0-100) for x and y coordinates
+        - Ensure each suggestion follows the exact format with the | separator
+        - Position coordinates should reflect the center point of each element
+
+        Additional Context:
         - Purpose: ${context.purpose}
         - Target Audience: ${context.audience}
         - Desired Tone: ${context.tone}
         - Emotional Goal: ${context.emotionalGoal}
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
-
-        Important:
-        - Verify each coordinate pair points exactly to the intended UI element
-        - Ensure suggestions follow the exact format with | separator
-        - Double-check all measurements before providing coordinates
-        - Focus on accuracy over quantity of suggestions
       `;
 
       console.log('Sending request to Gemini API...');
@@ -129,21 +118,10 @@ const Index = () => {
         .map((line: string) => {
           const [element, original, improved, explanation, position] = line.split('|').map(p => p.trim());
           
-          // Extract x,y coordinates with improved parsing
+          // Extract x,y coordinates from the position string (format: "x:42,y:73")
           const coordinates = position.match(/x:(\d+\.?\d*),y:(\d+\.?\d*)/);
-          if (!coordinates) {
-            console.warn('Invalid position format:', position);
-            return null;
-          }
-
-          const x = parseFloat(coordinates[1]);
-          const y = parseFloat(coordinates[2]);
-
-          // Validate coordinates
-          if (isNaN(x) || isNaN(y) || x < 0 || x > 100 || y < 0 || y > 100) {
-            console.warn('Invalid coordinates:', x, y);
-            return null;
-          }
+          const x = coordinates ? parseFloat(coordinates[1]) : 50;
+          const y = coordinates ? parseFloat(coordinates[2]) : 50;
 
           return {
             element,
@@ -151,12 +129,12 @@ const Index = () => {
             improved,
             explanation,
             position: {
-              x,
-              y
+              x: Math.min(100, Math.max(0, x)), // Ensure x is between 0-100
+              y: Math.min(100, Math.max(0, y))  // Ensure y is between 0-100
             }
           };
         })
-        .filter((s): s is Suggestion => s !== null && Boolean(s.element && s.improved));
+        .filter((s: Suggestion) => s.element && s.improved);
 
       console.log('Processed suggestions:', suggestionsFromResponse);
 
@@ -237,4 +215,3 @@ const Index = () => {
 };
 
 export default Index;
-
