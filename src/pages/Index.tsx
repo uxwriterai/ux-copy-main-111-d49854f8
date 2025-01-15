@@ -1,22 +1,11 @@
 import { useState } from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 import { ContextForm, type ContextData } from '@/components/ContextForm';
 import { Suggestions, type Suggestion } from '@/components/Suggestions';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
-import { Card } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -27,7 +16,6 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const handleImageUpload = (file: File) => {
@@ -38,7 +26,6 @@ const Index = () => {
     };
     reader.readAsDataURL(file);
     toast.success('Image uploaded successfully');
-    setDialogOpen(true);
   };
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
@@ -167,7 +154,6 @@ const Index = () => {
     setIsLoading(true);
     try {
       await analyzeUIWithGemini(uploadedImage, contextData);
-      setDialogOpen(false);
     } catch (error) {
       console.error('Error in handleContextSubmit:', error);
     } finally {
@@ -180,7 +166,6 @@ const Index = () => {
     setSuggestions([]);
     setUploadedImage(null);
     setImagePreviewUrl(null);
-    setDialogOpen(false);
   };
 
   const handleFeedback = (index: number, isPositive: boolean) => {
@@ -188,45 +173,46 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
-      <div className="container max-w-6xl py-12">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-[#1A1F2C] dark:bg-[#1A1F2C] transition-colors duration-300">
+      <div className="container max-w-6xl py-12 px-4">
+        <div className="flex justify-between items-center mb-12">
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-foreground mb-4">UX Copy Improver</h1>
-            <p className="text-lg text-muted-foreground">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-5xl font-bold text-white tracking-tight">
+                Generate your next UX Copy
+              </h1>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="ml-4 bg-transparent border-gray-700"
+              >
+                {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
+            </div>
+            <p className="text-lg text-gray-400 mt-2">
               Transform your UI text with AI-powered suggestions
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
-            </p>
+            {suggestions.length > 0 && (
+              <p className="text-sm text-gray-500 mt-4">
+                {suggestions.length} suggestions generated so far.
+              </p>
+            )}
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="ml-4"
-          >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
         </div>
 
         {!showResults ? (
-          <div className="max-w-2xl mx-auto">
-            <Card className="p-6">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <div className="bg-[#1E2435] rounded-xl p-8 shadow-lg">
+              <h2 className="text-2xl font-semibold text-white mb-6">
+                Give us the brief
+                <span className="text-gray-400 font-normal">
+                  (or write a few keywords or a brief).
+                </span>
+              </h2>
               <ImageUpload onImageUpload={handleImageUpload} />
-            </Card>
-
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Provide Context</DialogTitle>
-                  <DialogDescription>
-                    Help us understand your UI better by providing some context
-                  </DialogDescription>
-                </DialogHeader>
-                <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
-              </DialogContent>
-            </Dialog>
+              <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -234,7 +220,7 @@ const Index = () => {
               <Button 
                 variant="outline" 
                 onClick={handleRestart}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-transparent border-gray-700 text-white hover:bg-gray-800"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Start Over

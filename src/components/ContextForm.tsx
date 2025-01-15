@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -105,33 +104,33 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
   };
 
   return (
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="purpose">Purpose of UI Screen</Label>
-          <Select onValueChange={(value) => handleSelectChange(value, 'purpose')}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select purpose..." />
-            </SelectTrigger>
-            <SelectContent>
-              {PURPOSES.map((purpose) => (
-                <SelectItem key={purpose} value={purpose}>
-                  {purpose}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {showCustomInputs.purpose && (
-            <Input
-              name="purpose"
-              placeholder="Enter custom purpose..."
-              value={formData.purpose}
-              onChange={handleInputChange}
-              className="mt-2"
-            />
-          )}
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-6 mt-8">
+      <div className="space-y-4">
+        <Label htmlFor="purpose" className="text-gray-300">Purpose of UI Screen</Label>
+        <Select onValueChange={(value) => handleSelectChange(value, 'purpose')}>
+          <SelectTrigger className="bg-[#252A3D] border-gray-700 text-white">
+            <SelectValue placeholder="Select purpose..." />
+          </SelectTrigger>
+          <SelectContent className="bg-[#252A3D] border-gray-700">
+            {PURPOSES.map((purpose) => (
+              <SelectItem key={purpose} value={purpose} className="text-gray-200 hover:bg-gray-700">
+                {purpose}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {showCustomInputs.purpose && (
+          <Input
+            name="purpose"
+            placeholder="Enter custom purpose..."
+            value={formData.purpose}
+            onChange={handleInputChange}
+            className="mt-2 bg-[#252A3D] border-gray-700 text-white placeholder:text-gray-500"
+          />
+        )}
+      </div>
 
+      {/* Repeat similar styling for other form groups */}
         <div className="space-y-2">
           <Label htmlFor="audience">Target Audience</Label>
           <Select onValueChange={(value) => handleSelectChange(value, 'audience')}>
@@ -230,10 +229,13 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Analyzing...' : 'Analyze UI Copy'}
-        </Button>
-      </form>
-    </Card>
+      <Button 
+        type="submit" 
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg font-medium"
+        disabled={isLoading}
+      >
+        {isLoading ? 'Analyzing...' : 'Generate UX Copy'}
+      </Button>
+    </form>
   );
 };
