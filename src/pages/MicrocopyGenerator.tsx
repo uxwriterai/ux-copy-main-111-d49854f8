@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { generateMicrocopy } from "@/services/geminiService";
 
 type ElementType = 
   | "button"
@@ -68,14 +69,15 @@ const MicrocopyGenerator = () => {
     setIsLoading(true);
     
     try {
-      // TODO: Implement API call to generate microcopy
-      console.log("Generating microcopy with request:", request);
+      const result = await generateMicrocopy(
+        request.elementType,
+        request.context,
+        request.tone,
+        request.maxLength,
+        request.additionalNotes
+      );
       
-      // Temporary mock response
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const mockResponse = `Sample ${request.elementType} text in ${request.tone.toLowerCase()} tone`;
-      
-      setGeneratedCopy(mockResponse);
+      setGeneratedCopy(result);
       toast.success("Microcopy generated successfully!");
     } catch (error) {
       console.error("Error generating microcopy:", error);
