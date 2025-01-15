@@ -32,15 +32,6 @@ const Index = () => {
     setImagePreviewUrl(null);
   };
 
-  const handleUpdatePosition = (index: number, position: { x: number; y: number }) => {
-    setSuggestions(prev => 
-      prev.map((suggestion, i) => 
-        i === index ? { ...suggestion, position } : suggestion
-      )
-    );
-    toast.success(`Updated position for marker ${index + 1}`);
-  };
-
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
       const base64Image = await new Promise<string>((resolve) => {
@@ -50,8 +41,8 @@ const Index = () => {
       });
 
       const prompt = `
-        Analyze this UI screenshot and provide UX copy improvement suggestions.
-        
+        Analyze this UI screenshot and provide UX copy improvement suggestions following these principles:
+
         Context:
         - Purpose: ${context.purpose}
         - Target Audience: ${context.audience}
@@ -60,14 +51,50 @@ const Index = () => {
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
 
-        For each element that needs improvement, provide:
-        ELEMENT: [element type]
-        ORIGINAL: [current text]
-        IMPROVED: [suggested text]
-        EXPLANATION: [why this improves the UX]
-        ---
+        Apply these UX writing principles:
 
-        Please analyze the image and provide 3-5 suggestions in exactly this format.
+        General Principles:
+        - Keep copy concise and clear
+        - Break text into digestible chunks
+        - Use precise, action-oriented verbs
+        - Maintain consistent tone and terminology
+        - Avoid technical jargon
+        - Use present tense and active voice
+        - Express numbers with numerals
+
+        User-Centric Communication:
+        - Address users directly with "you"
+        - Set clear expectations
+        - Prioritize key information
+        - Show empathy and understanding
+        - Provide clear calls to action
+
+        Formatting and Design:
+        - Present information gradually
+        - Use lists for better readability
+        - Highlight key points sparingly
+        - Remove unnecessary words
+
+        Clarity and Usability:
+        - Label elements intuitively
+        - Be explicit about errors
+        - Use commonly recognized terms
+        - Write accessibly
+        - Provide context for complex items
+
+        Tone and Voice:
+        - Use appropriate humor
+        - Align with platform conventions
+        - Use inclusive language
+        - Maintain positive framing
+
+        For each UI element, provide:
+        - Element type (e.g., heading, button, label)
+        - Original text
+        - Improved version
+        - Brief explanation of improvements
+
+        Format each suggestion as: "Element Type - Original Text - Improved Text - Explanation"
       `;
 
       const response = await fetch(
@@ -98,28 +125,28 @@ const Index = () => {
       }
 
       const data = await response.json();
-      console.log('Raw Gemini API Response:', data);
-
-      // Parse suggestions without coordinates - they will be set manually
-      const suggestions = data.candidates[0].content.parts[0].text
-        .split('---')
-        .filter((block: string) => block.trim().length > 0)
-        .map((block: string, index: number) => {
-          const lines = block.trim().split('\n');
+      
+      const suggestionsFromResponse = data.candidates[0].content.parts[0].text
+        .split('\n')
+        .filter((line: string) => line.trim().length > 0)
+        .map((line: string) => {
+          const parts = line.split('-').map(p => p.trim());
           return {
-            element: lines.find((line: string) => line.startsWith('ELEMENT:'))?.replace('ELEMENT:', '').trim() || '',
-            position: { x: 50, y: 50 }, // Default center position
-            original: lines.find((line: string) => line.startsWith('ORIGINAL:'))?.replace('ORIGINAL:', '').trim() || '',
-            improved: lines.find((line: string) => line.startsWith('IMPROVED:'))?.replace('IMPROVED:', '').trim() || '',
-            explanation: lines.find((line: string) => line.startsWith('EXPLANATION:'))?.replace('EXPLANATION:', '').trim() || ''
+            element: parts[0] || "Unknown",
+            original: parts[1] || "",
+            improved: parts[2] || "",
+            explanation: parts[3] || "",
+            position: {
+              x: Math.random() * 80 + 10, // Random position between 10% and 90%
+              y: Math.random() * 80 + 10  // Random position between 10% and 90%
+            }
           };
         })
         .filter((s: Suggestion) => s.element && s.improved);
 
-      console.log('Parsed suggestions:', suggestions);
-      setSuggestions(suggestions);
+      setSuggestions(suggestionsFromResponse);
       setShowResults(true);
-      toast.success('Analysis complete! Click on the image to position the markers.');
+      toast.success('Analysis complete!');
     } catch (error) {
       console.error('Error analyzing UI:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
@@ -172,7 +199,6 @@ const Index = () => {
               suggestions={suggestions} 
               onFeedback={handleFeedback}
               imageUrl={imagePreviewUrl}
-              onUpdatePosition={handleUpdatePosition}
             />
           </div>
         )}

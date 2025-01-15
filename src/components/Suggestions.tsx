@@ -23,37 +23,10 @@ interface SuggestionsProps {
   suggestions: Suggestion[];
   onFeedback: (index: number, isPositive: boolean) => void;
   imageUrl?: string | null;
-  onUpdatePosition?: (index: number, position: { x: number; y: number }) => void;
 }
 
-export const Suggestions = ({ suggestions, onFeedback, imageUrl, onUpdatePosition }: SuggestionsProps) => {
+export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsProps) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [isPlacingMarker, setIsPlacingMarker] = useState(false);
-  const [markerToPlace, setMarkerToPlace] = useState<number | null>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-
-  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
-    if (!isPlacingMarker || markerToPlace === null || !imageRef.current) return;
-
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-    console.log(`Marker ${markerToPlace + 1} placed at:`, { x, y });
-
-    if (onUpdatePosition) {
-      onUpdatePosition(markerToPlace, { x, y });
-    }
-
-    setIsPlacingMarker(false);
-    setMarkerToPlace(null);
-  };
-
-  const startPlacingMarker = (index: number) => {
-    setIsPlacingMarker(true);
-    setMarkerToPlace(index);
-    setActiveIndex(null);
-  };
 
   if (!suggestions.length || !imageUrl) {
     return null;
@@ -63,11 +36,9 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl, onUpdatePositio
     <div className="relative w-full">
       <div className="relative border rounded-lg overflow-hidden bg-white shadow-md">
         <img
-          ref={imageRef}
           src={imageUrl}
           alt="Uploaded UI"
-          className={`w-full h-auto ${isPlacingMarker ? 'cursor-crosshair' : ''}`}
-          onClick={handleImageClick}
+          className="w-full h-auto"
         />
         
         {suggestions.map((suggestion, index) => (
@@ -85,6 +56,7 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl, onUpdatePositio
                   left: `${suggestion.position.x}%`,
                   top: `${suggestion.position.y}%`,
                 }}
+                onClick={() => setActiveIndex(activeIndex === index ? null : index)}
               >
                 {index + 1}
               </button>
@@ -92,20 +64,11 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl, onUpdatePositio
             <PopoverContent className="w-80 p-0" side="right">
               <Card className="p-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
-                        {index + 1}
-                      </span>
-                      <h3 className="font-medium text-lg">{suggestion.element}</h3>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => startPlacingMarker(index)}
-                    >
-                      Reposition
-                    </Button>
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
+                      {index + 1}
+                    </span>
+                    <h3 className="font-medium text-lg">{suggestion.element}</h3>
                   </div>
                   <div className="space-y-4">
                     <div>
@@ -144,23 +107,6 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl, onUpdatePositio
           </Popover>
         ))}
       </div>
-      {isPlacingMarker && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg">
-            <p className="text-lg font-medium">Click on the image to place marker {markerToPlace! + 1}</p>
-            <Button
-              className="mt-4"
-              variant="outline"
-              onClick={() => {
-                setIsPlacingMarker(false);
-                setMarkerToPlace(null);
-              }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
