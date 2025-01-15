@@ -9,10 +9,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { getUserCredits, updateUserCredits } from '@/services/creditsService';
 
 interface CreditsContextType {
   credits: number;
-  useCredit: () => boolean;
+  useCredit: () => Promise<boolean>;
   showLoginDialog: () => void;
 }
 
@@ -23,31 +24,22 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const [showDialog, setShowDialog] = useState(false);
   const [userIP, setUserIP] = useState<string>('');
 
-  // Fetch user's IP address and load stored credits
   useEffect(() => {
     const fetchIPAndCredits = async () => {
       try {
-        // Use a more reliable IP service
         const response = await fetch('https://api64.ipify.org?format=json');
         const data = await response.json();
         const ip = data.ip;
         setUserIP(ip);
         
-        // Store IP in sessionStorage for services to use
+        // Store IP for services to use
         sessionStorage.setItem('current_ip', ip);
 
-        // Check sessionStorage for credits
-        const sessionCredits = sessionStorage.getItem(`credits_${ip}`);
-        if (sessionCredits !== null) {
-          setCredits(parseInt(sessionCredits));
-        } else {
-          // Initialize credits for new users in session
-          sessionStorage.setItem(`credits_${ip}`, '4');
-          setCredits(4);
-        }
+        // Fetch credits from Supabase
+        const credits = await getUserCredits(ip);
+        setCredits(credits);
       } catch (error) {
-        console.error('Error fetching IP:', error);
-        // Fallback to default credits if IP fetch fails
+        console.error('Error fetching IP or credits:', error);
         setCredits(4);
       }
     };
@@ -55,17 +47,17 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     fetchIPAndCredits();
   }, []);
 
-  // Update stored credits whenever credits change
-  useEffect(() => {
-    if (userIP) {
-      sessionStorage.setItem(`credits_${userIP}`, credits.toString());
-    }
-  }, [credits, userIP]);
-
-  const useCredit = () => {
+  const useCredit = async () => {
     if (credits > 0) {
-      setCredits(prev => prev - 1);
-      return true;
+      const newCredits = credits - 1;
+      try {
+        await updateUserCredits(userIP, newCredits);
+        setCredits(newCredits);
+        return true;
+      } catch (error) {
+        console.error('Error updating credits:', error);
+        return false;
+      }
     }
     setShowDialog(true);
     return false;

@@ -1,27 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getGeminiApiKey } from "./creditsService";
 
-const genAI = new GoogleGenerativeAI("AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w");
+let genAI: any = null;
 
-// Helper function to check credits before making API calls
-const checkCreditsAndGetModel = () => {
-  // Get credits context from sessionStorage and IP
-  const ip = sessionStorage.getItem('current_ip');
-  if (!ip) {
-    throw new Error('IP address not found');
+async function initializeGenAI() {
+  if (!genAI) {
+    const apiKey = await getGeminiApiKey();
+    genAI = new GoogleGenerativeAI(apiKey);
   }
-  
-  const credits = sessionStorage.getItem(`credits_${ip}`);
-  const remainingCredits = credits ? parseInt(credits) : 0;
-  
-  if (remainingCredits <= 0) {
-    throw new Error('No credits remaining');
-  }
-  
-  // Reduce credits by 1
-  sessionStorage.setItem(`credits_${ip}`, (remainingCredits - 1).toString());
-  
-  return genAI.getGenerativeModel({ model: "gemini-pro" });
-};
+  return genAI;
+}
 
 export const generateMicrocopy = async (
   elementType: string,
@@ -31,7 +19,7 @@ export const generateMicrocopy = async (
   additionalNotes?: string,
   customElementType?: string
 ) => {
-  const model = checkCreditsAndGetModel();
+  const model = (await initializeGenAI()).getGenerativeModel({ model: "gemini-pro" });
 
   const prompt = `Generate 3 different variants of microcopy for a ${elementType === 'custom' ? customElementType : elementType} with the following details:
 Context: ${context}
@@ -64,7 +52,7 @@ Format your response as a numbered list with exactly 3 variants, one per line:
 };
 
 export const analyzeABTest = async (variationA: any, variationB: any) => {
-  const model = checkCreditsAndGetModel();
+  const model = (await initializeGenAI()).getGenerativeModel({ model: "gemini-pro" });
 
   const prompt = `Analyze these two content variations and provide a detailed, structured comparison:
 
