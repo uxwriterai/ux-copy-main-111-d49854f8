@@ -33,13 +33,11 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
   useEffect(() => {
     if (!suggestions || !suggestions.length) return;
 
-    // Convert suggestions to annotation format with proper position calculations
     const newAnnotations = suggestions.map((suggestion, index) => ({
       geometry: {
         type: 'POINT',
-        // Ensure x and y are between 0 and 1 for relative positioning
-        x: Math.min(Math.max((suggestion.position?.x || 50) / 100, 0), 1),
-        y: Math.min(Math.max((suggestion.position?.y || 50) / 100, 0), 1),
+        x: suggestion.position?.x / 100,
+        y: suggestion.position?.y / 100,
       },
       data: {
         ...suggestion,
@@ -52,26 +50,23 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
   const renderMarker = ({ geometry, data }: any) => {
     if (!geometry) return null;
 
-    // Calculate position as percentage
-    const xPos = `${geometry.x * 100}%`;
-    const yPos = `${geometry.y * 100}%`;
-
     return (
       <Popover>
         <PopoverTrigger asChild>
-          <button
+          <div
             className="absolute p-2 w-6 h-6 flex items-center justify-center rounded-full 
               bg-primary text-primary-foreground hover:bg-primary/90
               shadow-lg cursor-pointer text-sm font-medium transform hover:scale-110 transition-all"
             style={{
-              left: xPos,
-              top: yPos,
+              position: 'absolute',
+              left: `${geometry.x * 100}%`,
+              top: `${geometry.y * 100}%`,
               transform: 'translate(-50%, -50%)',
               zIndex: 50
             }}
           >
             {data.index + 1}
-          </button>
+          </div>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0" side="right">
           <Card className="p-4">
