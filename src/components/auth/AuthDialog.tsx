@@ -48,9 +48,9 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       case "Email not confirmed":
         return "Please verify your email address before signing in."
       case "User not found":
-        return "No account found with these credentials."
+        return "No account found with these credentials. Please sign up first."
       default:
-        return error.message
+        return error.message || "An error occurred during authentication."
     }
   }
 
@@ -60,7 +60,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         <DialogHeader>
           <DialogTitle>Welcome</DialogTitle>
           <DialogDescription>
-            Sign in to unlock more credits and features.
+            Sign in to unlock more credits and features. New user? Please sign up first.
           </DialogDescription>
         </DialogHeader>
         
@@ -90,6 +90,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           }}
           theme={theme}
           providers={[]}
+          redirectTo={window.location.origin}
         />
       </DialogContent>
     </Dialog>
