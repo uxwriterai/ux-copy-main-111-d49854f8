@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { generateMicrocopy } from "@/services/geminiService";
+import { CopyVariant } from "@/components/microcopy/CopyVariant";
 
 type ElementType = 
   | "button"
@@ -26,6 +27,7 @@ type ElementType =
 
 interface MicrocopyRequest {
   elementType: ElementType;
+  customElementType?: string;
   context: string;
   tone: string;
   maxLength?: number;
@@ -62,22 +64,23 @@ const MicrocopyGenerator = () => {
     maxLength: undefined,
     additionalNotes: "",
   });
-  const [generatedCopy, setGeneratedCopy] = useState<string>("");
+  const [generatedCopy, setGeneratedCopy] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      const result = await generateMicrocopy(
+      const variants = await generateMicrocopy(
         request.elementType,
         request.context,
         request.tone,
         request.maxLength,
-        request.additionalNotes
+        request.additionalNotes,
+        request.customElementType
       );
       
-      setGeneratedCopy(result);
+      setGeneratedCopy(variants);
       toast.success("Microcopy generated successfully!");
     } catch (error) {
       console.error("Error generating microcopy:", error);
@@ -121,6 +124,23 @@ const MicrocopyGenerator = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {request.elementType === "custom" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="customElementType">Custom Element Type</Label>
+                    <Input
+                      id="customElementType"
+                      placeholder="e.g., Progress Bar Label"
+                      value={request.customElementType || ""}
+                      onChange={e =>
+                        setRequest(prev => ({
+                          ...prev,
+                          customElementType: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="context">Context</Label>
@@ -195,26 +215,16 @@ const MicrocopyGenerator = () => {
 
             <Card className="p-6">
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Generated Microcopy</h2>
-                {generatedCopy ? (
+                <h2 className="text-xl font-semibold">Generated Variants</h2>
+                {generatedCopy.length > 0 ? (
                   <div className="space-y-4">
-                    <div className="rounded-lg border bg-card p-4">
-                      <p className="text-card-foreground">{generatedCopy}</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        navigator.clipboard.writeText(generatedCopy);
-                        toast.success("Copied to clipboard!");
-                      }}
-                    >
-                      Copy to Clipboard
-                    </Button>
+                    {generatedCopy.map((variant, index) => (
+                      <CopyVariant key={index} text={variant} />
+                    ))}
                   </div>
                 ) : (
                   <p className="text-muted-foreground">
-                    Generated microcopy will appear here
+                    Generated microcopy variants will appear here
                   </p>
                 )}
               </div>

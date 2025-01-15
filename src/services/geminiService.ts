@@ -7,29 +7,40 @@ export const generateMicrocopy = async (
   context: string,
   tone: string,
   maxLength?: number,
-  additionalNotes?: string
+  additionalNotes?: string,
+  customElementType?: string
 ) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `Generate microcopy for a ${elementType} with the following details:
+    const prompt = `Generate 3 different variants of microcopy for a ${elementType === 'custom' ? customElementType : elementType} with the following details:
 Context: ${context}
 Tone: ${tone}
 ${maxLength ? `Maximum Length: ${maxLength} characters` : ''}
 ${additionalNotes ? `Additional Notes: ${additionalNotes}` : ''}
 
-Please provide clear, concise, and effective microcopy that:
-1. Is appropriate for the element type
-2. Matches the specified tone
-3. Considers the given context
-4. Is user-friendly and accessible
-5. ${maxLength ? `Stays within ${maxLength} characters` : 'Is concise'}
+Please provide 3 clear, concise, and effective microcopy variants that:
+1. Are appropriate for the element type
+2. Match the specified tone
+3. Consider the given context
+4. Are user-friendly and accessible
+5. ${maxLength ? `Stay within ${maxLength} characters` : 'Are concise'}
 
-Return only the generated microcopy text, nothing else.`;
+Format your response as a numbered list with exactly 3 variants, one per line:
+1. [First variant]
+2. [Second variant]
+3. [Third variant]`;
 
     const result = await model.generateContent(prompt);
-    const response = result.response;
-    return response.text();
+    const response = result.response.text();
+    
+    // Parse the response into separate variants
+    const variants = response
+      .split('\n')
+      .filter(line => line.trim().match(/^\d\./))
+      .map(line => line.replace(/^\d\.\s*/, '').trim());
+
+    return variants;
   } catch (error) {
     console.error("Error generating microcopy:", error);
     throw new Error("Failed to generate microcopy. Please try again.");
