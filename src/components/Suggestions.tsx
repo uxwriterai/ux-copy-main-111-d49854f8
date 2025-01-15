@@ -40,29 +40,33 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
 
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageType = 'image/png';
-    markerArea.settings.displayMode = 'preview';
+    markerArea.settings.displayMode = markerjs2.DisplayMode.Preview;
 
     // Show marker area first
     markerArea.show();
 
     // After showing, create and add markers
     suggestions.forEach((suggestion, index) => {
-      const marker = new markerjs2.CalloutMarker(markerArea);
+      // Create a marker with the correct constructor signature
+      const marker = new markerjs2.CalloutMarker();
       
       // Calculate position in pixels
       const rect = imageRef.current!.getBoundingClientRect();
       const xPos = (suggestion.position.x / 100) * rect.width;
       const yPos = (suggestion.position.y / 100) * rect.height;
 
-      // Set marker properties
-      marker.setSize(100, 100);
-      marker.setPosition(xPos - 50, yPos - 50);
-      marker.captionText = `${index + 1}`;
+      // Set marker properties using the marker's state
+      marker.state = {
+        ...marker.state,
+        width: 100,
+        height: 100,
+        left: xPos - 50,
+        top: yPos - 50,
+        text: `${index + 1}`,
+      };
       
-      // Add marker to the marker area
-      if (markerArea.addMarker) {
-        markerArea.addMarker(marker);
-      }
+      // Add marker to the marker area's markers array
+      markerArea.addMarkerToState(marker);
     });
 
     // Add click handlers to markers
