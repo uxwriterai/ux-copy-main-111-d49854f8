@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
-const MAX_SUGGESTIONS = 15;
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +29,7 @@ const Index = () => {
     try {
       console.log('Starting image analysis...');
       
+      // Validate image size
       if (image.size > 4 * 1024 * 1024) {
         throw new Error('Image size must be less than 4MB');
       }
@@ -44,39 +44,60 @@ const Index = () => {
       console.log('Image converted to base64');
 
       const prompt = `
-        Analyze this UI screenshot and provide the ${MAX_SUGGESTIONS} most important UX copy improvement suggestions.
-        Focus on the most prominent and impactful UI elements only.
+        Analyze this UI screenshot and provide UX copy improvement suggestions following these principles:
 
-        For each UI element, provide:
-        1. Element type (e.g., heading, button, label)
-        2. Original text content exactly as shown
-        3. Improved version of the text
-        4. Brief explanation of improvements
-        5. Position coordinates:
-           - x: percentage (0-100) from left edge of the image
-           - y: percentage (0-100) from top edge of the image
-           - Be extremely precise with positioning
-           - Measure from the center point of each text element
-           - Double-check all coordinates
-
-        Format each suggestion exactly like this, with the | separator:
-        Element Type | Original Text | Improved Text | Explanation | x:42,y:73
-
-        Important rules:
-        - Provide exactly ${MAX_SUGGESTIONS} suggestions or fewer
-        - Focus on text elements only (headings, labels, buttons)
-        - Ensure coordinates are precise percentages (0-100)
-        - Verify each coordinate points to the center of the text
-        - Double-check all text matches exactly what's in the image
-        - Maintain consistent formatting with the | separator
-
-        Context for improvements:
+        Context:
         - Purpose: ${context.purpose}
         - Target Audience: ${context.audience}
         - Desired Tone: ${context.tone}
         - Emotional Goal: ${context.emotionalGoal}
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
+
+        Apply these UX writing principles:
+
+        General Principles:
+        - Keep copy concise and clear
+        - Break text into digestible chunks
+        - Use precise, action-oriented verbs
+        - Maintain consistent tone and terminology
+        - Avoid technical jargon
+        - Use present tense and active voice
+        - Express numbers with numerals
+
+        User-Centric Communication:
+        - Address users directly with "you"
+        - Set clear expectations
+        - Prioritize key information
+        - Show empathy and understanding
+        - Provide clear calls to action
+
+        Formatting and Design:
+        - Present information gradually
+        - Use lists for better readability
+        - Highlight key points sparingly
+        - Remove unnecessary words
+
+        Clarity and Usability:
+        - Label elements intuitively
+        - Be explicit about errors
+        - Use commonly recognized terms
+        - Write accessibly
+        - Provide context for complex items
+
+        Tone and Voice:
+        - Use appropriate humor
+        - Align with platform conventions
+        - Use inclusive language
+        - Maintain positive framing
+
+        For each UI element, provide:
+        - Element type (e.g., heading, button, label)
+        - Original text
+        - Improved version
+        - Brief explanation of improvements
+
+        Format each suggestion as: "Element Type - Original Text - Improved Text - Explanation"
       `;
 
       console.log('Sending request to Gemini API...');
@@ -87,6 +108,7 @@ const Index = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify({
             contents: [{
@@ -103,6 +125,8 @@ const Index = () => {
         }
       );
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error('API Error:', errorData);
@@ -116,43 +140,23 @@ const Index = () => {
         throw new Error('Invalid response format from API');
       }
 
-      const suggestionsText = data.candidates[0].content.parts[0].text;
-      console.log('Raw suggestions:', suggestionsText);
-
-      const suggestionsFromResponse = suggestionsText
+      const suggestionsFromResponse = data.candidates[0].content.parts[0].text
         .split('\n')
-        .filter((line: string) => line.includes('|'))
+        .filter((line: string) => line.trim().length > 0)
         .map((line: string) => {
-          const [element, original, improved, explanation, position] = line.split('|').map(p => p.trim());
-          
-          // Extract x,y coordinates from the position string (format: "x:42,y:73")
-          const coordinates = position.match(/x:(\d+\.?\d*),y:(\d+\.?\d*)/);
-          if (!coordinates || coordinates.length !== 3) {
-            return null;
-          }
-
-          const x = parseFloat(coordinates[1]);
-          const y = parseFloat(coordinates[2]);
-
-          // Validate coordinates and required fields
-          if (
-            isNaN(x) || isNaN(y) ||
-            x < 0 || x > 100 || y < 0 || y > 100 ||
-            !element || !original || !improved || !explanation
-          ) {
-            return null;
-          }
-
+          const parts = line.split('-').map(p => p.trim());
           return {
-            element,
-            original,
-            improved,
-            explanation,
-            position: { x, y }
+            element: parts[0] || "Unknown",
+            original: parts[1] || "",
+            improved: parts[2] || "",
+            explanation: parts[3] || "",
+            position: {
+              x: Math.random() * 80 + 10,
+              y: Math.random() * 80 + 10
+            }
           };
         })
-        .filter((s): s is Suggestion => s !== null)
-        .slice(0, MAX_SUGGESTIONS); // Ensure we don't exceed the maximum number of suggestions
+        .filter((s: Suggestion) => s.element && s.improved);
 
       console.log('Processed suggestions:', suggestionsFromResponse);
 
@@ -162,7 +166,7 @@ const Index = () => {
     } catch (error) {
       console.error('Error analyzing UI:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
-      throw error;
+      throw error; // Re-throw to be handled by the caller
     }
   };
 
