@@ -10,24 +10,29 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
     toast.success('Image uploaded successfully');
   };
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
-      // Convert image to base64
       const base64Image = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
         reader.readAsDataURL(image);
       });
 
-      // Prepare the prompt
       const prompt = `
-        Analyze this UI screenshot and provide UX copy improvement suggestions.
+        Analyze this UI screenshot and provide UX copy improvement suggestions following these principles:
+
         Context:
         - Purpose: ${context.purpose}
         - Target Audience: ${context.audience}
@@ -36,20 +41,52 @@ const Index = () => {
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
 
-        Please identify key text elements and suggest improvements that:
-        1. Enhance clarity and user understanding
-        2. Match the desired tone and voice
-        3. Achieve the emotional response goal
-        4. Stay within any specified constraints
-        
-        For each element, provide:
-        - The element type (e.g., heading, button, label)
-        - The original text
+        Apply these UX writing principles:
+
+        General Principles:
+        - Keep copy concise and clear
+        - Break text into digestible chunks
+        - Use precise, action-oriented verbs
+        - Maintain consistent tone and terminology
+        - Avoid technical jargon
+        - Use present tense and active voice
+        - Express numbers with numerals
+
+        User-Centric Communication:
+        - Address users directly with "you"
+        - Set clear expectations
+        - Prioritize key information
+        - Show empathy and understanding
+        - Provide clear calls to action
+
+        Formatting and Design:
+        - Present information gradually
+        - Use lists for better readability
+        - Highlight key points sparingly
+        - Remove unnecessary words
+
+        Clarity and Usability:
+        - Label elements intuitively
+        - Be explicit about errors
+        - Use commonly recognized terms
+        - Write accessibly
+        - Provide context for complex items
+
+        Tone and Voice:
+        - Use appropriate humor
+        - Align with platform conventions
+        - Use inclusive language
+        - Maintain positive framing
+
+        For each UI element, provide:
+        - Element type (e.g., heading, button, label)
+        - Original text
         - Improved version
-        - Brief explanation of the improvement
+        - Brief explanation of improvements
+
+        Format each suggestion as: "Element Type - Original Text - Improved Text - Explanation"
       `;
 
-      // Make API call to Gemini
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`,
         {
@@ -79,12 +116,10 @@ const Index = () => {
 
       const data = await response.json();
       
-      // Parse the response and extract suggestions
       const suggestionsFromResponse = data.candidates[0].content.parts[0].text
         .split('\n')
         .filter((line: string) => line.trim().length > 0)
         .map((line: string) => {
-          // Simple parsing logic - you might need to adjust based on actual response format
           const parts = line.split('-').map(p => p.trim());
           return {
             element: parts[0] || "Unknown",
@@ -134,7 +169,11 @@ const Index = () => {
             <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
           </div>
           <div className="space-y-8">
-            <Suggestions suggestions={suggestions} onFeedback={handleFeedback} />
+            <Suggestions 
+              suggestions={suggestions} 
+              onFeedback={handleFeedback}
+              imageUrl={imagePreviewUrl}
+            />
           </div>
         </div>
       </div>

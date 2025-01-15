@@ -4,6 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface ContextData {
   purpose: string;
@@ -19,6 +26,46 @@ interface ContextFormProps {
   isLoading: boolean;
 }
 
+const PURPOSES = [
+  "User Onboarding",
+  "Navigation Menu",
+  "Settings Panel",
+  "Dashboard",
+  "Form Interface",
+  "Error Messages",
+  "Custom"
+];
+
+const TONES = [
+  "Professional",
+  "Friendly",
+  "Playful",
+  "Technical",
+  "Casual",
+  "Formal",
+  "Custom"
+];
+
+const EMOTIONAL_GOALS = [
+  "Motivating",
+  "Reassuring",
+  "Engaging",
+  "Empowering",
+  "Calming",
+  "Exciting",
+  "Custom"
+];
+
+const AUDIENCES = [
+  "Tech-savvy Users",
+  "Beginners",
+  "Business Professionals",
+  "Creative Professionals",
+  "Students",
+  "Seniors",
+  "Custom"
+];
+
 export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
   const [formData, setFormData] = useState<ContextData>({
     purpose: '',
@@ -28,13 +75,29 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
     constraints: '',
     additionalDetails: '',
   });
+  const [showCustomInputs, setShowCustomInputs] = useState({
+    purpose: false,
+    audience: false,
+    tone: false,
+    emotionalGoal: false,
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSelectChange = (value: string, field: keyof typeof showCustomInputs) => {
+    if (value === 'Custom') {
+      setShowCustomInputs(prev => ({ ...prev, [field]: true }));
+      setFormData(prev => ({ ...prev, [field]: '' }));
+    } else {
+      setShowCustomInputs(prev => ({ ...prev, [field]: false }));
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const handleCustomInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -44,50 +107,102 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="purpose">Purpose of UI Screen</Label>
-          <Input
-            id="purpose"
-            name="purpose"
-            placeholder="e.g., User onboarding, Navigation menu"
-            value={formData.purpose}
-            onChange={handleChange}
-            required
-          />
+          <Select onValueChange={(value) => handleSelectChange(value, 'purpose')}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select purpose..." />
+            </SelectTrigger>
+            <SelectContent>
+              {PURPOSES.map((purpose) => (
+                <SelectItem key={purpose} value={purpose}>
+                  {purpose}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {showCustomInputs.purpose && (
+            <Input
+              name="purpose"
+              placeholder="Enter custom purpose..."
+              value={formData.purpose}
+              onChange={handleCustomInput}
+              className="mt-2"
+            />
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="audience">Target Audience</Label>
-          <Input
-            id="audience"
-            name="audience"
-            placeholder="e.g., Tech-savvy millennials"
-            value={formData.audience}
-            onChange={handleChange}
-            required
-          />
+          <Select onValueChange={(value) => handleSelectChange(value, 'audience')}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select audience..." />
+            </SelectTrigger>
+            <SelectContent>
+              {AUDIENCES.map((audience) => (
+                <SelectItem key={audience} value={audience}>
+                  {audience}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {showCustomInputs.audience && (
+            <Input
+              name="audience"
+              placeholder="Enter custom audience..."
+              value={formData.audience}
+              onChange={handleCustomInput}
+              className="mt-2"
+            />
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="tone">Desired Tone & Voice</Label>
-          <Input
-            id="tone"
-            name="tone"
-            placeholder="e.g., Professional, Friendly, Playful"
-            value={formData.tone}
-            onChange={handleChange}
-            required
-          />
+          <Select onValueChange={(value) => handleSelectChange(value, 'tone')}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select tone..." />
+            </SelectTrigger>
+            <SelectContent>
+              {TONES.map((tone) => (
+                <SelectItem key={tone} value={tone}>
+                  {tone}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {showCustomInputs.tone && (
+            <Input
+              name="tone"
+              placeholder="Enter custom tone..."
+              value={formData.tone}
+              onChange={handleCustomInput}
+              className="mt-2"
+            />
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="emotionalGoal">Emotional Response Goal</Label>
-          <Input
-            id="emotionalGoal"
-            name="emotionalGoal"
-            placeholder="e.g., Motivating, Reassuring"
-            value={formData.emotionalGoal}
-            onChange={handleChange}
-            required
-          />
+          <Select onValueChange={(value) => handleSelectChange(value, 'emotionalGoal')}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select emotional goal..." />
+            </SelectTrigger>
+            <SelectContent>
+              {EMOTIONAL_GOALS.map((goal) => (
+                <SelectItem key={goal} value={goal}>
+                  {goal}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {showCustomInputs.emotionalGoal && (
+            <Input
+              name="emotionalGoal"
+              placeholder="Enter custom emotional goal..."
+              value={formData.emotionalGoal}
+              onChange={handleCustomInput}
+              className="mt-2"
+            />
+          )}
         </div>
 
         <div className="space-y-2">
@@ -97,7 +212,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
             name="constraints"
             placeholder="e.g., Max 50 characters for buttons"
             value={formData.constraints}
-            onChange={handleChange}
+            onChange={handleCustomInput}
           />
         </div>
 
@@ -108,7 +223,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
             name="additionalDetails"
             placeholder="Any other specific requirements or context"
             value={formData.additionalDetails}
-            onChange={handleChange}
+            onChange={handleCustomInput}
             className="h-24"
           />
         </div>
