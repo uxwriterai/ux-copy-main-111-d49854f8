@@ -9,7 +9,8 @@ import {
   SplitSquareVertical,
   Type,
   Wand2,
-  FileX
+  FileX,
+  Layout
 } from "lucide-react"
 
 const items = [
@@ -37,6 +38,11 @@ const items = [
     title: "Empty State Generator",
     url: "/empty-state",
     icon: FileX,
+  },
+  {
+    title: "Hero Copy Generator",
+    url: "/hero-copy",
+    icon: Layout,
   }
 ]
 
