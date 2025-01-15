@@ -4,9 +4,11 @@ import { ContextForm, type ContextData } from '@/components/ContextForm';
 import { Suggestions, type Suggestion } from '@/components/Suggestions';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
+const MAX_SUGGESTIONS = 15;
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +16,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
@@ -27,9 +30,6 @@ const Index = () => {
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
-      console.log('Starting image analysis...');
-      
-      // Validate image size
       if (image.size > 4 * 1024 * 1024) {
         throw new Error('Image size must be less than 4MB');
       }
@@ -41,10 +41,14 @@ const Index = () => {
         reader.readAsDataURL(image);
       });
 
-      console.log('Image converted to base64');
-
       const prompt = `
-        Analyze this UI screenshot and provide UX copy improvement suggestions following these principles:
+        Analyze this UI screenshot and provide up to ${MAX_SUGGESTIONS} UX copy improvement suggestions.
+        For each UI element, provide:
+        1. Precise element location (x,y coordinates as percentages of the image dimensions, e.g. x: 45, y: 72)
+        2. Element type (e.g., heading, button, label)
+        3. Original text content
+        4. Improved version of the text
+        5. Brief explanation of why the improvement helps
 
         Context:
         - Purpose: ${context.purpose}
@@ -54,53 +58,19 @@ const Index = () => {
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
 
-        Apply these UX writing principles:
+        Format each suggestion exactly as:
+        {
+          "element": "element type",
+          "position": {"x": number, "y": number},
+          "original": "original text",
+          "improved": "improved text",
+          "explanation": "brief explanation"
+        }
 
-        General Principles:
-        - Keep copy concise and clear
-        - Break text into digestible chunks
-        - Use precise, action-oriented verbs
-        - Maintain consistent tone and terminology
-        - Avoid technical jargon
-        - Use present tense and active voice
-        - Express numbers with numerals
-
-        User-Centric Communication:
-        - Address users directly with "you"
-        - Set clear expectations
-        - Prioritize key information
-        - Show empathy and understanding
-        - Provide clear calls to action
-
-        Formatting and Design:
-        - Present information gradually
-        - Use lists for better readability
-        - Highlight key points sparingly
-        - Remove unnecessary words
-
-        Clarity and Usability:
-        - Label elements intuitively
-        - Be explicit about errors
-        - Use commonly recognized terms
-        - Write accessibly
-        - Provide context for complex items
-
-        Tone and Voice:
-        - Use appropriate humor
-        - Align with platform conventions
-        - Use inclusive language
-        - Maintain positive framing
-
-        For each UI element, provide:
-        - Element type (e.g., heading, button, label)
-        - Original text
-        - Improved version
-        - Brief explanation of improvements
-
-        Format each suggestion as: "Element Type - Original Text - Improved Text - Explanation"
+        Ensure coordinates are precise percentages between 0-100.
+        Return exactly one JSON object per line.
+        Validate all suggestions have all required fields.
       `;
-
-      console.log('Sending request to Gemini API...');
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
@@ -108,7 +78,6 @@ const Index = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
           },
           body: JSON.stringify({
             contents: [{
@@ -125,48 +94,54 @@ const Index = () => {
         }
       );
 
-      console.log('Response status:', response.status);
-
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API Error:', errorData);
         throw new Error(`API Error: ${errorData.error?.message || 'Failed to analyze image'}`);
       }
 
       const data = await response.json();
-      console.log('API Response:', data);
-
+      
       if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
         throw new Error('Invalid response format from API');
       }
 
-      const suggestionsFromResponse = data.candidates[0].content.parts[0].text
+      const suggestionsText = data.candidates[0].content.parts[0].text;
+      const parsedSuggestions = suggestionsText
         .split('\n')
-        .filter((line: string) => line.trim().length > 0)
-        .map((line: string) => {
-          const parts = line.split('-').map(p => p.trim());
-          return {
-            element: parts[0] || "Unknown",
-            original: parts[1] || "",
-            improved: parts[2] || "",
-            explanation: parts[3] || "",
-            position: {
-              x: Math.random() * 80 + 10,
-              y: Math.random() * 80 + 10
-            }
-          };
+        .filter(line => line.trim())
+        .map(line => {
+          try {
+            const suggestion = JSON.parse(line);
+            return {
+              ...suggestion,
+              position: {
+                x: Math.min(100, Math.max(0, suggestion.position.x)),
+                y: Math.min(100, Math.max(0, suggestion.position.y))
+              }
+            };
+          } catch (e) {
+            console.error('Failed to parse suggestion:', line);
+            return null;
+          }
         })
-        .filter((s: Suggestion) => s.element && s.improved);
+        .filter((s): s is Suggestion => 
+          s !== null && 
+          typeof s.element === 'string' &&
+          typeof s.original === 'string' &&
+          typeof s.improved === 'string' &&
+          typeof s.explanation === 'string' &&
+          typeof s.position?.x === 'number' &&
+          typeof s.position?.y === 'number'
+        )
+        .slice(0, MAX_SUGGESTIONS);
 
-      console.log('Processed suggestions:', suggestionsFromResponse);
-
-      setSuggestions(suggestionsFromResponse);
+      setSuggestions(parsedSuggestions);
       setShowResults(true);
       toast.success('Analysis complete!');
     } catch (error) {
       console.error('Error analyzing UI:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
-      throw error; // Re-throw to be handled by the caller
+      toast.error(error instanceof Error ? error.message : 'Failed to analyze UI');
+      throw error;
     }
   };
 
@@ -198,13 +173,26 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container max-w-6xl">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">UX Copy Improver</h1>
-          <p className="text-lg text-gray-600">
-            Upload your UI screenshot and get AI-powered suggestions for better UX copy
-          </p>
+    <div className="min-h-screen bg-background transition-colors duration-300">
+      <div className="container max-w-6xl py-12">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-foreground mb-4">UX Copy Improver</h1>
+            <p className="text-lg text-muted-foreground">
+              Transform your UI text with AI-powered suggestions
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="ml-4"
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
         </div>
 
         {!showResults ? (
