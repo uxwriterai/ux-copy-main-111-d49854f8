@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
+const MAX_SUGGESTIONS = 15;
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,27 +44,33 @@ const Index = () => {
       console.log('Image converted to base64');
 
       const prompt = `
-        Analyze this UI screenshot and provide UX copy improvement suggestions.
-        For each UI element you find, provide:
+        Analyze this UI screenshot and provide the ${MAX_SUGGESTIONS} most important UX copy improvement suggestions.
+        Focus on the most prominent and impactful UI elements only.
+
+        For each UI element, provide:
         1. Element type (e.g., heading, button, label)
-        2. Original text content
+        2. Original text content exactly as shown
         3. Improved version of the text
         4. Brief explanation of improvements
-        5. Position of the element in the image:
-           - Specify x coordinate as percentage (0-100) from left edge
-           - Specify y coordinate as percentage (0-100) from top edge
-           - Be very precise with positioning to ensure markers appear exactly on the elements
+        5. Position coordinates:
+           - x: percentage (0-100) from left edge of the image
+           - y: percentage (0-100) from top edge of the image
+           - Be extremely precise with positioning
+           - Measure from the center point of each text element
+           - Double-check all coordinates
 
-        Format each suggestion exactly like this example:
+        Format each suggestion exactly like this, with the | separator:
         Element Type | Original Text | Improved Text | Explanation | x:42,y:73
 
-        Important:
-        - Provide coordinates that will place markers directly on the UI elements
-        - Use precise percentage values (0-100) for x and y coordinates
-        - Ensure each suggestion follows the exact format with the | separator
-        - Position coordinates should reflect the center point of each element
+        Important rules:
+        - Provide exactly ${MAX_SUGGESTIONS} suggestions or fewer
+        - Focus on text elements only (headings, labels, buttons)
+        - Ensure coordinates are precise percentages (0-100)
+        - Verify each coordinate points to the center of the text
+        - Double-check all text matches exactly what's in the image
+        - Maintain consistent formatting with the | separator
 
-        Additional Context:
+        Context for improvements:
         - Purpose: ${context.purpose}
         - Target Audience: ${context.audience}
         - Desired Tone: ${context.tone}
@@ -120,21 +127,32 @@ const Index = () => {
           
           // Extract x,y coordinates from the position string (format: "x:42,y:73")
           const coordinates = position.match(/x:(\d+\.?\d*),y:(\d+\.?\d*)/);
-          const x = coordinates ? parseFloat(coordinates[1]) : 50;
-          const y = coordinates ? parseFloat(coordinates[2]) : 50;
+          if (!coordinates || coordinates.length !== 3) {
+            return null;
+          }
+
+          const x = parseFloat(coordinates[1]);
+          const y = parseFloat(coordinates[2]);
+
+          // Validate coordinates and required fields
+          if (
+            isNaN(x) || isNaN(y) ||
+            x < 0 || x > 100 || y < 0 || y > 100 ||
+            !element || !original || !improved || !explanation
+          ) {
+            return null;
+          }
 
           return {
             element,
             original,
             improved,
             explanation,
-            position: {
-              x: Math.min(100, Math.max(0, x)), // Ensure x is between 0-100
-              y: Math.min(100, Math.max(0, y))  // Ensure y is between 0-100
-            }
+            position: { x, y }
           };
         })
-        .filter((s: Suggestion) => s.element && s.improved);
+        .filter((s): s is Suggestion => s !== null)
+        .slice(0, MAX_SUGGESTIONS); // Ensure we don't exceed the maximum number of suggestions
 
       console.log('Processed suggestions:', suggestionsFromResponse);
 
