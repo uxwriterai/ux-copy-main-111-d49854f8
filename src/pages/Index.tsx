@@ -1,11 +1,22 @@
 import { useState } from 'react';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 import { ContextForm, type ContextData } from '@/components/ContextForm';
 import { Suggestions, type Suggestion } from '@/components/Suggestions';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import { Card } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -16,6 +27,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const handleImageUpload = (file: File) => {
@@ -26,6 +38,7 @@ const Index = () => {
     };
     reader.readAsDataURL(file);
     toast.success('Image uploaded successfully');
+    setDialogOpen(true);
   };
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
@@ -154,6 +167,7 @@ const Index = () => {
     setIsLoading(true);
     try {
       await analyzeUIWithGemini(uploadedImage, contextData);
+      setDialogOpen(false);
     } catch (error) {
       console.error('Error in handleContextSubmit:', error);
     } finally {
@@ -166,6 +180,7 @@ const Index = () => {
     setSuggestions([]);
     setUploadedImage(null);
     setImagePreviewUrl(null);
+    setDialogOpen(false);
   };
 
   const handleFeedback = (index: number, isPositive: boolean) => {
@@ -196,9 +211,22 @@ const Index = () => {
         </div>
 
         {!showResults ? (
-          <div className="max-w-2xl mx-auto space-y-8">
-            <ImageUpload onImageUpload={handleImageUpload} />
-            <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+          <div className="max-w-2xl mx-auto">
+            <Card className="p-6">
+              <ImageUpload onImageUpload={handleImageUpload} />
+            </Card>
+
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Provide Context</DialogTitle>
+                  <DialogDescription>
+                    Help us understand your UI better by providing some context
+                  </DialogDescription>
+                </DialogHeader>
+                <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+              </DialogContent>
+            </Dialog>
           </div>
         ) : (
           <div className="space-y-4">
