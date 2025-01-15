@@ -33,12 +33,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       console.log("Auth state changed:", event)
       if (event === 'SIGNED_IN' && session?.user) {
         // Check if this is a new sign up by comparing timestamps
-        console.log("Checking if new user:", {
-          created_at: session.user.created_at,
-          last_sign_in_at: session.user.last_sign_in_at
+        const createdAt = new Date(session.user.created_at).getTime()
+        const lastSignIn = new Date(session.user.last_sign_in_at).getTime()
+        const timeDiff = Math.abs(createdAt - lastSignIn)
+        
+        console.log("Time comparison:", {
+          createdAt,
+          lastSignIn,
+          timeDiff,
+          isNewUser: timeDiff < 5000 // Consider new if timestamps are within 5 seconds
         })
         
-        if (session.user.created_at === session.user.last_sign_in_at) {
+        if (timeDiff < 5000) { // If timestamps are within 5 seconds, consider it a new signup
           console.log("New user detected, showing welcome message and confetti")
           setShowConfetti(true)
           setShowWelcome(true)
