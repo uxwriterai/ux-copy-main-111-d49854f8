@@ -14,17 +14,15 @@ interface LandingPageResultProps {
 export const LandingPageResult = ({ sections, onRestart }: LandingPageResultProps) => {
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
-      <div className="container max-w-6xl py-12">
-        <div className="flex justify-center items-center mb-8 text-center">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Landing Page Copy</h1>
-            <p className="text-lg text-muted-foreground">
-              Your generated landing page sections
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {sections.length} sections generated
-            </p>
-          </div>
+      <div className="container max-w-6xl py-8">
+        <div className="text-left mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-4">Landing Page Copy</h1>
+          <p className="text-lg text-muted-foreground">
+            Your generated landing page sections
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {sections.length} sections generated
+          </p>
         </div>
 
         <div className="space-y-8 animate-fadeIn">
