@@ -2,13 +2,34 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI("AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w");
 
+// Helper function to check credits before making API calls
+const checkCreditsAndGetModel = () => {
+  // Get credits context from sessionStorage and IP
+  const ip = sessionStorage.getItem('current_ip');
+  if (!ip) {
+    throw new Error('IP address not found');
+  }
+  
+  const credits = sessionStorage.getItem(`credits_${ip}`);
+  const remainingCredits = credits ? parseInt(credits) : 0;
+  
+  if (remainingCredits <= 0) {
+    throw new Error('No credits remaining');
+  }
+  
+  // Reduce credits by 1
+  sessionStorage.setItem(`credits_${ip}`, (remainingCredits - 1).toString());
+  
+  return genAI.getGenerativeModel({ model: "gemini-pro" });
+};
+
 interface ABTestVariation {
   image?: File;
   text: string;
 }
 
 export const analyzeABTest = async (variationA: ABTestVariation, variationB: ABTestVariation) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = checkCreditsAndGetModel();
 
   const prompt = `Analyze these two content variations and provide a detailed, structured comparison:
 
