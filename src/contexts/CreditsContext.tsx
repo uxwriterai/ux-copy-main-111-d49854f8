@@ -58,7 +58,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
   // Handle auth state changes
   useEffect(() => {
-    const handleAuthChange = async (event: string) => {
+    const handleAuthChange = async (event: string, session: any) => {
       console.log("Auth state changed:", event)
       if (event === 'SIGNED_IN') {
         console.log("User signed in, setting credits to 15")
@@ -72,8 +72,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      handleAuthChange(event)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      handleAuthChange(event, session)
     })
 
     // Listen for broadcast messages from other tabs
@@ -98,6 +98,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Initialize credits immediately
     initializeCredits()
 
     // Cleanup
