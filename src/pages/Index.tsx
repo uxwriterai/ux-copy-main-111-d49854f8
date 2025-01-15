@@ -34,11 +34,21 @@ const Index = () => {
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
-      const base64Image = await new Promise<string>((resolve) => {
+      console.log('Starting image analysis...');
+      
+      // Validate image size
+      if (image.size > 4 * 1024 * 1024) {
+        throw new Error('Image size must be less than 4MB');
+      }
+
+      const base64Image = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
         reader.readAsDataURL(image);
       });
+
+      console.log('Image converted to base64');
 
       const prompt = `
         Analyze this UI screenshot and provide UX copy improvement suggestions following these principles:
@@ -97,12 +107,15 @@ const Index = () => {
         Format each suggestion as: "Element Type - Original Text - Improved Text - Explanation"
       `;
 
+      console.log('Sending request to Gemini API...');
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify({
             contents: [{
@@ -119,13 +132,21 @@ const Index = () => {
         }
       );
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('API Error:', errorData);
         throw new Error(`API Error: ${errorData.error?.message || 'Failed to analyze image'}`);
       }
 
       const data = await response.json();
-      
+      console.log('API Response:', data);
+
+      if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        throw new Error('Invalid response format from API');
+      }
+
       const suggestionsFromResponse = data.candidates[0].content.parts[0].text
         .split('\n')
         .filter((line: string) => line.trim().length > 0)
@@ -137,12 +158,14 @@ const Index = () => {
             improved: parts[2] || "",
             explanation: parts[3] || "",
             position: {
-              x: Math.random() * 80 + 10, // Random position between 10% and 90%
-              y: Math.random() * 80 + 10  // Random position between 10% and 90%
+              x: Math.random() * 80 + 10,
+              y: Math.random() * 80 + 10
             }
           };
         })
         .filter((s: Suggestion) => s.element && s.improved);
+
+      console.log('Processed suggestions:', suggestionsFromResponse);
 
       setSuggestions(suggestionsFromResponse);
       setShowResults(true);
@@ -150,6 +173,7 @@ const Index = () => {
     } catch (error) {
       console.error('Error analyzing UI:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
+      throw error; // Re-throw to be handled by the caller
     }
   };
 
@@ -160,8 +184,13 @@ const Index = () => {
     }
 
     setIsLoading(true);
-    await analyzeUIWithGemini(uploadedImage, contextData);
-    setIsLoading(false);
+    try {
+      await analyzeUIWithGemini(uploadedImage, contextData);
+    } catch (error) {
+      console.error('Error in handleContextSubmit:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFeedback = (index: number, isPositive: boolean) => {
