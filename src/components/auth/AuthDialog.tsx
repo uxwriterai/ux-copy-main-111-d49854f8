@@ -21,7 +21,6 @@ interface AuthDialogProps {
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
-  const [view, setView] = useState<"sign_in" | "sign_up">("sign_in")
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -53,28 +52,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }
 
-  const getTitleAndDescription = () => {
-    if (view === "sign_in") {
-      return {
-        title: "Welcome back to your UX studio!",
-        description: "Sign in to continue crafting compelling copy and creating delightful user experiences."
-      }
-    }
-    return {
-      title: "Join our UX writing community",
-      description: "Create an account to access AI-powered tools that will help you write better microcopy, landing pages, and more."
-    }
-  }
-
-  const { title, description } = getTitleAndDescription()
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>Welcome</DialogTitle>
           <DialogDescription>
-            {description}
+            Sign in to unlock more credits and features.
           </DialogDescription>
         </DialogHeader>
         
@@ -106,7 +90,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           theme={theme}
           providers={[]}
           redirectTo={window.location.origin}
-          onViewChange={(newView) => setView(newView as "sign_in" | "sign_up")}
         />
       </DialogContent>
     </Dialog>
