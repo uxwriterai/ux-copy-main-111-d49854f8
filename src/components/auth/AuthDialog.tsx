@@ -8,7 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useTheme } from "@/components/ThemeProvider"
+import { useEffect, useState } from "react"
+import { AuthError } from "@supabase/supabase-js"
 
 interface AuthDialogProps {
   open: boolean
@@ -17,6 +20,33 @@ interface AuthDialogProps {
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { theme } = useTheme()
+  const [error, setError] = useState<string>("")
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        onOpenChange(false)
+      }
+      if (event === 'SIGNED_OUT') {
+        setError("")
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [onOpenChange])
+
+  const getErrorMessage = (error: AuthError) => {
+    switch (error.message) {
+      case "Invalid login credentials":
+        return "Invalid email or password. Please check your credentials and try again."
+      case "Email not confirmed":
+        return "Please verify your email address before signing in."
+      case "User not found":
+        return "No account found with these credentials."
+      default:
+        return error.message
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -27,6 +57,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             Sign in to unlock more credits and features.
           </DialogDescription>
         </DialogHeader>
+        
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -47,6 +84,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           }}
           theme={theme}
           providers={[]}
+          onError={(error) => setError(getErrorMessage(error))}
         />
       </DialogContent>
     </Dialog>
