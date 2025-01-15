@@ -27,21 +27,25 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchIPAndCredits = async () => {
       try {
-        const response = await fetch('https://api.ipify.org?format=json');
+        // Use a more reliable IP service
+        const response = await fetch('https://api64.ipify.org?format=json');
         const data = await response.json();
         const ip = data.ip;
         setUserIP(ip);
 
-        // Load stored credits for this IP
-        const storedCredits = localStorage.getItem(`credits_${ip}`);
-        if (storedCredits !== null) {
-          setCredits(parseInt(storedCredits));
+        // Check sessionStorage for credits
+        const sessionCredits = sessionStorage.getItem(`credits_${ip}`);
+        if (sessionCredits !== null) {
+          setCredits(parseInt(sessionCredits));
         } else {
-          // Initialize credits for new users
-          localStorage.setItem(`credits_${ip}`, '4');
+          // Initialize credits for new users in session
+          sessionStorage.setItem(`credits_${ip}`, '4');
+          setCredits(4);
         }
       } catch (error) {
         console.error('Error fetching IP:', error);
+        // Fallback to default credits if IP fetch fails
+        setCredits(4);
       }
     };
 
@@ -51,7 +55,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
   // Update stored credits whenever credits change
   useEffect(() => {
     if (userIP) {
-      localStorage.setItem(`credits_${userIP}`, credits.toString());
+      sessionStorage.setItem(`credits_${userIP}`, credits.toString());
     }
   }, [credits, userIP]);
 
