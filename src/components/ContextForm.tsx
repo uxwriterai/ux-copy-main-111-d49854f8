@@ -97,7 +97,9 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
     }
   };
 
-  const handleCustomInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -124,7 +126,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
               name="purpose"
               placeholder="Enter custom purpose..."
               value={formData.purpose}
-              onChange={handleCustomInput}
+              onChange={handleInputChange}
               className="mt-2"
             />
           )}
@@ -149,7 +151,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
               name="audience"
               placeholder="Enter custom audience..."
               value={formData.audience}
-              onChange={handleCustomInput}
+              onChange={handleInputChange}
               className="mt-2"
             />
           )}
@@ -174,7 +176,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
               name="tone"
               placeholder="Enter custom tone..."
               value={formData.tone}
-              onChange={handleCustomInput}
+              onChange={handleInputChange}
               className="mt-2"
             />
           )}
@@ -199,7 +201,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
               name="emotionalGoal"
               placeholder="Enter custom emotional goal..."
               value={formData.emotionalGoal}
-              onChange={handleCustomInput}
+              onChange={handleInputChange}
               className="mt-2"
             />
           )}
@@ -212,7 +214,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
             name="constraints"
             placeholder="e.g., Max 50 characters for buttons"
             value={formData.constraints}
-            onChange={handleCustomInput}
+            onChange={handleInputChange}
           />
         </div>
 
@@ -223,7 +225,7 @@ export const ContextForm = ({ onSubmit, isLoading }: ContextFormProps) => {
             name="additionalDetails"
             placeholder="Any other specific requirements or context"
             value={formData.additionalDetails}
-            onChange={handleCustomInput}
+            onChange={handleInputChange}
             className="h-24"
           />
         </div>
