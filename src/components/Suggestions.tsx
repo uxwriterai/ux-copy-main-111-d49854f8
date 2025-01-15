@@ -154,4 +154,4 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
       </div>
     </div>
   );
-});
+};
