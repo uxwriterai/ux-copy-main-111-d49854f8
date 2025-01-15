@@ -10,7 +10,8 @@ import {
   Type,
   Wand2,
   FileX,
-  Layout
+  Layout,
+  LayoutTemplate
 } from "lucide-react"
 
 const items = [
@@ -43,6 +44,11 @@ const items = [
     title: "Hero Copy Generator",
     url: "/hero-copy",
     icon: Layout,
+  },
+  {
+    title: "Landing Page Generator",
+    url: "/landing-page",
+    icon: LayoutTemplate,
   }
 ]
 
