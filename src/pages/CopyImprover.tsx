@@ -4,8 +4,7 @@ import { ContextForm, type ContextData } from '@/components/ContextForm';
 import { Suggestions, type Suggestion } from '@/components/Suggestions';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Moon, Sun } from 'lucide-react';
-import { useTheme } from '@/components/ThemeProvider';
+import { ArrowLeft } from 'lucide-react';
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -16,7 +15,6 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const { theme, setTheme } = useTheme();
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
@@ -175,7 +173,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       <div className="container max-w-6xl py-12">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-center items-center mb-8 text-center">
           <div className="flex-1">
             <h1 className="text-4xl font-bold text-foreground mb-4">UX Copy Improver</h1>
             <p className="text-lg text-muted-foreground">
@@ -185,14 +183,6 @@ const Index = () => {
               {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="ml-4"
-          >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
         </div>
 
         {!showResults ? (
