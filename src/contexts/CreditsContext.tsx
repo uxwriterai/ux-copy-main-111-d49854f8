@@ -19,8 +19,41 @@ interface CreditsContextType {
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState(4);
+  const [credits, setCredits] = useState<number>(4);
   const [showDialog, setShowDialog] = useState(false);
+  const [userIP, setUserIP] = useState<string>('');
+
+  // Fetch user's IP address and load stored credits
+  useEffect(() => {
+    const fetchIPAndCredits = async () => {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        const ip = data.ip;
+        setUserIP(ip);
+
+        // Load stored credits for this IP
+        const storedCredits = localStorage.getItem(`credits_${ip}`);
+        if (storedCredits !== null) {
+          setCredits(parseInt(storedCredits));
+        } else {
+          // Initialize credits for new users
+          localStorage.setItem(`credits_${ip}`, '4');
+        }
+      } catch (error) {
+        console.error('Error fetching IP:', error);
+      }
+    };
+
+    fetchIPAndCredits();
+  }, []);
+
+  // Update stored credits whenever credits change
+  useEffect(() => {
+    if (userIP) {
+      localStorage.setItem(`credits_${userIP}`, credits.toString());
+    }
+  }, [credits, userIP]);
 
   const useCredit = () => {
     if (credits > 0) {
