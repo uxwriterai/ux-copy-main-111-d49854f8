@@ -1,8 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import * as markerjs3 from 'markerjs3';
+import { useState, useRef } from 'react';
 import {
   Popover,
   PopoverContent,
@@ -27,89 +26,40 @@ interface SuggestionsProps {
 }
 
 export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsProps) => {
-  const imageRef = useRef<HTMLImageElement>(null);
-  const markerAreaRef = useRef<markerjs3.MarkerArea | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!imageRef.current || !imageUrl || !isImageLoaded || !suggestions.length) return;
-
-    const markerArea = new markerjs3.MarkerArea(imageRef.current);
-    markerAreaRef.current = markerArea;
-
-    markerArea.uiStyleSettings.hideToolbar = true;
-    markerArea.uiStyleSettings.hideToolbox = true;
-    markerArea.settings.defaultFillColor = '#000000';
-    markerArea.settings.defaultStrokeColor = '#000000';
-
-    // Show marker area first
-    markerArea.show();
-
-    // After showing, create and add markers
-    suggestions.forEach((suggestion, index) => {
-      // Calculate position in pixels
-      const rect = imageRef.current!.getBoundingClientRect();
-      const xPos = (suggestion.position.x / 100) * rect.width;
-      const yPos = (suggestion.position.y / 100) * rect.height;
-
-      // Create marker
-      const marker = new markerjs3.CalloutMarker();
-      
-      // Set marker position and size using the state object
-      marker.setSize(100, 100);
-      marker.setPosition(xPos - 50, yPos - 50);
-      
-      // Configure marker appearance
-      marker.settings.strokeColor = '#000000';
-      marker.settings.fillColor = '#000000';
-      marker.settings.strokeWidth = 2;
-      marker.settings.text = `${index + 1}`;
-      
-      // Add marker to marker area
-      markerArea.markers.push(marker);
-    });
-
-    // Add click handlers to markers
-    const markerElements = document.querySelectorAll('.markerjs-marker');
-    markerElements.forEach((element, index) => {
-      element.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const popoverTrigger = document.querySelector(`[data-suggestion-index="${index}"]`);
-        if (popoverTrigger) {
-          (popoverTrigger as HTMLElement).click();
-        }
-      });
-    });
-
-    return () => {
-      if (markerAreaRef.current) {
-        markerAreaRef.current.close();
-      }
-    };
-  }, [suggestions, imageUrl, isImageLoaded]);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   if (!suggestions.length || !imageUrl) {
     return null;
   }
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="relative w-full">
       <div className="relative border rounded-lg overflow-hidden bg-white shadow-md">
         <img
-          ref={imageRef}
           src={imageUrl}
           alt="Uploaded UI"
           className="w-full h-auto"
-          onLoad={() => setIsImageLoaded(true)}
         />
         
         {suggestions.map((suggestion, index) => (
-          <Popover key={index}>
+          <Popover 
+            key={index}
+            open={activeIndex === index}
+            onOpenChange={(open) => setActiveIndex(open ? index : null)}
+          >
             <PopoverTrigger asChild>
-              <div data-suggestion-index={index} className="hidden">
+              <button
+                className={`absolute w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium 
+                  transform -translate-x-1/2 -translate-y-1/2 hover:bg-primary/90 transition-colors
+                  ${activeIndex === index ? 'ring-2 ring-offset-2 ring-primary' : ''}`}
+                style={{
+                  left: `${suggestion.position.x}%`,
+                  top: `${suggestion.position.y}%`,
+                }}
+                onClick={() => setActiveIndex(activeIndex === index ? null : index)}
+              >
                 {index + 1}
-              </div>
+              </button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" side="right">
               <Card className="p-4">
