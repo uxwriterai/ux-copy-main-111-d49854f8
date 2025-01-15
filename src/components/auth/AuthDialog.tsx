@@ -21,6 +21,7 @@ interface AuthDialogProps {
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
+  const [view, setView] = useState<"sign_in" | "sign_up">("sign_in")
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -52,13 +53,28 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }
 
+  const getTitleAndDescription = () => {
+    if (view === "sign_in") {
+      return {
+        title: "Welcome back!",
+        description: "Sign in to your account to access your UX writing tools and saved content."
+      }
+    }
+    return {
+      title: "Create an account",
+      description: "Join us to unlock powerful UX writing tools and start creating better content today."
+    }
+  }
+
+  const { title, description } = getTitleAndDescription()
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Welcome</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Sign in to unlock more credits and features.
+            {description}
           </DialogDescription>
         </DialogHeader>
         
@@ -90,6 +106,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           theme={theme}
           providers={[]}
           redirectTo={window.location.origin}
+          onViewChange={(newView) => setView(newView as "sign_in" | "sign_up")}
         />
       </DialogContent>
     </Dialog>
