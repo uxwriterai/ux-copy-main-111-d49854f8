@@ -31,18 +31,18 @@ Please ensure each variant:
 4. Is concise and impactful
 5. Uses powerful and emotionally engaging language
 
-Format your response as exactly 3 variants, with each variant containing a headline, tagline, and CTA, like this:
-Variant 1:
+Format your response exactly like this, without any asterisks or other formatting:
+Variant 1
 Headline: [Headline text]
 Tagline: [Tagline text]
 CTA: [CTA text]
 
-Variant 2:
+Variant 2
 Headline: [Headline text]
 Tagline: [Tagline text]
 CTA: [CTA text]
 
-Variant 3:
+Variant 3
 Headline: [Headline text]
 Tagline: [Tagline text]
 CTA: [CTA text]`;
@@ -50,21 +50,23 @@ CTA: [CTA text]`;
   try {
     const result = await model.generateContent(prompt);
     const response = result.response.text();
-    console.log("Raw AI response:", response); // Debug log
+    console.log("Raw AI response:", response);
     
     // Parse the response into separate variants
-    const variants = response.split('\n\n')
-      .filter(block => block.trim().startsWith('Variant'))
+    const variants = response
+      .replace(/\*\*/g, '') // Remove any asterisks
+      .split(/Variant \d+/)  // Split by "Variant X" pattern
+      .filter(block => block.trim()) // Remove empty blocks
       .map(block => {
-        const lines = block.split('\n');
+        const lines = block.trim().split('\n');
         return {
-          headline: lines[1].replace('Headline: ', '').trim(),
-          tagline: lines[2].replace('Tagline: ', '').trim(),
-          cta: lines[3].replace('CTA: ', '').trim(),
+          headline: lines[0].replace('Headline:', '').trim(),
+          tagline: lines[1].replace('Tagline:', '').trim(),
+          cta: lines[2].replace('CTA:', '').trim(),
         };
       });
 
-    console.log("Parsed variants:", variants); // Debug log
+    console.log("Parsed variants:", variants);
     return variants;
   } catch (error) {
     console.error("Error in generateHeroCopy:", error);
