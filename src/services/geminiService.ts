@@ -56,7 +56,7 @@ export const analyzeABTest = async (variationA: ABTestVariation, variationB: ABT
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `Analyze these two content variations and provide a detailed comparison:
+    const prompt = `Analyze these two content variations and provide a detailed, structured comparison:
 
 Variation A:
 ${variationA.text}
@@ -64,21 +64,57 @@ ${variationA.text}
 Variation B:
 ${variationB.text}
 
-Please evaluate both variations based on:
-1. Clarity and Readability
-2. Engagement and Appeal
-3. Effectiveness for Target Audience
-4. Call-to-Action Strength
-5. Overall Impact
+Please provide a comprehensive analysis in the following format:
 
-For each variation, provide:
-1. A score out of 10 for each criterion
-2. Specific strengths and weaknesses
-3. Suggested improvements
+# WINNER DECLARATION
+[Clearly state which variation performs better and why in one sentence]
 
-Finally, recommend which variation is better and explain why.
+# SCORING (Out of 100)
+## Variation A
+- Clarity: [Score]
+- Engagement: [Score]
+- Relevance: [Score]
+- Readability: [Score]
+- Overall Score: [Average of above scores]
 
-Format your response in a clear, structured way with headings and bullet points.`;
+## Variation B
+- Clarity: [Score]
+- Engagement: [Score]
+- Relevance: [Score]
+- Readability: [Score]
+- Overall Score: [Average of above scores]
+
+# DETAILED COMPARISON
+## Clarity
+[Compare how clear and understandable each variation is]
+
+## Tone & Voice
+[Compare the tone and voice of each variation]
+
+## User Engagement
+[Analyze which variation is more likely to engage users]
+
+## Call-to-Action Effectiveness
+[Compare the effectiveness of any calls to action]
+
+# STRENGTHS
+## Variation A
+- [Bullet points of strengths]
+
+## Variation B
+- [Bullet points of strengths]
+
+# AREAS FOR IMPROVEMENT
+## Variation A
+- [Specific suggestions for improvement]
+
+## Variation B
+- [Specific suggestions for improvement]
+
+# OPTIMIZATION RECOMMENDATIONS
+[3-5 actionable recommendations to improve the winning variation further]
+
+Please format the response in a clear, structured way using markdown headings and bullet points.`;
 
     const result = await model.generateContent(prompt);
     return result.response.text();
