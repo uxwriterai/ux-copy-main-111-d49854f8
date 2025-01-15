@@ -72,7 +72,7 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed"
 
   return (
-    <Sidebar>
+    <Sidebar variant="sidebar" collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
@@ -83,10 +83,11 @@ export function AppSidebar() {
                   <SidebarMenuButton 
                     asChild
                     isActive={location.pathname === item.url}
-                    className="transition-colors hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70"
+                    className="transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent/90"
+                    tooltip={item.title}
                   >
                     <Link to={item.url}>
-                      <item.icon className="shrink-0" />
+                      <item.icon className="h-4 w-4 shrink-0" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -96,12 +97,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border p-4 flex flex-col gap-2">
+      <SidebarFooter className="border-t border-sidebar-border p-4 flex flex-col gap-2 mt-auto">
         <Button 
           variant="ghost" 
           size="icon"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          className="w-full flex items-center justify-center hover:bg-sidebar-accent/50"
+          className="w-full flex items-center justify-center hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
         </Button>
@@ -109,7 +110,7 @@ export function AppSidebar() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="w-full flex items-center justify-center hover:bg-sidebar-accent/50"
+          className="w-full flex items-center justify-center hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           {isCollapsed ? (
             <PanelLeft className="h-5 w-5" />
