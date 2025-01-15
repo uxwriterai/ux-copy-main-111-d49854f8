@@ -3,10 +3,6 @@ import { Slot } from "@radix-ui/react-slot"
 import { PanelLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
   TooltipContent,
@@ -144,7 +140,7 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
         <Tooltip>
           <TooltipTrigger asChild>{content}</TooltipTrigger>
           <TooltipContent>
-            {typeof tooltip === "string" ? tooltip : { ...tooltip }}
+            {typeof tooltip === "string" ? tooltip : React.cloneElement(tooltip)}
           </TooltipContent>
         </Tooltip>
       )
