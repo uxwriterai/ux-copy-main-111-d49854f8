@@ -11,20 +11,22 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
+import { Session } from "@supabase/supabase-js"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
   const { state, toggleSidebar } = useSidebar()
-  const { credits } = useCredits()
+  const { credits, resetCredits } = useCredits()
   const isCollapsed = state === "collapsed"
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session:", session)
       setSession(session)
     })
 
@@ -32,13 +34,20 @@ export function SidebarFooterButtons() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session)
       setSession(session)
+      
       if (_event === 'SIGNED_OUT') {
+        console.log("User signed out, resetting state...")
+        setSession(null)
+        resetCredits()
         navigate('/')
       }
     })
 
-    return () => subscription.unsubscribe()
-  }, [navigate])
+    return () => {
+      console.log("Cleaning up auth subscription")
+      subscription.unsubscribe()
+    }
+  }, [navigate, resetCredits])
 
   const handleLogout = async () => {
     try {
@@ -50,7 +59,6 @@ export function SidebarFooterButtons() {
       } else {
         console.log("Successfully signed out")
         toast.success('Signed out successfully')
-        navigate('/')
       }
     } catch (error) {
       console.error("Caught error during sign out:", error)
@@ -95,6 +103,7 @@ export function SidebarFooterButtons() {
           <span className="group-data-[collapsible=icon]:hidden">Sign out</span>
         </Button>
       )}
+      
       <Button 
         variant="ghost" 
         className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
