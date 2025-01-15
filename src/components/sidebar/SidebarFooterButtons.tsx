@@ -1,4 +1,4 @@
-import { Moon, Sun, PanelLeft, PanelLeftClose } from "lucide-react"
+import { Moon, Sun, PanelLeft, PanelLeftClose, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ThemeProvider"
 import { useSidebar } from "@/components/ui/sidebar"
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { AuthDialog } from "@/components/auth/AuthDialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
@@ -14,6 +15,7 @@ export function SidebarFooterButtons() {
   const { credits } = useCredits()
   const isCollapsed = state === "collapsed"
   const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false)
 
   return (
     <>
@@ -27,12 +29,20 @@ export function SidebarFooterButtons() {
                 ? "bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/50" 
                 : "bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border"
             )}
-            onClick={() => setShowAuthDialog(true)}
+            onClick={() => setShowCreditsDialog(true)}
           >
             {credits} credits left
           </Badge>
         </div>
       )}
+      <Button 
+        variant="ghost" 
+        className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
+        onClick={() => setShowAuthDialog(true)}
+      >
+        <LogIn className="h-5 w-5" />
+        <span className="group-data-[collapsible=icon]:hidden">Sign in</span>
+      </Button>
       <Button 
         variant="ghost" 
         className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
@@ -67,6 +77,33 @@ export function SidebarFooterButtons() {
           </>
         )}
       </Button>
+
+      <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Unlock 5x More Credits</DialogTitle>
+            <DialogDescription className="pt-2">
+              You've used all your free credits! Sign up now to get:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li>5x more credits to generate content</li>
+                <li>Priority support</li>
+              </ul>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 justify-end">
+            <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
+              Maybe later
+            </Button>
+            <Button onClick={() => {
+              setShowCreditsDialog(false)
+              setShowAuthDialog(true)
+            }}>
+              Sign up
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </>
   )
