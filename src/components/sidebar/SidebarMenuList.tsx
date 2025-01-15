@@ -12,6 +12,7 @@ import {
   MessageSquare, 
   Settings, 
   SplitSquareVertical,
+  Type,
   Wand2
 } from "lucide-react"
 
@@ -50,6 +51,11 @@ const items = [
     title: "Error Enhancer",
     url: "/error",
     icon: AlertCircle,
+  },
+  {
+    title: "Microcopy Generator",
+    url: "/microcopy",
+    icon: Type,
   },
   {
     title: "Settings",
