@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { PanelLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import {
   Tooltip,
   TooltipContent,
@@ -43,7 +44,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
@@ -140,7 +141,7 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
         <Tooltip>
           <TooltipTrigger asChild>{content}</TooltipTrigger>
           <TooltipContent>
-            {typeof tooltip === "string" ? tooltip : React.cloneElement(tooltip)}
+            {typeof tooltip === "string" ? tooltip : React.isValidElement(tooltip) ? tooltip : null}
           </TooltipContent>
         </Tooltip>
       )
