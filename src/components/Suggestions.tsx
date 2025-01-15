@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import * as markerjs2 from 'markerjs2';
+import * as markerjs3 from 'markerjs3';
 import {
   Popover,
   PopoverContent,
@@ -28,45 +28,45 @@ interface SuggestionsProps {
 
 export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsProps) => {
   const imageRef = useRef<HTMLImageElement>(null);
-  const markerAreaRef = useRef<markerjs2.MarkerArea | null>(null);
+  const markerAreaRef = useRef<markerjs3.MarkerArea | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
     if (!imageRef.current || !imageUrl || !isImageLoaded || !suggestions.length) return;
 
-    const markerArea = new markerjs2.MarkerArea(imageRef.current);
+    const markerArea = new markerjs3.MarkerArea(imageRef.current);
     markerAreaRef.current = markerArea;
 
-    markerArea.renderAtNaturalSize = true;
-    markerArea.renderImageType = 'image/png';
-    markerArea.settings.displayMode = markerjs2.DisplayMode.Preview;
+    markerArea.uiStyleSettings.hideToolbar = true;
+    markerArea.uiStyleSettings.hideToolbox = true;
+    markerArea.settings.renderAtNaturalSize = true;
+    markerArea.settings.defaultFillColor = '#000000';
+    markerArea.settings.defaultStrokeColor = '#000000';
 
     // Show marker area first
     markerArea.show();
 
     // After showing, create and add markers
     suggestions.forEach((suggestion, index) => {
-      // Create a marker with the correct constructor signature
-      const marker = new markerjs2.CalloutMarker();
-      
       // Calculate position in pixels
       const rect = imageRef.current!.getBoundingClientRect();
       const xPos = (suggestion.position.x / 100) * rect.width;
       const yPos = (suggestion.position.y / 100) * rect.height;
 
-      // Set marker properties using the marker's state
-      marker.state = {
-        ...marker.state,
+      // Create a marker
+      const marker = new markerjs3.CalloutMarker({
+        strokeColor: '#000000',
+        fillColor: '#000000',
+        strokeWidth: 2,
+        captionText: `${index + 1}`,
+        x: xPos - 50,
+        y: yPos - 50,
         width: 100,
-        height: 100,
-        left: xPos - 50,
-        top: yPos - 50,
-        text: `${index + 1}`,
-      };
+        height: 100
+      });
       
-      // Add marker to the marker area's markers array
-      markerArea.addMarkerToState(marker);
+      markerArea.addMarker(marker);
     });
 
     // Add click handlers to markers
