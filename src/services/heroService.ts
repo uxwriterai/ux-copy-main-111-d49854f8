@@ -11,7 +11,8 @@ interface HeroCopyVariant {
 export const generateHeroCopy = async (formData: any): Promise<HeroCopyVariant[]> => {
   const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-  const prompt = `Generate 3 different variants of hero section copy with the following details:
+  const prompt = `Create 3 compelling hero section copy variants based on the following details:
+
 Context: ${formData.context}
 Industry: ${formData.industry}
 Brand Tone: ${formData.tone}
@@ -19,17 +20,38 @@ Primary Goal: ${formData.goal}
 Target Audience: ${formData.targetAudience}
 ${formData.additionalNotes ? `Additional Notes: ${formData.additionalNotes}` : ''}
 
-For each variant, please provide:
-1. A bold, attention-grabbing headline (max 10 words)
-2. A supporting tagline that expands on the value proposition (max 15 words)
-3. A clear, action-oriented CTA (max 5 words)
+Guidelines for each variant:
 
-Please ensure each variant:
-1. Aligns with the specified brand tone
-2. Addresses the target audience effectively
-3. Supports the primary goal
-4. Is concise and impactful
-5. Uses powerful and emotionally engaging language
+HEADLINE (6-12 words):
+- Must be clear, concise, and benefit-driven
+- Focus on the primary value proposition
+- Use emotional triggers when appropriate
+- Avoid jargon or complex language
+- Consider these formulas:
+  * "Achieve [Desired Outcome] Without [Pain Point]"
+  * "The [Adjective] Way to [Benefit]"
+  * "Discover How to [Key Result] in [Timeframe]"
+
+TAGLINE (10-15 words):
+- Expand on the headline's promise
+- Address specific pain points
+- Include social proof or authority indicators when relevant
+- Keep it actionable and solution-focused
+- Must complement the headline without repeating it
+
+CTA (2-5 words):
+- Start with action verbs
+- Create urgency or exclusivity
+- Match the user's journey stage
+- Be specific and value-focused
+- Must be compelling and clear
+
+Each variant should:
+1. Be unique in approach but consistent in message
+2. Match the specified brand tone
+3. Speak directly to the target audience
+4. Support the primary business goal
+5. Be immediately clear and impactful
 
 Format your response exactly like this, without any asterisks or other formatting:
 Variant 1
