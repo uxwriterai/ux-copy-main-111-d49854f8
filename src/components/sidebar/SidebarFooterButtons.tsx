@@ -4,6 +4,7 @@ import { useTheme } from "@/components/ThemeProvider"
 import { useSidebar } from "@/components/ui/sidebar"
 import { useCredits } from "@/contexts/CreditsContext"
 import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
