@@ -38,24 +38,35 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
     const markerArea = new markerjs2.MarkerArea(imageRef.current);
     markerAreaRef.current = markerArea;
 
-    markerArea.settings.displayMode = 'readonly';
-    markerArea.settings.markers = suggestions.map((suggestion, index) => {
-      const marker = new markerjs2.PointerMarker();
+    // Set to view-only mode
+    markerArea.settings.displayMode = 'preview';
+    
+    // Create markers using the correct API
+    const markersState: markerjs2.MarkerState[] = suggestions.map((suggestion, index) => {
+      const marker = new markerjs2.CalloutMarker(); // Using CalloutMarker instead of PointerMarker
       
       // Convert percentage to actual pixels
       const rect = imageRef.current!.getBoundingClientRect();
-      marker.left = (suggestion.position.x / 100) * rect.width;
-      marker.top = (suggestion.position.y / 100) * rect.height;
+      const xPos = (suggestion.position.x / 100) * rect.width;
+      const yPos = (suggestion.position.y / 100) * rect.height;
       
-      // Set marker properties
+      marker.left = xPos;
+      marker.top = yPos;
       marker.color = '#2563eb'; // primary color
-      marker.fillColor = '#ffffff';
-      marker.caption = `${index + 1}`;
+      marker.captionText = `${index + 1}`;
       
-      return marker;
+      return marker.getState();
     });
 
-    markerArea.renderMarkers();
+    // Set the markers state
+    markerArea.restoreState({
+      width: imageRef.current.width,
+      height: imageRef.current.height,
+      markers: markersState
+    });
+
+    // Render markers in read-only mode
+    markerArea.renderMarkersOnly();
 
     // Add click handlers to markers
     const markerElements = document.querySelectorAll('.markerjs-marker');
