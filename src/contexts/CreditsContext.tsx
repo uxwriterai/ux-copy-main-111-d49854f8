@@ -81,13 +81,11 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unlock Unlimited AI Generations</AlertDialogTitle>
+            <AlertDialogTitle>Unlock 5x More Credits</AlertDialogTitle>
             <AlertDialogDescription>
-              <p>You've used all your free credits! Sign up now to unlock:</p>
+              <p>You've used all your free credits! Sign up now to get:</p>
               <ul className="list-disc pl-4 mt-2 space-y-1">
-                <li>Unlimited AI generations</li>
-                <li>Save and organize your generated content</li>
-                <li>Access to premium features</li>
+                <li>5x more credits to generate content</li>
                 <li>Priority support</li>
               </ul>
             </AlertDialogDescription>
