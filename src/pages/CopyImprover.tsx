@@ -4,7 +4,10 @@ import { ContextForm, type ContextData } from '@/components/ContextForm';
 import { Suggestions, type Suggestion } from '@/components/Suggestions';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -220,6 +223,53 @@ const Index = () => {
     setImagePreviewUrl(null);
   };
 
+  const handleDownloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(16);
+      doc.text('UX Copy Improvement Suggestions', 14, 15);
+      
+      // Add context info
+      doc.setFontSize(10);
+      const timestamp = new Date().toLocaleString();
+      doc.text(`Generated on: ${timestamp}`, 14, 25);
+      
+      // Prepare table data
+      const tableData = suggestions.map((suggestion, index) => [
+        index + 1,
+        suggestion.element,
+        suggestion.original,
+        suggestion.improved,
+        suggestion.explanation
+      ]);
+      
+      // Add table
+      autoTable(doc, {
+        head: [['#', 'Element', 'Original Text', 'Improved Text', 'Explanation']],
+        body: tableData,
+        startY: 30,
+        styles: { fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 45 },
+          3: { cellWidth: 45 },
+          4: { cellWidth: 65 }
+        },
+        headStyles: { fillColor: [41, 37, 36] }
+      });
+      
+      // Save PDF
+      doc.save('ux-copy-improvements.pdf');
+      toast.success('PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF');
+    }
+  };
+
   const handleFeedback = (index: number, isPositive: boolean) => {
     toast.success(isPositive ? 'Thanks for the positive feedback!' : 'Thanks for the feedback. We\'ll improve our suggestions.');
   };
@@ -245,7 +295,7 @@ const Index = () => {
             <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-8">
             <div className="flex justify-between items-center mb-8">
               <Button 
                 variant="outline" 
@@ -255,12 +305,58 @@ const Index = () => {
                 <ArrowLeft className="w-4 h-4" />
                 Start Over
               </Button>
+              {suggestions.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadPDF}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PDF
+                </Button>
+              )}
             </div>
             <Suggestions 
               suggestions={suggestions} 
               onFeedback={handleFeedback}
               imageUrl={imagePreviewUrl}
             />
+            
+            {suggestions.length > 0 && (
+              <div className="mt-8 rounded-lg border bg-card">
+                <div className="p-4 border-b">
+                  <h2 className="text-xl font-semibold">Improvement Details</h2>
+                </div>
+                <div className="p-4 overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">#</TableHead>
+                        <TableHead className="w-32">Element</TableHead>
+                        <TableHead>Original Text</TableHead>
+                        <TableHead>Improved Text</TableHead>
+                        <TableHead className="w-64">Explanation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {suggestions.map((suggestion, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{suggestion.element}</TableCell>
+                          <TableCell>{suggestion.original}</TableCell>
+                          <TableCell className="font-medium text-primary">
+                            {suggestion.improved}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {suggestion.explanation}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
