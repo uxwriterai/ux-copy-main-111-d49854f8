@@ -50,54 +50,56 @@ const Index = () => {
       `;
 
       // Make API call to Gemini
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${GEMINI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }, {
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: base64Image.split(',')[1]
-              }
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }, {
+                inline_data: {
+                  mime_type: "image/jpeg",
+                  data: base64Image.split(',')[1]
+                }
+              }]
             }]
-          }]
-        })
-      });
+          })
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to analyze image');
+        const errorData = await response.json();
+        throw new Error(`API Error: ${errorData.error?.message || 'Failed to analyze image'}`);
       }
 
       const data = await response.json();
       
-      // Parse the response and format suggestions
-      // This is a simplified example - you'd need to parse the actual Gemini response
-      const mockSuggestions: Suggestion[] = [
-        {
-          element: "Header",
-          original: "Welcome to our app",
-          improved: "Start Your Journey",
-          explanation: "More engaging and action-oriented welcome message"
-        },
-        {
-          element: "Button",
-          original: "Submit",
-          improved: "Get Started",
-          explanation: "Creates more excitement and clarity about the next step"
-        }
-      ];
+      // Parse the response and extract suggestions
+      const suggestionsFromResponse = data.candidates[0].content.parts[0].text
+        .split('\n')
+        .filter((line: string) => line.trim().length > 0)
+        .map((line: string) => {
+          // Simple parsing logic - you might need to adjust based on actual response format
+          const parts = line.split('-').map(p => p.trim());
+          return {
+            element: parts[0] || "Unknown",
+            original: parts[1] || "",
+            improved: parts[2] || "",
+            explanation: parts[3] || ""
+          };
+        })
+        .filter((s: Suggestion) => s.element && s.improved);
 
-      setSuggestions(mockSuggestions);
+      setSuggestions(suggestionsFromResponse);
       toast.success('Analysis complete!');
     } catch (error) {
       console.error('Error analyzing UI:', error);
-      toast.error('Failed to analyze UI. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
     }
   };
 
