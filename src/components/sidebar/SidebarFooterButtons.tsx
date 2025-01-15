@@ -50,7 +50,7 @@ export function SidebarFooterButtons() {
       <div className="w-full flex justify-center">
         <Badge 
           variant="secondary" 
-          className="text-xs cursor-pointer hover:bg-accent"
+          className="text-xs cursor-pointer transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           onClick={showLoginDialog}
         >
           Free Credits: {credits}
