@@ -43,42 +43,33 @@ const Index = () => {
       console.log('Image converted to base64');
 
       const prompt = `
-        You are a UX writing expert. Analyze this UI screenshot and provide precise suggestions for improving the copy.
-        
-        Instructions for analysis:
-        1. Identify each text element in the UI
-        2. For each element, provide:
-           - The exact type of UI element (button, heading, label, etc.)
-           - The exact original text as it appears
-           - An improved version that matches the context
-           - A brief explanation of why the improvement is better
-           - The precise position of the element using percentages:
-             * x: horizontal position from left (0-100)
-             * y: vertical position from top (0-100)
-             * Be extremely precise with coordinates
-             * Measure from the center of the text element
-             * Use the visible boundaries of the text
+        Analyze this UI screenshot and provide UX copy improvement suggestions.
+        For each UI element you find, provide:
+        1. Element type (e.g., heading, button, label)
+        2. Original text content
+        3. Improved version of the text
+        4. Brief explanation of improvements
+        5. Position of the element in the image:
+           - Specify x coordinate as percentage (0-100) from left edge
+           - Specify y coordinate as percentage (0-100) from top edge
+           - Be very precise with positioning to ensure markers appear exactly on the elements
 
-        Format each suggestion exactly like this, with the | separator:
+        Format each suggestion exactly like this example:
         Element Type | Original Text | Improved Text | Explanation | x:42,y:73
 
-        Context to consider:
+        Important:
+        - Provide coordinates that will place markers directly on the UI elements
+        - Use precise percentage values (0-100) for x and y coordinates
+        - Ensure each suggestion follows the exact format with the | separator
+        - Position coordinates should reflect the center point of each element
+
+        Additional Context:
         - Purpose: ${context.purpose}
         - Target Audience: ${context.audience}
         - Desired Tone: ${context.tone}
         - Emotional Goal: ${context.emotionalGoal}
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
-
-        Important rules:
-        1. Only suggest changes for actual text elements
-        2. Preserve any technical terms or proper nouns
-        3. Maintain consistent tone across suggestions
-        4. Ensure coordinates are precise and within 0-100
-        5. Verify each element actually exists in the UI
-        6. Skip decorative or non-text elements
-        7. Focus on meaningful improvements
-        8. Keep improved text within any specified length constraints
       `;
 
       console.log('Sending request to Gemini API...');
@@ -121,51 +112,31 @@ const Index = () => {
       const suggestionsText = data.candidates[0].content.parts[0].text;
       console.log('Raw suggestions:', suggestionsText);
 
-      // Enhanced parsing logic with validation
       const suggestionsFromResponse = suggestionsText
         .split('\n')
         .filter((line: string) => line.includes('|'))
         .map((line: string) => {
           const [element, original, improved, explanation, position] = line.split('|').map(p => p.trim());
           
-          // Strict coordinate parsing with validation
+          // Extract x,y coordinates from the position string (format: "x:42,y:73")
           const coordinates = position.match(/x:(\d+\.?\d*),y:(\d+\.?\d*)/);
-          if (!coordinates) {
-            console.warn('Invalid position format:', position);
-            return null;
-          }
-
-          const x = parseFloat(coordinates[1]);
-          const y = parseFloat(coordinates[2]);
-
-          // Validate all required fields and coordinate ranges
-          if (!element || !original || !improved || !explanation || 
-              isNaN(x) || isNaN(y) || 
-              x < 0 || x > 100 || y < 0 || y > 100) {
-            console.warn('Invalid suggestion data:', { element, original, improved, explanation, x, y });
-            return null;
-          }
+          const x = coordinates ? parseFloat(coordinates[1]) : 50;
+          const y = coordinates ? parseFloat(coordinates[2]) : 50;
 
           return {
             element,
             original,
             improved,
             explanation,
-            position: { x, y }
+            position: {
+              x: Math.min(100, Math.max(0, x)), // Ensure x is between 0-100
+              y: Math.min(100, Math.max(0, y))  // Ensure y is between 0-100
+            }
           };
         })
-        .filter((s): s is Suggestion => s !== null && 
-          s.element !== '---' && 
-          s.original !== '---' && 
-          s.improved !== '---' && 
-          s.explanation !== '---'
-        );
+        .filter((s: Suggestion) => s.element && s.improved);
 
       console.log('Processed suggestions:', suggestionsFromResponse);
-
-      if (suggestionsFromResponse.length === 0) {
-        throw new Error('No valid suggestions were generated');
-      }
 
       setSuggestions(suggestionsFromResponse);
       setShowResults(true);
