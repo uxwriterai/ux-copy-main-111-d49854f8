@@ -3,7 +3,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarFooter,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
@@ -24,8 +23,7 @@ export function AppSidebar() {
       <Sidebar variant="sidebar" collapsible="icon">
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Tools</SidebarGroupLabel>
-            <SidebarGroupContent>
+            <SidebarGroupContent className="pt-2">
               <SidebarMenuList />
             </SidebarGroupContent>
           </SidebarGroup>

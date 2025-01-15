@@ -73,7 +73,7 @@ export function SidebarMenuList() {
           >
             <Link to={item.url}>
               <item.icon className="h-4 w-4 shrink-0" />
-              <span>{item.title}</span>
+              <span className="font-medium">{item.title}</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
