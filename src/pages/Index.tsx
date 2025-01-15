@@ -3,6 +3,8 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { ContextForm, type ContextData } from '@/components/ContextForm';
 import { Suggestions, type Suggestion } from '@/components/Suggestions';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 
@@ -11,6 +13,7 @@ const Index = () => {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [showResults, setShowResults] = useState(false);
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
@@ -20,6 +23,13 @@ const Index = () => {
     };
     reader.readAsDataURL(file);
     toast.success('Image uploaded successfully');
+  };
+
+  const handleRestart = () => {
+    setShowResults(false);
+    setSuggestions([]);
+    setUploadedImage(null);
+    setImagePreviewUrl(null);
   };
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
@@ -125,12 +135,17 @@ const Index = () => {
             element: parts[0] || "Unknown",
             original: parts[1] || "",
             improved: parts[2] || "",
-            explanation: parts[3] || ""
+            explanation: parts[3] || "",
+            position: {
+              x: Math.random() * 80 + 10, // Random position between 10% and 90%
+              y: Math.random() * 80 + 10  // Random position between 10% and 90%
+            }
           };
         })
         .filter((s: Suggestion) => s.element && s.improved);
 
       setSuggestions(suggestionsFromResponse);
+      setShowResults(true);
       toast.success('Analysis complete!');
     } catch (error) {
       console.error('Error analyzing UI:', error);
@@ -163,19 +178,30 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-8">
+        {!showResults ? (
+          <div className="max-w-2xl mx-auto space-y-8">
             <ImageUpload onImageUpload={handleImageUpload} />
             <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
           </div>
-          <div className="space-y-8">
+        ) : (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center mb-8">
+              <Button 
+                variant="outline" 
+                onClick={handleRestart}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Start Over
+              </Button>
+            </div>
             <Suggestions 
               suggestions={suggestions} 
               onFeedback={handleFeedback}
               imageUrl={imagePreviewUrl}
             />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
