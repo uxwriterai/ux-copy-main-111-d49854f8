@@ -62,7 +62,7 @@ export function SidebarMenuList() {
           <SidebarMenuButton 
             asChild
             isActive={location.pathname === item.url}
-            className="transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent/90 rounded-lg px-3 py-2"
+            className="transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-sm active:bg-sidebar-accent/90 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground rounded-lg px-3 py-2"
             tooltip={item.title}
           >
             <Link to={item.url}>
