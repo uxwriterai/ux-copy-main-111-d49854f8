@@ -5,12 +5,15 @@ import { useSidebar } from "@/components/ui/sidebar"
 import { useCredits } from "@/contexts/CreditsContext"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { AuthDialog } from "@/components/auth/AuthDialog"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
   const { state, toggleSidebar } = useSidebar()
-  const { credits, showLoginDialog } = useCredits()
+  const { credits } = useCredits()
   const isCollapsed = state === "collapsed"
+  const [showAuthDialog, setShowAuthDialog] = useState(false)
 
   return (
     <>
@@ -24,7 +27,7 @@ export function SidebarFooterButtons() {
                 ? "bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/50" 
                 : "bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border"
             )}
-            onClick={showLoginDialog}
+            onClick={() => setShowAuthDialog(true)}
           >
             {credits} credits left
           </Badge>
@@ -64,6 +67,7 @@ export function SidebarFooterButtons() {
           </>
         )}
       </Button>
+      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </>
   )
 }

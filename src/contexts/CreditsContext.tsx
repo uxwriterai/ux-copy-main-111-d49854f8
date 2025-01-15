@@ -1,14 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { getUserCredits, updateUserCredits } from '@/services/creditsService';
 
 interface CreditsContextType {
@@ -21,7 +11,6 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const [credits, setCredits] = useState<number>(4);
-  const [showDialog, setShowDialog] = useState(false);
   const [userIP, setUserIP] = useState<string>('');
 
   useEffect(() => {
@@ -59,35 +48,17 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
     }
-    setShowDialog(true);
     return false;
   };
 
   const showLoginDialog = () => {
-    setShowDialog(true);
+    // This is now handled by the AuthDialog component
+    return;
   };
 
   return (
     <CreditsContext.Provider value={{ credits, useCredit, showLoginDialog }}>
       {children}
-      <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unlock 5x More Credits</AlertDialogTitle>
-            <AlertDialogDescription>
-              <p>You've used all your free credits! Sign up now to get:</p>
-              <ul className="list-disc pl-4 mt-2 space-y-1">
-                <li>5x more credits to generate content</li>
-                <li>Priority support</li>
-              </ul>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Maybe Later</AlertDialogCancel>
-            <AlertDialogAction>Sign Up Now</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </CreditsContext.Provider>
   );
 }
