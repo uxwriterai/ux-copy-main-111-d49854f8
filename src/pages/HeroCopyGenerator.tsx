@@ -19,6 +19,7 @@ const HeroCopyGenerator = () => {
     setIsLoading(true);
     try {
       const variants = await generateHeroCopy(formData);
+      console.log("Generated variants:", variants); // Debug log
       setGeneratedVariants(variants);
       toast.success("Hero copy generated successfully!");
     } catch (error) {
