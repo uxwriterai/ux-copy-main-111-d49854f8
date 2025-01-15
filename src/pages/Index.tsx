@@ -25,13 +25,6 @@ const Index = () => {
     toast.success('Image uploaded successfully');
   };
 
-  const handleRestart = () => {
-    setShowResults(false);
-    setSuggestions([]);
-    setUploadedImage(null);
-    setImagePreviewUrl(null);
-  };
-
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
       console.log('Starting image analysis...');
@@ -191,6 +184,13 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRestart = () => {
+    setShowResults(false);
+    setSuggestions([]);
+    setUploadedImage(null);
+    setImagePreviewUrl(null);
   };
 
   const handleFeedback = (index: number, isPositive: boolean) => {

@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   Popover,
   PopoverContent,
@@ -28,7 +28,9 @@ interface SuggestionsProps {
 export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsProps) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  // Don't render anything if there are no suggestions or no image
   if (!suggestions.length || !imageUrl) {
+    console.log('No suggestions or image URL available');
     return null;
   }
 
@@ -39,6 +41,10 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
           src={imageUrl}
           alt="Uploaded UI"
           className="w-full h-auto"
+          onError={(e) => {
+            console.error('Error loading image:', e);
+            e.currentTarget.style.display = 'none';
+          }}
         />
         
         {suggestions.map((suggestion, index) => (
