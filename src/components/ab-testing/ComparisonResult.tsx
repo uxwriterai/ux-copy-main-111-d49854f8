@@ -1,6 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import ReactMarkdown from 'react-markdown';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
@@ -47,7 +46,6 @@ export const ComparisonResult = ({ analysis }: ComparisonResultProps) => {
   const getDetailedAnalysis = () => {
     const sections = {
       winner: '',
-      reason: '',
       strengths: [] as string[],
       weaknesses: [] as string[],
       suggestions: [] as string[],
@@ -59,41 +57,55 @@ export const ComparisonResult = ({ analysis }: ComparisonResultProps) => {
 
     const lines = analysis.split('\n');
     let currentSection = '';
+    let collectingList = false;
 
     lines.forEach(line => {
       if (line.includes('# WINNER DECLARATION')) {
         currentSection = 'winner';
-      } else if (line.includes('## Clarity')) {
-        currentSection = 'clarity';
-      } else if (line.includes('## Tone & Voice')) {
-        currentSection = 'tone';
-      } else if (line.includes('## User Engagement')) {
-        currentSection = 'engagement';
-      } else if (line.includes('## Call-to-Action Effectiveness')) {
-        currentSection = 'cta';
+        collectingList = false;
       } else if (line.includes('### Strengths')) {
         currentSection = 'strengths';
+        collectingList = true;
       } else if (line.includes('### Weaknesses')) {
         currentSection = 'weaknesses';
+        collectingList = true;
       } else if (line.includes('# OPTIMIZATION RECOMMENDATIONS')) {
         currentSection = 'suggestions';
+        collectingList = true;
+      } else if (line.includes('## Clarity Analysis')) {
+        currentSection = 'clarity';
+        collectingList = false;
+      } else if (line.includes('## Tone Analysis')) {
+        currentSection = 'tone';
+        collectingList = false;
+      } else if (line.includes('## Engagement Analysis')) {
+        currentSection = 'engagement';
+        collectingList = false;
+      } else if (line.includes('## CTA Analysis')) {
+        currentSection = 'cta';
+        collectingList = false;
       } else if (line.trim() && !line.startsWith('#')) {
-        if (currentSection === 'winner') {
-          sections.winner = line.trim();
-        } else if (currentSection === 'clarity') {
-          sections.clarity = line.trim();
-        } else if (currentSection === 'tone') {
-          sections.tone = line.trim();
-        } else if (currentSection === 'engagement') {
-          sections.engagement = line.trim();
-        } else if (currentSection === 'cta') {
-          sections.cta = line.trim();
-        } else if (currentSection === 'strengths' && line.startsWith('-')) {
-          sections.strengths.push(line.replace('-', '').trim());
-        } else if (currentSection === 'weaknesses' && line.startsWith('-')) {
-          sections.weaknesses.push(line.replace('-', '').trim());
-        } else if (currentSection === 'suggestions' && line.startsWith('-')) {
-          sections.suggestions.push(line.replace('-', '').trim());
+        if (collectingList && line.trim().startsWith('-')) {
+          const content = line.replace('-', '').trim();
+          if (currentSection === 'strengths') {
+            sections.strengths.push(content);
+          } else if (currentSection === 'weaknesses') {
+            sections.weaknesses.push(content);
+          } else if (currentSection === 'suggestions') {
+            sections.suggestions.push(content);
+          }
+        } else if (!collectingList) {
+          if (currentSection === 'winner') {
+            sections.winner = line.trim();
+          } else if (currentSection === 'clarity') {
+            sections.clarity = line.trim();
+          } else if (currentSection === 'tone') {
+            sections.tone = line.trim();
+          } else if (currentSection === 'engagement') {
+            sections.engagement = line.trim();
+          } else if (currentSection === 'cta') {
+            sections.cta = line.trim();
+          }
         }
       }
     });
@@ -224,11 +236,15 @@ export const ComparisonResult = ({ analysis }: ComparisonResultProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc pl-4 space-y-2">
-              {analysis_sections.strengths.map((strength, index) => (
-                <li key={index} className="text-sm text-muted-foreground">{strength}</li>
-              ))}
-            </ul>
+            {analysis_sections.strengths.length > 0 ? (
+              <ul className="list-disc pl-4 space-y-2">
+                {analysis_sections.strengths.map((strength, index) => (
+                  <li key={index} className="text-sm text-muted-foreground">{strength}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">No strengths identified.</p>
+            )}
           </CardContent>
         </Card>
 
@@ -242,37 +258,49 @@ export const ComparisonResult = ({ analysis }: ComparisonResultProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc pl-4 space-y-2">
-              {analysis_sections.weaknesses.map((weakness, index) => (
-                <li key={index} className="text-sm text-muted-foreground">{weakness}</li>
-              ))}
-            </ul>
+            {analysis_sections.weaknesses.length > 0 ? (
+              <ul className="list-disc pl-4 space-y-2">
+                {analysis_sections.weaknesses.map((weakness, index) => (
+                  <li key={index} className="text-sm text-muted-foreground">{weakness}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">No areas for improvement identified.</p>
+            )}
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Detailed Comparison</CardTitle>
+          <CardTitle>Detailed Analysis</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <div>
-              <h4 className="font-semibold mb-2">Clarity & Message</h4>
-              <p className="text-sm text-muted-foreground">{analysis_sections.clarity}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Tone & Voice</h4>
-              <p className="text-sm text-muted-foreground">{analysis_sections.tone}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">User Engagement</h4>
-              <p className="text-sm text-muted-foreground">{analysis_sections.engagement}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Call-to-Action Impact</h4>
-              <p className="text-sm text-muted-foreground">{analysis_sections.cta}</p>
-            </div>
+            {analysis_sections.clarity && (
+              <div>
+                <h4 className="font-semibold mb-2">Clarity & Message</h4>
+                <p className="text-sm text-muted-foreground">{analysis_sections.clarity}</p>
+              </div>
+            )}
+            {analysis_sections.tone && (
+              <div>
+                <h4 className="font-semibold mb-2">Tone & Voice</h4>
+                <p className="text-sm text-muted-foreground">{analysis_sections.tone}</p>
+              </div>
+            )}
+            {analysis_sections.engagement && (
+              <div>
+                <h4 className="font-semibold mb-2">User Engagement</h4>
+                <p className="text-sm text-muted-foreground">{analysis_sections.engagement}</p>
+              </div>
+            )}
+            {analysis_sections.cta && (
+              <div>
+                <h4 className="font-semibold mb-2">Call-to-Action Impact</h4>
+                <p className="text-sm text-muted-foreground">{analysis_sections.cta}</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -282,22 +310,26 @@ export const ComparisonResult = ({ analysis }: ComparisonResultProps) => {
           <CardTitle>Improvement Suggestions</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]">#</TableHead>
-                <TableHead>Suggestion</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {analysis_sections.suggestions.map((suggestion, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell>{suggestion}</TableCell>
+          {analysis_sections.suggestions.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">#</TableHead>
+                  <TableHead>Suggestion</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {analysis_sections.suggestions.map((suggestion, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
+                    <TableCell>{suggestion}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-sm text-muted-foreground">No improvement suggestions available.</p>
+          )}
         </CardContent>
       </Card>
     </div>

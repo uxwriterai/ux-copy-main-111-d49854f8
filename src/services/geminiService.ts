@@ -69,52 +69,47 @@ Please provide a comprehensive analysis in the following format:
 # WINNER DECLARATION
 [Clearly state which variation performs better and why in one sentence]
 
-# SCORING (Out of 100)
+# SCORING
 ## Variation A
-- Clarity: [Score]
-- Engagement: [Score]
-- Relevance: [Score]
-- Readability: [Score]
-- Overall Score: [Average of above scores]
+Clarity: [Score out of 100]
+Engagement: [Score out of 100]
+Relevance: [Score out of 100]
+Readability: [Score out of 100]
+Overall Score: [Average of above scores]
 
 ## Variation B
-- Clarity: [Score]
-- Engagement: [Score]
-- Relevance: [Score]
-- Readability: [Score]
-- Overall Score: [Average of above scores]
+Clarity: [Score out of 100]
+Engagement: [Score out of 100]
+Relevance: [Score out of 100]
+Readability: [Score out of 100]
+Overall Score: [Average of above scores]
 
-# DETAILED COMPARISON
-## Clarity
-[Compare how clear and understandable each variation is]
+### Strengths
+- [List key strengths of the winning variation]
+- [Add more strengths]
 
-## Tone & Voice
-[Compare the tone and voice of each variation]
+### Weaknesses
+- [List areas where the winning variation could improve]
+- [Add more weaknesses]
 
-## User Engagement
-[Analyze which variation is more likely to engage users]
+## Clarity Analysis
+[Detailed analysis of clarity differences between variations]
 
-## Call-to-Action Effectiveness
-[Compare the effectiveness of any calls to action]
+## Tone Analysis
+[Compare tone and voice between variations]
 
-# STRENGTHS
-## Variation A
-- [Bullet points of strengths]
+## Engagement Analysis
+[Analysis of user engagement potential]
 
-## Variation B
-- [Bullet points of strengths]
-
-# AREAS FOR IMPROVEMENT
-## Variation A
-- [Specific suggestions for improvement]
-
-## Variation B
-- [Specific suggestions for improvement]
+## CTA Analysis
+[Compare call-to-action effectiveness]
 
 # OPTIMIZATION RECOMMENDATIONS
-[3-5 actionable recommendations to improve the winning variation further]
+- [Specific, actionable suggestion for improvement]
+- [Another specific suggestion]
+- [Additional suggestions as needed]
 
-Please format the response in a clear, structured way using markdown headings and bullet points.`;
+Please be specific and actionable in your analysis.`;
 
     const result = await model.generateContent(prompt);
     return result.response.text();
