@@ -4,15 +4,40 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { generateLandingPageCopy } from "@/services/landingPageService";
 import { LandingPageResult } from "@/components/landing-page/LandingPageResult";
 
-interface LandingPageSection {
-  title: string;
-  content: string[];
-}
+const INDUSTRIES = [
+  "Technology",
+  "Healthcare",
+  "Education",
+  "E-commerce",
+  "Finance",
+  "Real Estate",
+  "Marketing",
+  "Entertainment",
+  "Food & Beverage",
+  "Travel",
+  "Fitness",
+  "Professional Services"
+];
+
+const TARGET_AUDIENCES = [
+  "Young Adults (18-24)",
+  "Professionals (25-34)",
+  "Mid-Career (35-44)",
+  "Established (45-54)",
+  "Senior (55+)",
+  "All Ages"
+];
 
 const TONES = [
   "Professional",
@@ -27,7 +52,7 @@ const TONES = [
 const LandingPageGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [sections, setSections] = useState<LandingPageSection[]>([]);
+  const [sections, setSections] = useState([]);
   const [formData, setFormData] = useState({
     productName: "",
     industry: "",
@@ -45,8 +70,8 @@ const LandingPageGenerator = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleToneChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, tone: value }));
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,33 +138,47 @@ const LandingPageGenerator = () => {
 
               <div>
                 <Label htmlFor="industry">Industry</Label>
-                <Input
-                  id="industry"
-                  name="industry"
+                <Select
                   value={formData.industry}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Project Management Software"
-                  required
-                />
+                  onValueChange={(value) => handleSelectChange("industry", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INDUSTRIES.map((industry) => (
+                      <SelectItem key={industry} value={industry}>
+                        {industry}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
                 <Label htmlFor="targetAudience">Target Audience</Label>
-                <Input
-                  id="targetAudience"
-                  name="targetAudience"
+                <Select
                   value={formData.targetAudience}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Small Business Owners and Freelancers"
-                  required
-                />
+                  onValueChange={(value) => handleSelectChange("targetAudience", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select target audience" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TARGET_AUDIENCES.map((audience) => (
+                      <SelectItem key={audience} value={audience}>
+                        {audience}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
                 <Label htmlFor="tone">Brand Tone</Label>
                 <Select
                   value={formData.tone}
-                  onValueChange={handleToneChange}
+                  onValueChange={(value) => handleSelectChange("tone", value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select tone" />
