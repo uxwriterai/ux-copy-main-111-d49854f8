@@ -56,9 +56,9 @@ const HeroCopyGenerator = () => {
                           <h3 className="text-sm font-medium text-muted-foreground">
                             Variant {index + 1}
                           </h3>
-                          <CopyVariant text={variant.headline} />
-                          <CopyVariant text={variant.tagline} />
-                          <CopyVariant text={variant.cta} />
+                          <CopyVariant text={variant.headline} label="Headline" />
+                          <CopyVariant text={variant.tagline} label="Tagline" />
+                          <CopyVariant text={variant.cta} label="CTA" />
                         </div>
                       </div>
                     ))}
