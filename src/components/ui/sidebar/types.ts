@@ -1,4 +1,6 @@
 import { type TooltipContent } from "@radix-ui/react-tooltip"
+import { type VariantProps } from "class-variance-authority"
+import { sidebarMenuButtonVariants } from "./variants"
 
 export type SidebarContext = {
   state: "expanded" | "collapsed"
