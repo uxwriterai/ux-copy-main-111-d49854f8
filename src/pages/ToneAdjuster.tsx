@@ -1,6 +1,6 @@
 const ToneAdjuster = () => {
   return (
-    <div className="container max-w-6xl py-12">
+    <div className="container max-w-6xl py-8">
       <div className="flex justify-between items-center mb-8">
         <div className="flex-1">
           <h1 className="text-4xl font-bold text-foreground">Microcopy Tone Adjuster</h1>

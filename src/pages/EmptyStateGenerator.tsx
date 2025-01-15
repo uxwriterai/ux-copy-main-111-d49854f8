@@ -63,7 +63,7 @@ const EmptyStateGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12">
+    <div className="min-h-screen bg-background py-8">
       <div className="container max-w-4xl">
         <div className="space-y-6">
           <div className="space-y-2">
@@ -182,7 +182,7 @@ const EmptyStateGenerator = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default EmptyStateGenerator
+export default EmptyStateGenerator;

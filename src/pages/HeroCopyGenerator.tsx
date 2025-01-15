@@ -31,7 +31,7 @@ const HeroCopyGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12">
+    <div className="min-h-screen bg-background py-8">
       <div className="container max-w-6xl">
         <div className="space-y-6">
           <div className="space-y-2">
