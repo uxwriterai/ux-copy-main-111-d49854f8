@@ -8,6 +8,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { ComparisonResult } from "./ComparisonResult";
 import { analyzeABTest } from "@/services/geminiService";
 import { ArrowLeft } from "lucide-react";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface ABTestVariation {
   image?: File;
@@ -20,6 +21,7 @@ export const ABTestingForm = () => {
   const [variationA, setVariationA] = useState<ABTestVariation>({ text: "" });
   const [variationB, setVariationB] = useState<ABTestVariation>({ text: "" });
   const [showResults, setShowResults] = useState(false);
+  const { useCredit } = useCredits();
 
   const handleImageUpload = (variation: "A" | "B") => (file: File) => {
     if (variation === "A") {
@@ -35,6 +37,12 @@ export const ABTestingForm = () => {
     setIsLoading(true);
 
     try {
+      // Check and use a credit before proceeding
+      if (!useCredit()) {
+        toast.error("No credits remaining");
+        return;
+      }
+
       const result = await analyzeABTest(variationA, variationB);
       setResults(result);
       setShowResults(true);
