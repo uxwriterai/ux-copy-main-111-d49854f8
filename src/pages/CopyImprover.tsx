@@ -31,26 +31,20 @@ const Index = () => {
 
   const parseGeminiResponse = (text: string): Suggestion[] => {
     try {
-      // Split the response into lines and filter out empty lines
       const lines = text.split('\n').filter(line => line.trim());
-      
-      // Find lines that look like complete JSON objects
       const jsonLines = lines.filter(line => 
         (line.trim().startsWith('{') && line.trim().endsWith('}')) ||
         (line.trim().startsWith('{') && line.trim().endsWith('},'))
       );
 
-      // Parse each JSON line and validate the structure
       const parsedSuggestions = jsonLines.map(line => {
         try {
-          // Remove trailing comma if present
           const cleanLine = line.trim().endsWith(',') 
             ? line.slice(0, -1) 
             : line;
           
           const suggestion = JSON.parse(cleanLine);
           
-          // Validate the suggestion structure
           if (!suggestion.element || 
               !suggestion.position?.x || 
               !suggestion.position?.y || 
@@ -61,7 +55,6 @@ const Index = () => {
             return null;
           }
 
-          // Ensure position values are within bounds
           return {
             ...suggestion,
             position: {
@@ -227,16 +220,13 @@ const Index = () => {
     try {
       const doc = new jsPDF();
       
-      // Add title
       doc.setFontSize(16);
       doc.text('UX Copy Improvement Suggestions', 14, 15);
       
-      // Add context info
       doc.setFontSize(10);
       const timestamp = new Date().toLocaleString();
       doc.text(`Generated on: ${timestamp}`, 14, 25);
       
-      // Prepare table data
       const tableData = suggestions.map((suggestion, index) => [
         index + 1,
         suggestion.element,
@@ -245,7 +235,6 @@ const Index = () => {
         suggestion.explanation
       ]);
       
-      // Add table
       autoTable(doc, {
         head: [['#', 'Element', 'Original Text', 'Improved Text', 'Explanation']],
         body: tableData,
@@ -261,7 +250,6 @@ const Index = () => {
         headStyles: { fillColor: [41, 37, 36] }
       });
       
-      // Save PDF
       doc.save('ux-copy-improvements.pdf');
       toast.success('PDF downloaded successfully');
     } catch (error) {
@@ -276,17 +264,15 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
-      <div className="container max-w-6xl py-12">
-        <div className="flex justify-center items-center mb-8 text-center">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold text-foreground mb-4">UX Copy Improver</h1>
-            <p className="text-lg text-muted-foreground">
-              Transform your UI text with AI-powered suggestions
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
-            </p>
-          </div>
+      <div className="container max-w-6xl py-8">
+        <div className="text-left mb-8">
+          <h1 className="text-4xl font-bold text-foreground">UX Copy Improver</h1>
+          <p className="text-lg text-muted-foreground mt-2">
+            Transform your UI text with AI-powered suggestions
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
+          </p>
         </div>
 
         {!showResults ? (
