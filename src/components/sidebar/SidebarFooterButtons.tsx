@@ -64,13 +64,11 @@ export function SidebarFooterButtons() {
         return
       }
 
-      // Clear local storage first to prevent token issues
-      supabase.auth.clearSession()
+      // Remove the session from localStorage to prevent token issues
+      localStorage.removeItem('sb-' + supabase.supabaseUrl + '-auth-token')
       
       // Then attempt to sign out
-      const { error } = await supabase.auth.signOut({
-        scope: 'local'
-      })
+      const { error } = await supabase.auth.signOut()
       
       if (error) {
         console.error("Error during sign out:", error)
