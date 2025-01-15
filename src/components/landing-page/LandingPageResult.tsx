@@ -1,6 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CopyVariant } from "@/components/microcopy/CopyVariant";
 
 interface LandingPageSection {
   title: string;
@@ -26,12 +25,11 @@ export const LandingPageResult = ({ sections, onRestart }: LandingPageResultProp
           <CardHeader>
             <CardTitle>{section.title}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             {section.content.map((content, contentIndex) => (
-              <CopyVariant 
-                key={contentIndex} 
-                text={content.replace(/[*#`]/g, '').trim()} 
-              />
+              <p key={contentIndex} className="mb-4">
+                {content.replace(/[*#`]/g, '').trim()}
+              </p>
             ))}
           </CardContent>
         </Card>
