@@ -41,7 +41,12 @@ const Index = () => {
       });
 
       const prompt = `
-        Analyze this UI screenshot and provide UX copy improvement suggestions following these principles:
+        Analyze this UI screenshot and provide UX copy improvement suggestions. For each suggestion:
+        1. Identify the specific UI element's location (provide x,y coordinates as percentages of the image width/height, where 0,0 is top-left and 100,100 is bottom-right)
+        2. Describe what the element is (button, text, heading, etc.)
+        3. Note its current text content
+        4. Suggest improved text
+        5. Explain why the improvement helps
 
         Context:
         - Purpose: ${context.purpose}
@@ -51,50 +56,15 @@ const Index = () => {
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
 
-        Apply these UX writing principles:
+        For each element that needs improvement, provide the response in this exact format:
+        ELEMENT: [element type]
+        POSITION: x:[number 0-100],y:[number 0-100]
+        ORIGINAL: [current text]
+        IMPROVED: [suggested text]
+        EXPLANATION: [why this improves the UX]
+        ---
 
-        General Principles:
-        - Keep copy concise and clear
-        - Break text into digestible chunks
-        - Use precise, action-oriented verbs
-        - Maintain consistent tone and terminology
-        - Avoid technical jargon
-        - Use present tense and active voice
-        - Express numbers with numerals
-
-        User-Centric Communication:
-        - Address users directly with "you"
-        - Set clear expectations
-        - Prioritize key information
-        - Show empathy and understanding
-        - Provide clear calls to action
-
-        Formatting and Design:
-        - Present information gradually
-        - Use lists for better readability
-        - Highlight key points sparingly
-        - Remove unnecessary words
-
-        Clarity and Usability:
-        - Label elements intuitively
-        - Be explicit about errors
-        - Use commonly recognized terms
-        - Write accessibly
-        - Provide context for complex items
-
-        Tone and Voice:
-        - Use appropriate humor
-        - Align with platform conventions
-        - Use inclusive language
-        - Maintain positive framing
-
-        For each UI element, provide:
-        - Element type (e.g., heading, button, label)
-        - Original text
-        - Improved version
-        - Brief explanation of improvements
-
-        Format each suggestion as: "Element Type - Original Text - Improved Text - Explanation"
+        Please analyze the image and provide 3-5 suggestions in exactly this format.
       `;
 
       const response = await fetch(
@@ -125,26 +95,39 @@ const Index = () => {
       }
 
       const data = await response.json();
-      
-      const suggestionsFromResponse = data.candidates[0].content.parts[0].text
-        .split('\n')
-        .filter((line: string) => line.trim().length > 0)
-        .map((line: string) => {
-          const parts = line.split('-').map(p => p.trim());
+      console.log('Gemini API Response:', data);
+
+      // Parse the response text into structured suggestions
+      const suggestions = data.candidates[0].content.parts[0].text
+        .split('---')
+        .filter((block: string) => block.trim().length > 0)
+        .map((block: string) => {
+          const lines = block.trim().split('\n');
+          const position = lines
+            .find((line: string) => line.startsWith('POSITION:'))
+            ?.replace('POSITION:', '')
+            .trim()
+            .split(',')
+            .map((coord: string) => {
+              const [axis, value] = coord.trim().split(':');
+              return parseFloat(value);
+            }) || [0, 0];
+
           return {
-            element: parts[0] || "Unknown",
-            original: parts[1] || "",
-            improved: parts[2] || "",
-            explanation: parts[3] || "",
+            element: lines.find((line: string) => line.startsWith('ELEMENT:'))?.replace('ELEMENT:', '').trim() || '',
             position: {
-              x: Math.random() * 80 + 10, // Random position between 10% and 90%
-              y: Math.random() * 80 + 10  // Random position between 10% and 90%
-            }
+              x: position[0],
+              y: position[1]
+            },
+            original: lines.find((line: string) => line.startsWith('ORIGINAL:'))?.replace('ORIGINAL:', '').trim() || '',
+            improved: lines.find((line: string) => line.startsWith('IMPROVED:'))?.replace('IMPROVED:', '').trim() || '',
+            explanation: lines.find((line: string) => line.startsWith('EXPLANATION:'))?.replace('EXPLANATION:', '').trim() || ''
           };
         })
         .filter((s: Suggestion) => s.element && s.improved);
 
-      setSuggestions(suggestionsFromResponse);
+      console.log('Parsed Suggestions:', suggestions);
+      setSuggestions(suggestions);
       setShowResults(true);
       toast.success('Analysis complete!');
     } catch (error) {
