@@ -47,20 +47,27 @@ Headline: [Headline text]
 Tagline: [Tagline text]
 CTA: [CTA text]`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response.text();
-  
-  // Parse the response into separate variants
-  const variants = response.split('\n\n')
-    .filter(block => block.trim().startsWith('Variant'))
-    .map(block => {
-      const lines = block.split('\n');
-      return {
-        headline: lines[1].replace('Headline: ', '').trim(),
-        tagline: lines[2].replace('Tagline: ', '').trim(),
-        cta: lines[3].replace('CTA: ', '').trim(),
-      };
-    });
+  try {
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+    console.log("Raw AI response:", response); // Debug log
+    
+    // Parse the response into separate variants
+    const variants = response.split('\n\n')
+      .filter(block => block.trim().startsWith('Variant'))
+      .map(block => {
+        const lines = block.split('\n');
+        return {
+          headline: lines[1].replace('Headline: ', '').trim(),
+          tagline: lines[2].replace('Tagline: ', '').trim(),
+          cta: lines[3].replace('CTA: ', '').trim(),
+        };
+      });
 
-  return variants;
+    console.log("Parsed variants:", variants); // Debug log
+    return variants;
+  } catch (error) {
+    console.error("Error in generateHeroCopy:", error);
+    throw error;
+  }
 };

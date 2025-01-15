@@ -53,10 +53,10 @@ const HeroCopyGenerator = () => {
                   <div className="space-y-8">
                     {generatedVariants.map((variant, index) => (
                       <div key={index} className="space-y-4">
+                        <h3 className="text-sm font-medium text-muted-foreground">
+                          Variant {index + 1}
+                        </h3>
                         <div className="space-y-2">
-                          <h3 className="text-sm font-medium text-muted-foreground">
-                            Variant {index + 1}
-                          </h3>
                           <CopyVariant text={variant.headline} label="Headline" />
                           <CopyVariant text={variant.tagline} label="Tagline" />
                           <CopyVariant text={variant.cta} label="CTA" />

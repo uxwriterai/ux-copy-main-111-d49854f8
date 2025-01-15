@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
 interface CopyVariantProps {
-  text: string
-  label?: string
+  text: string;
+  label?: string;
 }
 
 export const CopyVariant = ({ text, label }: CopyVariantProps) => {
