@@ -40,35 +40,38 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
 
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageType = 'image/png';
-    markerArea.settings.displayMode = 'preview';
+    markerArea.settings.displayMode = markerjs2.MarkerAreaDisplayMode.Preview;
 
     // Show marker area first
     markerArea.show();
 
     // After showing, create and add markers
     suggestions.forEach((suggestion, index) => {
-      // Create marker
-      const marker = new markerjs2.CalloutMarker({
-        width: 100,
-        height: 100,
-        color: '#2563eb',
-        fontFamily: 'Arial',
-        padding: 5
-      });
+      // Create marker with required parameters
+      const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const container = document.createElement('div');
+      const state = new markerjs2.MarkerAreaState();
+      const marker = new markerjs2.CalloutMarker(svgElement, container, state);
       
       // Calculate position in pixels
       const rect = imageRef.current!.getBoundingClientRect();
       const xPos = (suggestion.position.x / 100) * rect.width;
       const yPos = (suggestion.position.y / 100) * rect.height;
 
-      // Position the marker
-      marker.left = xPos - 50; // Center horizontally
-      marker.top = yPos - 50;  // Center vertically
-      marker.width = 100;
-      marker.height = 100;
-      marker.text = `${index + 1}`;
+      // Set marker properties using the available API methods
+      marker.manipulate({
+        left: xPos - 50,
+        top: yPos - 50,
+        width: 100,
+        height: 100
+      });
       
-      markerArea.addMarker(marker);
+      // Set the text content
+      if (marker instanceof markerjs2.CalloutMarker) {
+        marker.content = `${index + 1}`;
+      }
+      
+      markerArea.markers.push(marker);
     });
 
     // Add click handlers to markers
