@@ -45,8 +45,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     switch (error.message) {
       case "Invalid login credentials":
         return "Invalid email or password. Please check your credentials and try again."
-      case "Email not confirmed":
-        return "Please verify your email address before signing in."
       case "User not found":
         return "No account found with these credentials."
       default:
@@ -72,6 +70,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
         <Auth
           supabaseClient={supabase}
+          view="sign_in"
           appearance={{
             theme: ThemeSupa,
             variables: {
@@ -90,6 +89,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           }}
           theme={theme}
           providers={[]}
+          redirectTo={window.location.origin}
+          showLinks={false}
         />
       </DialogContent>
     </Dialog>
