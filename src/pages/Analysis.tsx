@@ -1,13 +1,10 @@
-import { Button } from "@/components/ui/button"
-
-export default function Analysis() {
+const Analysis = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">UX Copy Analysis</h1>
-      <p className="text-muted-foreground mb-4">
-        Analyze your UX copy for clarity, consistency, and effectiveness.
-      </p>
-      <Button>Start Analysis</Button>
+    <div className="container py-6">
+      <h1 className="text-4xl font-bold mb-4">UX Copy Analysis</h1>
+      <p className="text-muted-foreground">Analyze your UX copy for improvements</p>
     </div>
   )
 }
+
+export default Analysis

@@ -1,13 +1,10 @@
-import { Button } from "@/components/ui/button"
-
-export default function Generator() {
+const Generator = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">A/B Testing Generator</h1>
-      <p className="text-muted-foreground mb-4">
-        Generate A/B test variations for your UX copy.
-      </p>
-      <Button>Generate Variations</Button>
+    <div className="container py-6">
+      <h1 className="text-4xl font-bold mb-4">A/B Testing Generator</h1>
+      <p className="text-muted-foreground">Generate A/B test variations for your copy</p>
     </div>
   )
 }
+
+export default Generator
