@@ -52,7 +52,23 @@ export function SidebarFooterButtons() {
   const handleLogout = async () => {
     try {
       console.log("Attempting to sign out...")
-      const { error } = await supabase.auth.signOut()
+      
+      // First get the current session
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      
+      if (!currentSession) {
+        console.log("No active session found")
+        setSession(null)
+        resetCredits()
+        navigate('/')
+        return
+      }
+
+      // Then sign out
+      const { error } = await supabase.auth.signOut({
+        scope: 'local' // Changed from 'global' to 'local' to avoid session conflicts
+      })
+      
       if (error) {
         console.error("Error signing out:", error)
         toast.error('Error signing out')
