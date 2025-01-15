@@ -6,7 +6,8 @@ import {
   Wand2,
   Type,
   FileX,
-  Layout
+  Layout,
+  LayoutTemplate
 } from "lucide-react"
 
 const tools = [
@@ -39,6 +40,12 @@ const tools = [
     description: "Create compelling hero sections with headlines, taglines, and CTAs",
     icon: Layout,
     route: "/hero-copy"
+  },
+  {
+    title: "Landing Page Generator",
+    description: "Generate comprehensive copy for your entire landing page",
+    icon: LayoutTemplate,
+    route: "/landing-page"
   }
 ]
 

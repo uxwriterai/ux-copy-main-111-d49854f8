@@ -13,6 +13,7 @@ import CopyImprover from "./pages/CopyImprover"
 import MicrocopyGenerator from "./pages/MicrocopyGenerator"
 import EmptyStateGenerator from "./pages/EmptyStateGenerator"
 import HeroCopyGenerator from "./pages/HeroCopyGenerator"
+import LandingPageGenerator from "./pages/LandingPageGenerator"
 
 const queryClient = new QueryClient()
 
@@ -53,6 +54,7 @@ const App = () => {
                       <Route path="/microcopy" element={<MicrocopyGenerator />} />
                       <Route path="/empty-state" element={<EmptyStateGenerator />} />
                       <Route path="/hero-copy" element={<HeroCopyGenerator />} />
+                      <Route path="/landing-page" element={<LandingPageGenerator />} />
                     </Routes>
                   </div>
                 </main>
