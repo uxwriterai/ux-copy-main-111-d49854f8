@@ -12,6 +12,7 @@ import Generator from "./pages/Generator"
 import Accessibility from "./pages/Accessibility"
 import ToneAdjuster from "./pages/ToneAdjuster"
 import ErrorEnhancer from "./pages/ErrorEnhancer"
+import CopyImprover from "./pages/CopyImprover"
 
 const queryClient = new QueryClient()
 
@@ -28,6 +29,7 @@ const App = () => (
                   <SidebarTrigger />
                   <Routes>
                     <Route path="/" element={<Index />} />
+                    <Route path="/copy-improver" element={<CopyImprover />} />
                     <Route path="/analysis" element={<Analysis />} />
                     <Route path="/generator" element={<Generator />} />
                     <Route path="/accessibility" element={<Accessibility />} />

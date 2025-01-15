@@ -12,26 +12,32 @@ import {
   MessageSquare, 
   Settings, 
   SplitSquareVertical,
+  Wand2
 } from "lucide-react"
 
 const items = [
   {
-    title: "UX Copy Improver",
+    title: "Home",
     url: "/",
     icon: Home,
   },
   {
-    title: "UX Copy Analysis",
+    title: "Copy Improver",
+    url: "/copy-improver",
+    icon: Wand2,
+  },
+  {
+    title: "Copy Analysis",
     url: "/analysis",
     icon: BarChart2,
   },
   {
-    title: "A/B Testing Generator",
+    title: "A/B Testing",
     url: "/generator",
     icon: SplitSquareVertical,
   },
   {
-    title: "Accessibility Checker",
+    title: "Accessibility",
     url: "/accessibility",
     icon: FileText,
   },
