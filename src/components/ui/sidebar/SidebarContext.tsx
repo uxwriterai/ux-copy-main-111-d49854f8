@@ -1,10 +1,10 @@
 import * as React from "react"
-import { SidebarContext, SidebarProviderProps } from "./types"
+import type { SidebarContext as SidebarContextType, SidebarProviderProps } from "./types"
 import { SIDEBAR_COOKIE_NAME, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_KEYBOARD_SHORTCUT } from "./variants"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
-const SidebarContext = React.createContext<SidebarContext | null>(null)
+const SidebarContext = React.createContext<SidebarContextType | null>(null)
 
 export function useSidebar() {
   const context = React.useContext(SidebarContext)

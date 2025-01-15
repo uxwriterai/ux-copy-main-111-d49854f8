@@ -111,28 +111,113 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
 )
 Sidebar.displayName = "Sidebar"
 
-// Export all the components
+const SidebarMenu = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("space-y-1", className)} {...props} />
+))
+SidebarMenu.displayName = "SidebarMenu"
+
+const SidebarMenuItem = React.forwardRef<
+  HTMLLIElement,
+  React.HTMLAttributes<HTMLLIElement>
+>(({ className, ...props }, ref) => (
+  <li ref={ref} className={cn("relative", className)} {...props} />
+))
+SidebarMenuItem.displayName = "SidebarMenuItem"
+
+const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
+  ({ className, asChild, isActive, tooltip, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    const content = (
+      <Comp
+        ref={ref}
+        className={cn(sidebarMenuButtonVariants(), className)}
+        data-active={isActive}
+        {...props}
+      />
+    )
+
+    if (tooltip) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{content}</TooltipTrigger>
+          <TooltipContent>
+            {typeof tooltip === "string" ? tooltip : { ...tooltip }}
+          </TooltipContent>
+        </Tooltip>
+      )
+    }
+
+    return content
+  }
+)
+SidebarMenuButton.displayName = "SidebarMenuButton"
+
+const SidebarContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("flex-1 overflow-auto", className)} {...props} />
+))
+SidebarContent.displayName = "SidebarContent"
+
+const SidebarFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("mt-auto", className)} {...props} />
+))
+SidebarFooter.displayName = "SidebarFooter"
+
+const SidebarGroup = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("space-y-3", className)} {...props} />
+))
+SidebarGroup.displayName = "SidebarGroup"
+
+const SidebarGroupContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("space-y-1", className)} {...props} />
+))
+SidebarGroupContent.displayName = "SidebarGroupContent"
+
+const SidebarTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, ...props }, ref) => {
+  const { toggleSidebar } = useSidebar()
+  return (
+    <Button
+      ref={ref}
+      variant="ghost"
+      size="icon"
+      className={cn("", className)}
+      onClick={toggleSidebar}
+      {...props}
+    >
+      <PanelLeft className="h-4 w-4" />
+      <span className="sr-only">Toggle sidebar</span>
+    </Button>
+  )
+})
+SidebarTrigger.displayName = "SidebarTrigger"
+
 export {
   Sidebar,
   SidebarProvider,
   useSidebar,
-  // Re-export other sidebar components...
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuAction,
-  SidebarMenuBadge,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInput,
-  SidebarRail,
-  SidebarSeparator,
+  SidebarTrigger
 }
