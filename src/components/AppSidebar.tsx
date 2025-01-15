@@ -5,9 +5,14 @@ import {
   Home, 
   MessageSquare, 
   Settings, 
-  SplitSquareVertical 
+  SplitSquareVertical,
+  Moon,
+  Sun,
+  PanelLeftClose,
+  PanelLeft
 } from "lucide-react"
 import { useLocation, Link } from "react-router-dom"
+import { useTheme } from "next-themes"
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +22,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
 
 const items = [
   {
@@ -59,6 +67,9 @@ const items = [
 
 export function AppSidebar() {
   const location = useLocation()
+  const { theme, setTheme } = useTheme()
+  const { state, toggleSidebar } = useSidebar()
+  const isCollapsed = state === "collapsed"
 
   return (
     <Sidebar>
@@ -72,9 +83,10 @@ export function AppSidebar() {
                   <SidebarMenuButton 
                     asChild
                     isActive={location.pathname === item.url}
+                    className="transition-colors hover:bg-sidebar-accent/50 active:bg-sidebar-accent/70"
                   >
                     <Link to={item.url}>
-                      <item.icon />
+                      <item.icon className="shrink-0" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -84,6 +96,28 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-sidebar-border p-4 flex flex-col gap-2">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          className="w-full flex items-center justify-center hover:bg-sidebar-accent/50"
+        >
+          {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="w-full flex items-center justify-center hover:bg-sidebar-accent/50"
+        >
+          {isCollapsed ? (
+            <PanelLeft className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   )
 }
