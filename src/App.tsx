@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { ThemeProvider } from "@/components/ThemeProvider"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import Index from "./pages/Index"
 import Analysis from "./pages/Analysis"
@@ -26,7 +26,6 @@ const App = () => (
               <AppSidebar />
               <main className="flex-1">
                 <div className="container">
-                  <SidebarTrigger />
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/copy-improver" element={<CopyImprover />} />

@@ -6,7 +6,6 @@ import {
   BarChart2, 
   FileText, 
   MessageSquare, 
-  Settings, 
   SplitSquareVertical,
   Wand2
 } from "lucide-react"
