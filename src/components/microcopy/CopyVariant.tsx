@@ -4,9 +4,10 @@ import { toast } from "sonner"
 
 interface CopyVariantProps {
   text: string
+  label?: string
 }
 
-export const CopyVariant = ({ text }: CopyVariantProps) => {
+export const CopyVariant = ({ text, label }: CopyVariantProps) => {
   const handleCopy = async () => {
     await navigator.clipboard.writeText(text)
     toast.success("Copied to clipboard!")
@@ -14,7 +15,14 @@ export const CopyVariant = ({ text }: CopyVariantProps) => {
 
   return (
     <div className="rounded-lg border bg-card p-4 flex justify-between items-start gap-4">
-      <p className="text-card-foreground flex-1">{text}</p>
+      <div className="flex-1">
+        {label && (
+          <span className="text-sm font-medium text-muted-foreground mb-1 block">
+            {label}
+          </span>
+        )}
+        <p className="text-card-foreground">{text}</p>
+      </div>
       <Button
         variant="ghost"
         size="icon"
