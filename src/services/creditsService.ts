@@ -1,11 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
-export async function getUserCredits(ipAddress: string) {
+type UserCredits = Database['public']['Tables']['user_credits']['Row'];
+
+export async function getUserCredits(ipAddress: string): Promise<number> {
   const { data, error } = await supabase
     .from('user_credits')
     .select('credits_remaining')
     .eq('ip_address', ipAddress)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching user credits:', error);
@@ -24,8 +27,7 @@ export async function updateUserCredits(ipAddress: string, newCredits: number) {
         credits_remaining: newCredits 
       },
       { 
-        onConflict: 'ip_address',
-        ignoreDuplicates: false 
+        onConflict: 'ip_address'
       }
     );
 
@@ -36,8 +38,16 @@ export async function updateUserCredits(ipAddress: string, newCredits: number) {
 }
 
 export async function getGeminiApiKey() {
-  const { data: { value } } = await supabase
-    .functions.invoke('get-gemini-key');
-  
-  return value;
+  const { data, error } = await supabase
+    .from('api_keys')
+    .select('key_value')
+    .eq('key_name', 'GEMINI_API_KEY')
+    .single();
+
+  if (error) {
+    console.error('Error fetching Gemini API key:', error);
+    throw error;
+  }
+
+  return data.key_value;
 }
