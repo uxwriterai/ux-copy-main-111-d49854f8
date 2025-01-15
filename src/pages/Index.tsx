@@ -29,7 +29,6 @@ const Index = () => {
     try {
       console.log('Starting image analysis...');
       
-      // Validate image size
       if (image.size > 4 * 1024 * 1024) {
         throw new Error('Image size must be less than 4MB');
       }
@@ -44,60 +43,33 @@ const Index = () => {
       console.log('Image converted to base64');
 
       const prompt = `
-        Analyze this UI screenshot and provide UX copy improvement suggestions following these principles:
+        Analyze this UI screenshot and provide UX copy improvement suggestions.
+        For each UI element you find, provide:
+        1. Element type (e.g., heading, button, label)
+        2. Original text content
+        3. Improved version of the text
+        4. Brief explanation of improvements
+        5. Position of the element in the image:
+           - Specify x coordinate as percentage (0-100) from left edge
+           - Specify y coordinate as percentage (0-100) from top edge
+           - Be very precise with positioning to ensure markers appear exactly on the elements
 
-        Context:
+        Format each suggestion exactly like this example:
+        Element Type | Original Text | Improved Text | Explanation | x:42,y:73
+
+        Important:
+        - Provide coordinates that will place markers directly on the UI elements
+        - Use precise percentage values (0-100) for x and y coordinates
+        - Ensure each suggestion follows the exact format with the | separator
+        - Position coordinates should reflect the center point of each element
+
+        Additional Context:
         - Purpose: ${context.purpose}
         - Target Audience: ${context.audience}
         - Desired Tone: ${context.tone}
         - Emotional Goal: ${context.emotionalGoal}
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
-
-        Apply these UX writing principles:
-
-        General Principles:
-        - Keep copy concise and clear
-        - Break text into digestible chunks
-        - Use precise, action-oriented verbs
-        - Maintain consistent tone and terminology
-        - Avoid technical jargon
-        - Use present tense and active voice
-        - Express numbers with numerals
-
-        User-Centric Communication:
-        - Address users directly with "you"
-        - Set clear expectations
-        - Prioritize key information
-        - Show empathy and understanding
-        - Provide clear calls to action
-
-        Formatting and Design:
-        - Present information gradually
-        - Use lists for better readability
-        - Highlight key points sparingly
-        - Remove unnecessary words
-
-        Clarity and Usability:
-        - Label elements intuitively
-        - Be explicit about errors
-        - Use commonly recognized terms
-        - Write accessibly
-        - Provide context for complex items
-
-        Tone and Voice:
-        - Use appropriate humor
-        - Align with platform conventions
-        - Use inclusive language
-        - Maintain positive framing
-
-        For each UI element, provide:
-        - Element type (e.g., heading, button, label)
-        - Original text
-        - Improved version
-        - Brief explanation of improvements
-
-        Format each suggestion as: "Element Type - Original Text - Improved Text - Explanation"
       `;
 
       console.log('Sending request to Gemini API...');
@@ -108,7 +80,6 @@ const Index = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
           },
           body: JSON.stringify({
             contents: [{
@@ -125,8 +96,6 @@ const Index = () => {
         }
       );
 
-      console.log('Response status:', response.status);
-
       if (!response.ok) {
         const errorData = await response.json();
         console.error('API Error:', errorData);
@@ -140,19 +109,28 @@ const Index = () => {
         throw new Error('Invalid response format from API');
       }
 
-      const suggestionsFromResponse = data.candidates[0].content.parts[0].text
+      const suggestionsText = data.candidates[0].content.parts[0].text;
+      console.log('Raw suggestions:', suggestionsText);
+
+      const suggestionsFromResponse = suggestionsText
         .split('\n')
-        .filter((line: string) => line.trim().length > 0)
+        .filter((line: string) => line.includes('|'))
         .map((line: string) => {
-          const parts = line.split('-').map(p => p.trim());
+          const [element, original, improved, explanation, position] = line.split('|').map(p => p.trim());
+          
+          // Extract x,y coordinates from the position string (format: "x:42,y:73")
+          const coordinates = position.match(/x:(\d+\.?\d*),y:(\d+\.?\d*)/);
+          const x = coordinates ? parseFloat(coordinates[1]) : 50;
+          const y = coordinates ? parseFloat(coordinates[2]) : 50;
+
           return {
-            element: parts[0] || "Unknown",
-            original: parts[1] || "",
-            improved: parts[2] || "",
-            explanation: parts[3] || "",
+            element,
+            original,
+            improved,
+            explanation,
             position: {
-              x: Math.random() * 80 + 10,
-              y: Math.random() * 80 + 10
+              x: Math.min(100, Math.max(0, x)), // Ensure x is between 0-100
+              y: Math.min(100, Math.max(0, y))  // Ensure y is between 0-100
             }
           };
         })
@@ -166,7 +144,7 @@ const Index = () => {
     } catch (error) {
       console.error('Error analyzing UI:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
-      throw error; // Re-throw to be handled by the caller
+      throw error;
     }
   };
 
