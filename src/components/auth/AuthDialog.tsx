@@ -30,6 +30,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       if (event === 'SIGNED_OUT') {
         setError("")
       }
+      if (event === 'USER_UPDATED' && !session) {
+        const errorData = (session as any)?.error
+        if (errorData) {
+          setError(getErrorMessage(errorData))
+        }
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -84,7 +90,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           }}
           theme={theme}
           providers={[]}
-          onError={(error) => setError(getErrorMessage(error))}
         />
       </DialogContent>
     </Dialog>
