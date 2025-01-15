@@ -53,18 +53,20 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
       const xPos = (suggestion.position.x / 100) * rect.width;
       const yPos = (suggestion.position.y / 100) * rect.height;
 
-      // Create a marker
-      const marker = new markerjs3.CalloutMarker();
-      marker.width = 100;
-      marker.height = 100;
-      marker.x = xPos - 50;
-      marker.y = yPos - 50;
-      marker.strokeColor = '#000000';
-      marker.fillColor = '#000000';
-      marker.strokeWidth = 2;
-      marker.captionText = `${index + 1}`;
+      // Create a marker with initial state
+      const marker = new markerjs3.CalloutMarker(
+        markerArea, 
+        { x: xPos - 50, y: yPos - 50, width: 100, height: 100 },
+        { text: `${index + 1}` }
+      );
       
-      markerArea.addMarkerToState(marker);
+      // Set marker styles through state
+      const state = marker.state;
+      state.strokeColor = '#000000';
+      state.fillColor = '#000000';
+      state.strokeWidth = 2;
+      
+      markerArea.addMarker(marker);
     });
 
     // Add click handlers to markers
