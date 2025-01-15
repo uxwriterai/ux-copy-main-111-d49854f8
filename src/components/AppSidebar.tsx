@@ -16,7 +16,7 @@ export function AppSidebar() {
   return (
     <>
       {isMobile && (
-        <div className="md:hidden p-4">
+        <div className="md:hidden">
           <SidebarTrigger />
         </div>
       )}
