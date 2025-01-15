@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { CreditsProvider } from "@/contexts/CreditsContext"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useEffect } from "react"
 import Index from "./pages/Index"
@@ -42,26 +43,28 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="dark">
           <TooltipProvider>
-            <SidebarProvider>
-              <div className="min-h-screen flex w-full">
-                <AppSidebar />
-                <main className="flex-1">
-                  <div className="container">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/copy-improver" element={<CopyImprover />} />
-                      <Route path="/generator" element={<Generator />} />
-                      <Route path="/microcopy" element={<MicrocopyGenerator />} />
-                      <Route path="/empty-state" element={<EmptyStateGenerator />} />
-                      <Route path="/hero-copy" element={<HeroCopyGenerator />} />
-                      <Route path="/landing-page" element={<LandingPageGenerator />} />
-                    </Routes>
-                  </div>
-                </main>
-              </div>
-              <Toaster />
-              <Sonner />
-            </SidebarProvider>
+            <CreditsProvider>
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppSidebar />
+                  <main className="flex-1">
+                    <div className="container">
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/copy-improver" element={<CopyImprover />} />
+                        <Route path="/generator" element={<Generator />} />
+                        <Route path="/microcopy" element={<MicrocopyGenerator />} />
+                        <Route path="/empty-state" element={<EmptyStateGenerator />} />
+                        <Route path="/hero-copy" element={<HeroCopyGenerator />} />
+                        <Route path="/landing-page" element={<LandingPageGenerator />} />
+                      </Routes>
+                    </div>
+                  </main>
+                </div>
+                <Toaster />
+                <Sonner />
+              </SidebarProvider>
+            </CreditsProvider>
           </TooltipProvider>
         </ThemeProvider>
       </QueryClientProvider>

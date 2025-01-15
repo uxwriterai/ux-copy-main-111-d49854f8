@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
+import { useCredits } from "@/contexts/CreditsContext"
 import {
   Select,
   SelectContent,
@@ -11,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { toast } from "sonner"
 import { generateEmptyState } from "@/services/emptyStateService"
 import { CopyVariant } from "@/components/microcopy/CopyVariant"
 
@@ -40,9 +41,16 @@ const EmptyStateGenerator = () => {
   const [tone, setTone] = useState<string>("")
   const [additionalNotes, setAdditionalNotes] = useState("")
   const [variants, setVariants] = useState<{ message: string; cta: string }[]>([])
+  const { useCredit } = useCredits()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check if we can use a credit before proceeding
+    if (!useCredit()) {
+      return;
+    }
+
     setIsLoading(true)
 
     try {
@@ -183,6 +191,6 @@ const EmptyStateGenerator = () => {
       </div>
     </div>
   );
-};
+}
 
-export default EmptyStateGenerator;
+export default EmptyStateGenerator

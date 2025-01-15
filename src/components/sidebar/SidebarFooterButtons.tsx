@@ -2,10 +2,13 @@ import { Moon, Sun, PanelLeft, PanelLeftClose } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ThemeProvider"
 import { useSidebar } from "@/components/ui/sidebar"
+import { useCredits } from "@/contexts/CreditsContext"
+import { Badge } from "@/components/ui/badge"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
   const { state, toggleSidebar } = useSidebar()
+  const { credits } = useCredits()
   const isCollapsed = state === "collapsed"
 
   return (
@@ -44,6 +47,11 @@ export function SidebarFooterButtons() {
           </>
         )}
       </Button>
+      <div className="w-full flex justify-center">
+        <Badge variant="secondary" className="text-xs">
+          Free Credits: {credits}
+        </Badge>
+      </div>
     </>
   )
 }
