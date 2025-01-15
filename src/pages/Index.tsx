@@ -6,6 +6,13 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import { Card } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -16,6 +23,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   const { theme, setTheme } = useTheme();
 
   const handleImageUpload = (file: File) => {
@@ -26,6 +34,7 @@ const Index = () => {
     };
     reader.readAsDataURL(file);
     toast.success('Image uploaded successfully');
+    setCurrentStep(2);
   };
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
@@ -154,6 +163,7 @@ const Index = () => {
     setIsLoading(true);
     try {
       await analyzeUIWithGemini(uploadedImage, contextData);
+      setCurrentStep(3);
     } catch (error) {
       console.error('Error in handleContextSubmit:', error);
     } finally {
@@ -166,6 +176,7 @@ const Index = () => {
     setSuggestions([]);
     setUploadedImage(null);
     setImagePreviewUrl(null);
+    setCurrentStep(1);
   };
 
   const handleFeedback = (index: number, isPositive: boolean) => {
@@ -196,9 +207,32 @@ const Index = () => {
         </div>
 
         {!showResults ? (
-          <div className="max-w-2xl mx-auto space-y-8">
-            <ImageUpload onImageUpload={handleImageUpload} />
-            <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+          <div className="max-w-2xl mx-auto">
+            <Accordion type="single" collapsible defaultValue="step-1">
+              <AccordionItem value="step-1" className="border-none">
+                <AccordionTrigger className="text-lg font-semibold">
+                  Step 1: Upload Screenshot
+                </AccordionTrigger>
+                <AccordionContent>
+                  <Card className="p-6">
+                    <ImageUpload onImageUpload={handleImageUpload} />
+                  </Card>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem 
+                value="step-2" 
+                className="border-none"
+                disabled={!uploadedImage}
+              >
+                <AccordionTrigger className="text-lg font-semibold">
+                  Step 2: Provide Context
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         ) : (
           <div className="space-y-4">
