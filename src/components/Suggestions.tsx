@@ -38,9 +38,6 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
     const markerArea = new markerjs2.MarkerArea(imageRef.current);
     markerAreaRef.current = markerArea;
 
-    // Configure marker area settings
-    markerArea.settings.displayMode = markerjs2.DisplayMode.Preview;
-    
     // Create markers
     const markers = suggestions.map((suggestion, index) => {
       const marker = new markerjs2.CalloutMarker();
@@ -50,23 +47,21 @@ export const Suggestions = ({ suggestions, onFeedback, imageUrl }: SuggestionsPr
       const xPos = (suggestion.position.x / 100) * rect.width;
       const yPos = (suggestion.position.y / 100) * rect.height;
       
-      // Set marker state through the appropriate methods
-      marker.setPosition(xPos, yPos);
-      marker.setStrokeColor('#2563eb');
-      marker.setText(`${index + 1}`);
+      // Set marker properties using the correct API
+      marker.left = xPos;
+      marker.top = yPos;
+      marker.strokeColor = '#2563eb';
+      marker.caption = `${index + 1}`;
       
       return marker;
     });
 
     // Set the state with markers
-    markerArea.renderState = {
-      width: imageRef.current.width,
-      height: imageRef.current.height,
-      markers: markers
-    };
+    markerArea.settings.markers = markers;
+    markerArea.settings.displayMode = 'preview';
 
-    // Render markers in read-only mode
-    markerArea.renderMarkersOnly();
+    // Render markers
+    markerArea.show();
 
     // Add click handlers to markers
     const markerElements = document.querySelectorAll('.markerjs-marker');
