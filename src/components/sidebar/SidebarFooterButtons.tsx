@@ -53,32 +53,43 @@ export function SidebarFooterButtons() {
     try {
       console.log("Attempting to sign out...")
       
-      // First get the current session
+      // First check if we have a valid session
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       
       if (!currentSession) {
-        console.log("No active session found")
+        console.log("No active session found, cleaning up local state")
         setSession(null)
         resetCredits()
         navigate('/')
         return
       }
 
-      // Then sign out
+      // Clear local storage first to prevent token issues
+      supabase.auth.clearSession()
+      
+      // Then attempt to sign out
       const { error } = await supabase.auth.signOut({
-        scope: 'local' // Changed from 'global' to 'local' to avoid session conflicts
+        scope: 'local'
       })
       
       if (error) {
-        console.error("Error signing out:", error)
-        toast.error('Error signing out')
+        console.error("Error during sign out:", error)
+        // Even if there's an error, we want to clean up the local state
+        setSession(null)
+        resetCredits()
+        navigate('/')
+        toast.error('Error during sign out, but local session cleared')
       } else {
         console.log("Successfully signed out")
         toast.success('Signed out successfully')
       }
     } catch (error) {
       console.error("Caught error during sign out:", error)
-      toast.error('Error signing out')
+      // Clean up local state even if there's an error
+      setSession(null)
+      resetCredits()
+      navigate('/')
+      toast.error('Error during sign out, but local session cleared')
     }
   }
 
