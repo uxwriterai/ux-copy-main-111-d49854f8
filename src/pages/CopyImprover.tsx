@@ -95,12 +95,32 @@ const Index = () => {
 
       const prompt = `
         Analyze this UI screenshot and provide up to ${MAX_SUGGESTIONS} UX copy improvement suggestions.
-        For each UI element, provide:
-        1. Precise element location (x,y coordinates as percentages of the image dimensions, e.g. x: 45, y: 72)
-        2. Element type (e.g., heading, button, label)
-        3. Original text content
-        4. Improved version of the text
-        5. Brief explanation of why the improvement helps
+        Focus on these key aspects:
+
+        1. CLARITY
+        - How effectively does the UI communicate its purpose?
+        - Is the language clear, concise, and unambiguous?
+        - Are technical terms explained when necessary?
+
+        2. VISUAL HIERARCHY
+        - Are elements arranged logically?
+        - Does the text sizing and placement guide users naturally?
+        - Is important information prominently displayed?
+
+        3. TONE CONSISTENCY
+        - Does the copy align with the specified tone: ${context.tone}?
+        - Is the emotional goal of ${context.emotionalGoal} effectively achieved?
+        - Is the language appropriate for ${context.audience}?
+
+        4. ACCESSIBILITY
+        - Is the copy inclusive and welcoming?
+        - Are instructions clear and actionable?
+        - Is the language simple enough for the target audience?
+
+        5. ACTIONABILITY
+        - Are calls-to-action (CTAs) clear and compelling?
+        - Do buttons and links clearly indicate their purpose?
+        - Is feedback and guidance provided when needed?
 
         Context:
         - Purpose: ${context.purpose}
@@ -110,11 +130,19 @@ const Index = () => {
         - Constraints: ${context.constraints}
         - Additional Details: ${context.additionalDetails}
 
+        For each UI element that needs improvement, provide:
+        1. Precise element location (x,y coordinates as percentages of image dimensions)
+        2. Element type (e.g., heading, button, label)
+        3. Original text content
+        4. Improved version that addresses the above aspects
+        5. Brief explanation of why the improvement helps
+
         Format each suggestion as a complete, valid JSON object on a single line:
         {"element": "element type", "position": {"x": number, "y": number}, "original": "original text", "improved": "improved text", "explanation": "brief explanation"}
 
         Ensure each suggestion is a complete JSON object on its own line.
         All coordinates must be percentages between 0-100.
+        Focus on impactful improvements that align with the provided context.
       `;
 
       const response = await fetch(
