@@ -30,9 +30,16 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        // Check if this is a new sign up
-        if (session?.user?.created_at === session?.user?.last_sign_in_at) {
+      console.log("Auth state changed:", event)
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Check if this is a new sign up by comparing timestamps
+        console.log("Checking if new user:", {
+          created_at: session.user.created_at,
+          last_sign_in_at: session.user.last_sign_in_at
+        })
+        
+        if (session.user.created_at === session.user.last_sign_in_at) {
+          console.log("New user detected, showing welcome message and confetti")
           setShowConfetti(true)
           setShowWelcome(true)
         }
@@ -72,7 +79,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           height={window.innerHeight}
           recycle={false}
           numberOfPieces={500}
-          onConfettiComplete={() => setShowConfetti(false)}
+          onConfettiComplete={() => {
+            console.log("Confetti animation completed")
+            setShowConfetti(false)
+          }}
         />
       )}
       
