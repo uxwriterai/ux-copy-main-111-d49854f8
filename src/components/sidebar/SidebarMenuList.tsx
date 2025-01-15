@@ -5,12 +5,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { 
-  AlertCircle, 
-  BarChart2, 
-  FileText, 
   Home, 
-  MessageSquare, 
-  Settings, 
   SplitSquareVertical,
   Type,
   Wand2
@@ -28,40 +23,15 @@ const items = [
     icon: Wand2,
   },
   {
-    title: "Copy Analysis",
-    url: "/analysis",
-    icon: BarChart2,
-  },
-  {
     title: "A/B Testing",
     url: "/generator",
     icon: SplitSquareVertical,
   },
   {
-    title: "Accessibility",
-    url: "/accessibility",
-    icon: FileText,
-  },
-  {
-    title: "Tone Adjuster",
-    url: "/tone",
-    icon: MessageSquare,
-  },
-  {
-    title: "Error Enhancer",
-    url: "/error",
-    icon: AlertCircle,
-  },
-  {
     title: "Microcopy Generator",
     url: "/microcopy",
     icon: Type,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-  },
+  }
 ]
 
 export function SidebarMenuList() {

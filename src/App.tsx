@@ -7,11 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import Index from "./pages/Index"
-import Analysis from "./pages/Analysis"
 import Generator from "./pages/Generator"
-import Accessibility from "./pages/Accessibility"
-import ToneAdjuster from "./pages/ToneAdjuster"
-import ErrorEnhancer from "./pages/ErrorEnhancer"
 import CopyImprover from "./pages/CopyImprover"
 import MicrocopyGenerator from "./pages/MicrocopyGenerator"
 
@@ -30,11 +26,7 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/copy-improver" element={<CopyImprover />} />
-                    <Route path="/analysis" element={<Analysis />} />
                     <Route path="/generator" element={<Generator />} />
-                    <Route path="/accessibility" element={<Accessibility />} />
-                    <Route path="/tone" element={<ToneAdjuster />} />
-                    <Route path="/error" element={<ErrorEnhancer />} />
                     <Route path="/microcopy" element={<MicrocopyGenerator />} />
                   </Routes>
                 </div>

@@ -2,10 +2,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { 
-  AlertCircle, 
-  BarChart2, 
-  FileText, 
-  MessageSquare, 
   SplitSquareVertical,
   Wand2,
   Type
@@ -25,34 +21,10 @@ const tools = [
     route: "/microcopy"
   },
   {
-    title: "UX Copy Analysis",
-    description: "Analyze your UX copy for clarity, consistency, and impact",
-    icon: BarChart2,
-    route: "/analysis"
-  },
-  {
     title: "A/B Testing Generator",
     description: "Generate A/B test variations for your UX copy",
     icon: SplitSquareVertical,
     route: "/generator"
-  },
-  {
-    title: "Accessibility Checker",
-    description: "Check your copy for accessibility and inclusivity",
-    icon: FileText,
-    route: "/accessibility"
-  },
-  {
-    title: "Tone Adjuster",
-    description: "Adjust the tone of your microcopy to match your brand voice",
-    icon: MessageSquare,
-    route: "/tone"
-  },
-  {
-    title: "Error Enhancer",
-    description: "Make your error messages more helpful and user-friendly",
-    icon: AlertCircle,
-    route: "/error"
   }
 ]
 
