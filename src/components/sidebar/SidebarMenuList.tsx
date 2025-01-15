@@ -8,7 +8,8 @@ import {
   Home, 
   SplitSquareVertical,
   Type,
-  Wand2
+  Wand2,
+  FileX
 } from "lucide-react"
 
 const items = [
@@ -31,6 +32,11 @@ const items = [
     title: "Microcopy Generator",
     url: "/microcopy",
     icon: Type,
+  },
+  {
+    title: "Empty State Generator",
+    url: "/empty-state",
+    icon: FileX,
   }
 ]
 
