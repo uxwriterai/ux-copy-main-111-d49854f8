@@ -12,7 +12,7 @@ import {
   PanelLeft
 } from "lucide-react"
 import { useLocation, Link } from "react-router-dom"
-import { useTheme } from "next-themes"
+import { useTheme } from "./ThemeProvider"
 import {
   Sidebar,
   SidebarContent,
@@ -100,22 +100,36 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-4 flex flex-col gap-2 mt-auto">
         <Button 
           variant="ghost" 
-          size="icon"
+          className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          className="w-full flex items-center justify-center hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
-          {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          {theme === "light" ? (
+            <>
+              <Moon className="h-5 w-5" />
+              <span className="group-data-[collapsible=icon]:hidden">Dark mode</span>
+            </>
+          ) : (
+            <>
+              <Sun className="h-5 w-5" />
+              <span className="group-data-[collapsible=icon]:hidden">Light mode</span>
+            </>
+          )}
         </Button>
         <Button
           variant="ghost"
-          size="icon"
+          className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
           onClick={toggleSidebar}
-          className="w-full flex items-center justify-center hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           {isCollapsed ? (
-            <PanelLeft className="h-5 w-5" />
+            <>
+              <PanelLeft className="h-5 w-5" />
+              <span className="group-data-[collapsible=icon]:hidden">Expand sidebar</span>
+            </>
           ) : (
-            <PanelLeftClose className="h-5 w-5" />
+            <>
+              <PanelLeftClose className="h-5 w-5" />
+              <span className="group-data-[collapsible=icon]:hidden">Collapse sidebar</span>
+            </>
           )}
         </Button>
       </SidebarFooter>
