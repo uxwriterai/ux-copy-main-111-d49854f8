@@ -32,124 +32,99 @@ const Index = () => {
     setImagePreviewUrl(null);
   };
 
-const analyzeUIWithGemini = async (image: File, context: ContextData) => {
-  try {
-    const base64Image = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(image);
-    });
-
-    const prompt = `
-      Analyze this UI screenshot and provide UX copy improvement suggestions. 
-      
-      IMPORTANT COORDINATE INSTRUCTIONS:
-      - For each UI element, provide its exact position using x,y coordinates
-      - Coordinates MUST be percentages between 0-100
-      - (0,0) is top-left corner, (100,100) is bottom-right corner
-      - Be extremely precise - measure the element's center point relative to the image dimensions
-      - Validate that all coordinates are within 0-100 range
-      - If an element appears to be outside these bounds, adjust to the nearest valid position
-
-      Context:
-      - Purpose: ${context.purpose}
-      - Target Audience: ${context.audience}
-      - Desired Tone: ${context.tone}
-      - Emotional Goal: ${context.emotionalGoal}
-      - Constraints: ${context.constraints}
-      - Additional Details: ${context.additionalDetails}
-
-      For each element that needs improvement, provide the response in this exact format:
-      ELEMENT: [element type]
-      POSITION: x:[number 0-100],y:[number 0-100]
-      ORIGINAL: [current text]
-      IMPROVED: [suggested text]
-      EXPLANATION: [why this improves the UX]
-      ---
-
-      Please analyze the image and provide 3-5 suggestions in exactly this format.
-      Double-check that all x,y values are between 0 and 100.
-    `;
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }, {
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: base64Image.split(',')[1]
-              }
-            }]
-          }]
-        })
-      }
+  const handleUpdatePosition = (index: number, position: { x: number; y: number }) => {
+    setSuggestions(prev => 
+      prev.map((suggestion, i) => 
+        i === index ? { ...suggestion, position } : suggestion
+      )
     );
+    toast.success(`Updated position for marker ${index + 1}`);
+  };
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`API Error: ${errorData.error?.message || 'Failed to analyze image'}`);
-    }
+  const analyzeUIWithGemini = async (image: File, context: ContextData) => {
+    try {
+      const base64Image = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(image);
+      });
 
-    const data = await response.json();
-    console.log('Raw Gemini API Response:', data);
-
-    // Parse and validate coordinates
-    const suggestions = data.candidates[0].content.parts[0].text
-      .split('---')
-      .filter((block: string) => block.trim().length > 0)
-      .map((block: string) => {
-        const lines = block.trim().split('\n');
+      const prompt = `
+        Analyze this UI screenshot and provide UX copy improvement suggestions.
         
-        // Extract and validate coordinates
-        const positionLine = lines.find((line: string) => line.startsWith('POSITION:'))?.replace('POSITION:', '').trim() || '';
-        const [xCoord, yCoord] = positionLine.split(',').map(coord => {
-          const [axis, value] = coord.trim().split(':');
-          const parsedValue = parseFloat(value);
-          // Ensure coordinates are within bounds
-          return Math.max(0, Math.min(100, parsedValue));
-        });
+        Context:
+        - Purpose: ${context.purpose}
+        - Target Audience: ${context.audience}
+        - Desired Tone: ${context.tone}
+        - Emotional Goal: ${context.emotionalGoal}
+        - Constraints: ${context.constraints}
+        - Additional Details: ${context.additionalDetails}
 
-        console.log('Parsed coordinates:', { x: xCoord, y: yCoord });
+        For each element that needs improvement, provide:
+        ELEMENT: [element type]
+        ORIGINAL: [current text]
+        IMPROVED: [suggested text]
+        EXPLANATION: [why this improves the UX]
+        ---
 
-        return {
-          element: lines.find((line: string) => line.startsWith('ELEMENT:'))?.replace('ELEMENT:', '').trim() || '',
-          position: {
-            x: xCoord,
-            y: yCoord
+        Please analyze the image and provide 3-5 suggestions in exactly this format.
+      `;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          original: lines.find((line: string) => line.startsWith('ORIGINAL:'))?.replace('ORIGINAL:', '').trim() || '',
-          improved: lines.find((line: string) => line.startsWith('IMPROVED:'))?.replace('IMPROVED:', '').trim() || '',
-          explanation: lines.find((line: string) => line.startsWith('EXPLANATION:'))?.replace('EXPLANATION:', '').trim() || ''
-        };
-      })
-      .filter((s: Suggestion) => (
-        s.element && 
-        s.improved && 
-        typeof s.position.x === 'number' && 
-        typeof s.position.y === 'number' &&
-        s.position.x >= 0 && 
-        s.position.x <= 100 && 
-        s.position.y >= 0 && 
-        s.position.y <= 100
-      ));
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: prompt
+              }, {
+                inline_data: {
+                  mime_type: "image/jpeg",
+                  data: base64Image.split(',')[1]
+                }
+              }]
+            }]
+          })
+        }
+      );
 
-    console.log('Final validated suggestions:', suggestions);
-    setSuggestions(suggestions);
-    setShowResults(true);
-    toast.success('Analysis complete!');
-  } catch (error) {
-    console.error('Error analyzing UI:', error);
-    toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
-  }
-};
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API Error: ${errorData.error?.message || 'Failed to analyze image'}`);
+      }
+
+      const data = await response.json();
+      console.log('Raw Gemini API Response:', data);
+
+      // Parse suggestions without coordinates - they will be set manually
+      const suggestions = data.candidates[0].content.parts[0].text
+        .split('---')
+        .filter((block: string) => block.trim().length > 0)
+        .map((block: string, index: number) => {
+          const lines = block.trim().split('\n');
+          return {
+            element: lines.find((line: string) => line.startsWith('ELEMENT:'))?.replace('ELEMENT:', '').trim() || '',
+            position: { x: 50, y: 50 }, // Default center position
+            original: lines.find((line: string) => line.startsWith('ORIGINAL:'))?.replace('ORIGINAL:', '').trim() || '',
+            improved: lines.find((line: string) => line.startsWith('IMPROVED:'))?.replace('IMPROVED:', '').trim() || '',
+            explanation: lines.find((line: string) => line.startsWith('EXPLANATION:'))?.replace('EXPLANATION:', '').trim() || ''
+          };
+        })
+        .filter((s: Suggestion) => s.element && s.improved);
+
+      console.log('Parsed suggestions:', suggestions);
+      setSuggestions(suggestions);
+      setShowResults(true);
+      toast.success('Analysis complete! Click on the image to position the markers.');
+    } catch (error) {
+      console.error('Error analyzing UI:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to analyze UI. Please try again.');
+    }
+  };
 
   const handleContextSubmit = async (contextData: ContextData) => {
     if (!uploadedImage) {
@@ -197,6 +172,7 @@ const analyzeUIWithGemini = async (image: File, context: ContextData) => {
               suggestions={suggestions} 
               onFeedback={handleFeedback}
               imageUrl={imagePreviewUrl}
+              onUpdatePosition={handleUpdatePosition}
             />
           </div>
         )}
