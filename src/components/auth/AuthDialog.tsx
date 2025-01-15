@@ -44,13 +44,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
       case "Invalid login credentials":
-        return "Invalid email or password. Please check your credentials and try again."
+        return "Invalid email or password. If you're new, please sign up first using the Sign Up tab."
       case "Email not confirmed":
-        return "Please verify your email address before signing in."
+        return "Please verify your email address before signing in. Check your inbox for the confirmation email."
       case "User not found":
-        return "No account found with these credentials. Please sign up first."
+        return "No account found. Please sign up first using the Sign Up tab."
       default:
-        return error.message || "An error occurred during authentication."
+        return error.message || "An error occurred during authentication. Please try again."
     }
   }
 
@@ -60,7 +60,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         <DialogHeader>
           <DialogTitle>Welcome</DialogTitle>
           <DialogDescription>
-            Sign in to unlock more credits and features. New user? Please sign up first.
+            New user? Please use the Sign Up tab first to create an account. Already have an account? Use Sign In to access your features.
           </DialogDescription>
         </DialogHeader>
         
@@ -91,6 +91,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           theme={theme}
           providers={[]}
           redirectTo={window.location.origin}
+          view="sign_up"
         />
       </DialogContent>
     </Dialog>
