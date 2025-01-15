@@ -6,7 +6,7 @@ import { getUserCredits } from "@/services/creditsService"
 interface CreditsContextType {
   credits: number
   setCredits: (credits: number) => void
-  resetCredits: () => void
+  resetCredits: () => Promise<void>
   useCredit: () => boolean
 }
 
@@ -14,6 +14,7 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const [credits, setCredits] = useState<number>(15)
+  const broadcastChannel = new BroadcastChannel('auth_channel')
 
   const resetCredits = async () => {
     console.log("Resetting credits...")
@@ -44,20 +45,48 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
   }
 
   const useCredit = () => {
-    console.log("Attempting to use a credit. Current credits:", credits)
     if (credits <= 0) {
-      console.log("No credits remaining")
-      toast.error("No credits remaining")
+      toast.error("No credits left!")
       return false
     }
-    
-    setCredits(prev => prev - 1)
-    console.log("Credit used successfully. Remaining credits:", credits - 1)
+
+    console.log("Using 1 credit. Credits before:", credits)
+    setCredits(credits - 1)
+    console.log("Credits after:", credits - 1)
     return true
   }
 
-  // Initialize credits based on auth state
+  // Handle auth state changes
   useEffect(() => {
+    const handleAuthChange = async (event: string) => {
+      console.log("Auth state changed:", event)
+      if (event === 'SIGNED_IN') {
+        console.log("User signed in, setting credits to 15")
+        setCredits(15)
+        broadcastChannel.postMessage({ type: 'SIGNED_IN' })
+      } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out, resetting credits")
+        await resetCredits()
+        broadcastChannel.postMessage({ type: 'SIGNED_OUT' })
+      }
+    }
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      handleAuthChange(event)
+    })
+
+    // Listen for broadcast messages from other tabs
+    broadcastChannel.onmessage = async (event) => {
+      console.log("Received broadcast message:", event.data)
+      if (event.data.type === 'SIGNED_IN') {
+        setCredits(15)
+      } else if (event.data.type === 'SIGNED_OUT') {
+        await resetCredits()
+      }
+    }
+
+    // Initialize credits based on current session
     const initializeCredits = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
@@ -70,6 +99,12 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     }
 
     initializeCredits()
+
+    // Cleanup
+    return () => {
+      subscription.unsubscribe()
+      broadcastChannel.close()
+    }
   }, [])
 
   return (
