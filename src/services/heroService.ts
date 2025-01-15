@@ -15,62 +15,13 @@ export const generateHeroCopy = async (formData: any): Promise<HeroCopyVariant[]
 
 CONTEXT ANALYSIS:
 Industry: ${formData.industry}
-- Consider industry-specific terminology and trends
-- Address common pain points in the ${formData.industry} sector
-- Highlight unique value propositions for this industry
-
 Target Audience: ${formData.targetAudience}
-- Use language that resonates with ${formData.targetAudience}
-- Address specific needs and aspirations of this audience
-- Consider their level of expertise and familiarity with the subject
-
 Brand Tone: ${formData.tone}
-- Maintain a ${formData.tone} voice throughout all copy
-- Adapt formal/informal language based on this tone
-- Ensure consistency in messaging style
-
 Primary Goal: ${formData.goal}
-- Focus copy on achieving ${formData.goal}
-- Include elements that drive towards this specific outcome
-- Structure CTAs to support this goal
-
 Context Details: ${formData.context}
 ${formData.additionalNotes ? `Additional Requirements: ${formData.additionalNotes}` : ''}
 
-Guidelines for each variant:
-
-HEADLINE (6-12 words):
-- Must be clear, concise, and benefit-driven
-- Focus on the primary value proposition
-- Use emotional triggers when appropriate
-- Avoid jargon or complex language
-- Consider these formulas:
-  * "Achieve [Desired Outcome] Without [Pain Point]"
-  * "The [Adjective] Way to [Benefit]"
-  * "Discover How to [Key Result] in [Timeframe]"
-
-TAGLINE (10-15 words):
-- Expand on the headline's promise
-- Address specific pain points
-- Include social proof or authority indicators when relevant
-- Keep it actionable and solution-focused
-- Must complement the headline without repeating it
-
-CTA (2-5 words):
-- Start with action verbs
-- Create urgency or exclusivity
-- Match the user's journey stage
-- Be specific and value-focused
-- Must be compelling and clear
-
-Each variant should:
-1. Be unique in approach but consistent in message
-2. Match the specified ${formData.tone} tone
-3. Speak directly to ${formData.targetAudience}
-4. Support the ${formData.goal} goal
-5. Be immediately clear and impactful
-
-Format your response exactly like this, without any asterisks or other formatting:
+Format your response exactly like this, with no markdown formatting:
 Variant 1
 Headline: [Headline text]
 Tagline: [Tagline text]
@@ -89,22 +40,24 @@ CTA: [CTA text]`;
   try {
     const result = await model.generateContent(prompt);
     const response = result.response.text();
-    console.log("Raw AI response:", response);
     
     // Parse the response into separate variants
     const variants = response
-      .split(/Variant \d+/)  // Split by "Variant X" pattern
-      .filter(block => block.trim()) // Remove empty blocks
+      .split(/Variant \d+/)
+      .filter(block => block.trim())
       .map(block => {
         const lines = block.trim().split('\n');
+        const headlineMatch = lines[0].match(/Headline:\s*(.*)/);
+        const taglineMatch = lines[1].match(/Tagline:\s*(.*)/);
+        const ctaMatch = lines[2].match(/CTA:\s*(.*)/);
+        
         return {
-          headline: lines[0].replace('Headline:', '').trim(),
-          tagline: lines[1].replace('Tagline:', '').trim(),
-          cta: lines[2].replace('CTA:', '').trim(),
+          headline: headlineMatch ? headlineMatch[1].trim() : '',
+          tagline: taglineMatch ? taglineMatch[1].trim() : '',
+          cta: ctaMatch ? ctaMatch[1].trim() : '',
         };
       });
 
-    console.log("Parsed variants:", variants);
     return variants;
   } catch (error) {
     console.error("Error in generateHeroCopy:", error);

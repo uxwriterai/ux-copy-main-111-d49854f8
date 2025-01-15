@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,32 +13,43 @@ import {
 interface CreditsContextType {
   credits: number;
   useCredit: () => boolean;
+  showLoginDialog: () => void;
 }
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const [credits, setCredits] = useState(4);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
 
   const useCredit = () => {
     if (credits > 0) {
       setCredits(prev => prev - 1);
       return true;
     }
-    setShowLoginDialog(true);
+    setShowDialog(true);
     return false;
   };
 
+  const showLoginDialog = () => {
+    setShowDialog(true);
+  };
+
   return (
-    <CreditsContext.Provider value={{ credits, useCredit }}>
+    <CreditsContext.Provider value={{ credits, useCredit, showLoginDialog }}>
       {children}
-      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+      <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Out of Credits</AlertDialogTitle>
-            <AlertDialogDescription>
-              You've used all your free credits! Sign up or log in to unlock unlimited AI generations and take your content to the next level.
+            <AlertDialogTitle>Unlock Unlimited AI Generations</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>You've used all your free credits! Sign up now to unlock:</p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Unlimited AI generations</li>
+                <li>Save and organize your generated content</li>
+                <li>Access to premium features</li>
+                <li>Priority support</li>
+              </ul>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

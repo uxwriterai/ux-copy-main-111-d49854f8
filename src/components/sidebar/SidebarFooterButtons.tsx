@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
   const { state, toggleSidebar } = useSidebar()
-  const { credits } = useCredits()
+  const { credits, showLoginDialog } = useCredits()
   const isCollapsed = state === "collapsed"
 
   return (
@@ -48,7 +48,11 @@ export function SidebarFooterButtons() {
         )}
       </Button>
       <div className="w-full flex justify-center">
-        <Badge variant="secondary" className="text-xs">
+        <Badge 
+          variant="secondary" 
+          className="text-xs cursor-pointer hover:bg-accent"
+          onClick={showLoginDialog}
+        >
           Free Credits: {credits}
         </Badge>
       </div>

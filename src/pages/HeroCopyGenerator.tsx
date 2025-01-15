@@ -4,6 +4,7 @@ import { HeroForm } from "@/components/hero/HeroForm";
 import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { generateHeroCopy } from "@/services/heroService";
 import { toast } from "sonner";
+import { useCredits } from "@/contexts/CreditsContext";
 
 interface HeroCopyVariant {
   headline: string;
@@ -14,12 +15,17 @@ interface HeroCopyVariant {
 const HeroCopyGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedVariants, setGeneratedVariants] = useState<HeroCopyVariant[]>([]);
+  const { useCredit } = useCredits();
 
   const handleSubmit = async (formData: any) => {
+    // Check if we can use a credit before proceeding
+    if (!useCredit()) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const variants = await generateHeroCopy(formData);
-      console.log("Generated variants:", variants); // Debug log
       setGeneratedVariants(variants);
       toast.success("Hero copy generated successfully!");
     } catch (error) {
