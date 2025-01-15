@@ -1,13 +1,15 @@
-import { Moon, Sun, PanelLeft, PanelLeftClose, LogIn } from "lucide-react"
+import { Moon, Sun, PanelLeft, PanelLeftClose, LogIn, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ThemeProvider"
 import { useSidebar } from "@/components/ui/sidebar"
 import { useCredits } from "@/contexts/CreditsContext"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AuthDialog } from "@/components/auth/AuthDialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { supabase } from "@/integrations/supabase/client"
+import { toast } from "sonner"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
@@ -16,6 +18,30 @@ export function SidebarFooterButtons() {
   const isCollapsed = state === "collapsed"
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
+  const [session, setSession] = useState<any>(null)
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      toast.error('Error signing out')
+    } else {
+      toast.success('Signed out successfully')
+    }
+  }
 
   return (
     <>
@@ -35,14 +61,25 @@ export function SidebarFooterButtons() {
           </Badge>
         </div>
       )}
-      <Button 
-        variant="ghost" 
-        className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
-        onClick={() => setShowAuthDialog(true)}
-      >
-        <LogIn className="h-5 w-5" />
-        <span className="group-data-[collapsible=icon]:hidden">Sign in</span>
-      </Button>
+      {!session ? (
+        <Button 
+          variant="ghost" 
+          className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
+          onClick={() => setShowAuthDialog(true)}
+        >
+          <LogIn className="h-5 w-5" />
+          <span className="group-data-[collapsible=icon]:hidden">Sign in</span>
+        </Button>
+      ) : (
+        <Button 
+          variant="ghost" 
+          className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="group-data-[collapsible=icon]:hidden">Sign out</span>
+        </Button>
+      )}
       <Button 
         variant="ghost" 
         className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"

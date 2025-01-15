@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useTheme } from "@/components/ThemeProvider"
 import { useEffect, useState } from "react"
 import { AuthError } from "@supabase/supabase-js"
+import { toast } from "sonner"
 
 interface AuthDialogProps {
   open: boolean
@@ -26,6 +27,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         onOpenChange(false)
+        toast.success('Signed in successfully')
       }
       if (event === 'SIGNED_OUT') {
         setError("")

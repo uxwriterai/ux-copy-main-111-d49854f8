@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getUserCredits, updateUserCredits } from '@/services/creditsService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreditsContextType {
   credits: number;
@@ -10,7 +11,7 @@ interface CreditsContextType {
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState<number>(4);
+  const [credits, setCredits] = useState<number>(15);
   const [userIP, setUserIP] = useState<string>('');
 
   useEffect(() => {
@@ -29,11 +30,27 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         setCredits(credits);
       } catch (error) {
         console.error('Error fetching IP or credits:', error);
-        setCredits(4);
+        setCredits(15);
       }
     };
 
     fetchIPAndCredits();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        // Refresh credits when user signs in
+        const ip = sessionStorage.getItem('current_ip');
+        if (ip) {
+          const credits = await getUserCredits(ip);
+          setCredits(credits);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const useCredit = async () => {
