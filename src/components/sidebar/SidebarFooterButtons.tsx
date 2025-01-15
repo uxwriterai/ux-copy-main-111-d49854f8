@@ -10,6 +10,7 @@ import { AuthDialog } from "@/components/auth/AuthDialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
@@ -19,6 +20,7 @@ export function SidebarFooterButtons() {
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
   const [session, setSession] = useState<any>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     // Get initial session
@@ -28,18 +30,31 @@ export function SidebarFooterButtons() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session)
       setSession(session)
+      if (_event === 'SIGNED_OUT') {
+        navigate('/')
+      }
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [navigate])
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
+    try {
+      console.log("Attempting to sign out...")
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error("Error signing out:", error)
+        toast.error('Error signing out')
+      } else {
+        console.log("Successfully signed out")
+        toast.success('Signed out successfully')
+        navigate('/')
+      }
+    } catch (error) {
+      console.error("Caught error during sign out:", error)
       toast.error('Error signing out')
-    } else {
-      toast.success('Signed out successfully')
     }
   }
 
