@@ -32,6 +32,9 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json();
         const ip = data.ip;
         setUserIP(ip);
+        
+        // Store IP in sessionStorage for services to use
+        sessionStorage.setItem('current_ip', ip);
 
         // Check sessionStorage for credits
         const sessionCredits = sessionStorage.getItem(`credits_${ip}`);
@@ -79,9 +82,9 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Unlock Unlimited AI Generations</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
+            <AlertDialogDescription>
               <p>You've used all your free credits! Sign up now to unlock:</p>
-              <ul className="list-disc pl-4 space-y-1">
+              <ul className="list-disc pl-4 mt-2 space-y-1">
                 <li>Unlimited AI generations</li>
                 <li>Save and organize your generated content</li>
                 <li>Access to premium features</li>
