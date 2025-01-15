@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom"
 import { 
   SplitSquareVertical,
   Wand2,
-  Type
+  Type,
+  FileX
 } from "lucide-react"
 
 const tools = [
@@ -25,6 +26,12 @@ const tools = [
     description: "Generate A/B test variations for your UX copy",
     icon: SplitSquareVertical,
     route: "/generator"
+  },
+  {
+    title: "Empty State Generator",
+    description: "Create engaging empty state messages that guide users",
+    icon: FileX,
+    route: "/empty-state"
   }
 ]
 
