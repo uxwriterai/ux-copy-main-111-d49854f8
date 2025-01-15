@@ -13,6 +13,7 @@ import Accessibility from "./pages/Accessibility"
 import ToneAdjuster from "./pages/ToneAdjuster"
 import ErrorEnhancer from "./pages/ErrorEnhancer"
 import CopyImprover from "./pages/CopyImprover"
+import MicrocopyGenerator from "./pages/MicrocopyGenerator"
 
 const queryClient = new QueryClient()
 
@@ -34,6 +35,7 @@ const App = () => (
                     <Route path="/accessibility" element={<Accessibility />} />
                     <Route path="/tone" element={<ToneAdjuster />} />
                     <Route path="/error" element={<ErrorEnhancer />} />
+                    <Route path="/microcopy" element={<MicrocopyGenerator />} />
                   </Routes>
                 </div>
               </main>

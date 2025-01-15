@@ -7,7 +7,8 @@ import {
   FileText, 
   MessageSquare, 
   SplitSquareVertical,
-  Wand2
+  Wand2,
+  Type
 } from "lucide-react"
 
 const tools = [
@@ -16,6 +17,12 @@ const tools = [
     description: "Transform your UI text with AI-powered suggestions",
     icon: Wand2,
     route: "/copy-improver"
+  },
+  {
+    title: "Microcopy Generator",
+    description: "Generate clear and effective microcopy for UI elements",
+    icon: Type,
+    route: "/microcopy"
   },
   {
     title: "UX Copy Analysis",
