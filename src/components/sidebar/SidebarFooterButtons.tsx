@@ -65,7 +65,7 @@ export function SidebarFooterButtons() {
       }
 
       // Remove the session from localStorage to prevent token issues
-      localStorage.removeItem('sb-' + supabase.supabaseUrl + '-auth-token')
+      localStorage.removeItem('sb-ztksesbncfpyzwwyllkv-auth-token')
       
       // Then attempt to sign out
       const { error } = await supabase.auth.signOut()
