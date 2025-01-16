@@ -14,7 +14,7 @@ interface CreditsContextType {
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState<number>(8) // Default to 8 credits
+  const [credits, setCredits] = useState<number>(8)
   const [session, setSession] = useState<Session | null>(null)
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
@@ -39,41 +39,70 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error("Error fetching user credits:", error)
-          setCredits(8) // Default for new logged-in users
-          await supabase
+          // For new logged-in users, upsert with onConflict handling
+          const { error: upsertError } = await supabase
             .from('user_credits')
-            .upsert({
-              user_id: session.user.id,
-              credits_remaining: 8,
-              ip_address: ipAddress
-            })
+            .upsert(
+              {
+                user_id: session.user.id,
+                credits_remaining: 8,
+                ip_address: ipAddress
+              },
+              {
+                onConflict: 'user_id',
+                ignoreDuplicates: false
+              }
+            )
+          
+          if (upsertError) {
+            console.error("Error upserting user credits:", upsertError)
+            toast.error("Error initializing credits")
+            return
+          }
+          setCredits(8)
         } else {
           console.log("Setting credits to user-based credits:", userData.credits_remaining)
           setCredits(userData.credits_remaining)
         }
       } else {
         // For non-logged-in users, use IP-based credits
-        const ipCredits = await getUserCredits(ipAddress)
-        console.log("Credits found for IP:", ipCredits)
+        const { data: ipData, error: ipError } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .eq('ip_address', ipAddress)
+          .is('user_id', null)
+          .single()
 
-        if (ipCredits > 0) {
-          console.log("Setting credits to IP-based credits:", ipCredits)
-          setCredits(ipCredits)
-        } else {
-          console.log("Setting credits to default value (8)")
-          setCredits(8)
-          await supabase
+        if (ipError) {
+          console.log("No existing IP-based credits, creating new record")
+          const { error: insertError } = await supabase
             .from('user_credits')
-            .upsert({
-              ip_address: ipAddress,
-              credits_remaining: 8,
-              user_id: null
-            })
+            .upsert(
+              {
+                ip_address: ipAddress,
+                credits_remaining: 8,
+                user_id: null
+              },
+              {
+                onConflict: 'ip_address',
+                ignoreDuplicates: false
+              }
+            )
+          
+          if (insertError) {
+            console.error("Error inserting IP credits:", insertError)
+            toast.error("Error initializing credits")
+            return
+          }
+          setCredits(8)
+        } else {
+          console.log("Found existing IP credits:", ipData.credits_remaining)
+          setCredits(ipData.credits_remaining)
         }
       }
     } catch (error) {
       console.error("Error resetting credits:", error)
-      setCredits(8) // Default to 8 credits for both logged-in and non-logged-in users
+      setCredits(8)
     }
   }
 
@@ -88,27 +117,50 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       const ipAddress = await getIpAddress()
       
       if (session?.user) {
-        // For logged-in users, update credits in Supabase with user_id
-        const { data: userData, error: userError } = await supabase
+        // For logged-in users, update credits with user_id
+        const { error: updateError } = await supabase
           .from('user_credits')
-          .upsert({ 
-            user_id: session.user.id,
-            credits_remaining: credits - 1,
-            ip_address: ipAddress
-          })
-          .select()
-          .single()
+          .upsert(
+            { 
+              user_id: session.user.id,
+              credits_remaining: credits - 1,
+              ip_address: ipAddress
+            },
+            {
+              onConflict: 'user_id',
+              ignoreDuplicates: false
+            }
+          )
 
-        if (userError) {
-          console.error("Error updating user credits:", userError)
+        if (updateError) {
+          console.error("Error updating user credits:", updateError)
           toast.error("Error updating credits. Please try again.")
           return false
         }
 
-        setCredits(userData.credits_remaining)
+        setCredits(credits - 1)
       } else {
         // For non-logged-in users, update credits based on IP
-        await updateUserCredits(ipAddress, credits - 1)
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .upsert(
+            { 
+              ip_address: ipAddress,
+              credits_remaining: credits - 1,
+              user_id: null
+            },
+            {
+              onConflict: 'ip_address',
+              ignoreDuplicates: false
+            }
+          )
+
+        if (updateError) {
+          console.error("Error updating IP credits:", updateError)
+          toast.error("Error updating credits. Please try again.")
+          return false
+        }
+
         setCredits(credits - 1)
       }
 
@@ -128,23 +180,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       
       if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in, setting credits to 8")
-        const ipAddress = await getIpAddress()
-        
-        // Initialize credits for new user
-        const { error } = await supabase
-          .from('user_credits')
-          .upsert({ 
-            user_id: session.user.id,
-            credits_remaining: 8,
-            ip_address: ipAddress
-          })
-
-        if (error) {
-          console.error("Error initializing user credits:", error)
-        }
-
-        setCredits(8)
+        console.log("User signed in, resetting credits")
+        await resetCredits()
         broadcastChannel.postMessage({ type: 'SIGNED_IN' })
       } else if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits")
@@ -160,9 +197,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     // Listen for broadcast messages from other tabs
     broadcastChannel.onmessage = async (event) => {
       console.log("Received broadcast message:", event.data)
-      if (event.data.type === 'SIGNED_IN') {
-        setCredits(8)
-      } else if (event.data.type === 'SIGNED_OUT') {
+      if (event.data.type === 'SIGNED_IN' || event.data.type === 'SIGNED_OUT') {
         await resetCredits()
       }
     }
@@ -171,35 +206,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     const initializeCredits = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
-      
-      if (!session) {
-        console.log("No session found, resetting credits")
-        await resetCredits()
-      } else {
-        const ipAddress = await getIpAddress()
-        // Get credits for logged-in user
-        const { data: userData, error } = await supabase
-          .from('user_credits')
-          .select('credits_remaining')
-          .eq('user_id', session.user.id)
-          .single()
-
-        if (error || !userData) {
-          console.log("No credits found for user, initializing with 8")
-          setCredits(8)
-          // Initialize credits for new user
-          await supabase
-            .from('user_credits')
-            .upsert({ 
-              user_id: session.user.id,
-              credits_remaining: 8,
-              ip_address: ipAddress
-            })
-        } else {
-          console.log("Found existing credits:", userData.credits_remaining)
-          setCredits(userData.credits_remaining)
-        }
-      }
+      await resetCredits()
     }
 
     // Initialize credits immediately
