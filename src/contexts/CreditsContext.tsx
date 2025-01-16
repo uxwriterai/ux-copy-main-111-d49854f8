@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import { getUserCredits, updateUserCredits } from "@/services/creditsService"
+import { AuthError, Session } from "@supabase/supabase-js"
 
 interface CreditsContextType {
   credits: number
@@ -14,34 +15,60 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const [credits, setCredits] = useState<number>(8)
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
   const resetCredits = async () => {
     console.log("Resetting credits...")
     try {
-      // Get user's IP address for non-logged-in users
-      const response = await fetch('https://api.ipify.org?format=json')
-      const data = await response.json()
-      const ipAddress = data.ip
-      console.log("User IP address:", ipAddress)
+      if (session?.user) {
+        // For logged-in users, check their credits in the database
+        const { data: userData, error } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .eq('user_id', session.user.id)
+          .single()
 
-      // Check if there are existing credits for this IP
-      const ipCredits = await getUserCredits(ipAddress)
-      console.log("Credits found for IP:", ipCredits)
-
-      if (ipCredits > 0) {
-        console.log("Setting credits to IP-based credits:", ipCredits)
-        setCredits(ipCredits)
+        if (error) {
+          console.error("Error fetching user credits:", error)
+          setCredits(8) // Default for new logged-in users
+          await supabase
+            .from('user_credits')
+            .upsert({
+              user_id: session.user.id,
+              credits_remaining: 8
+            })
+        } else {
+          console.log("Setting credits to user-based credits:", userData.credits_remaining)
+          setCredits(userData.credits_remaining)
+        }
       } else {
-        console.log("Setting credits to default value (2)")
-        setCredits(2)
-        // Initialize credits for new IP
-        await updateUserCredits(ipAddress, 2)
+        // For non-logged-in users, use IP-based credits
+        const response = await fetch('https://api.ipify.org?format=json')
+        const data = await response.json()
+        const ipAddress = data.ip
+        console.log("User IP address:", ipAddress)
+
+        const ipCredits = await getUserCredits(ipAddress)
+        console.log("Credits found for IP:", ipCredits)
+
+        if (ipCredits > 0) {
+          console.log("Setting credits to IP-based credits:", ipCredits)
+          setCredits(ipCredits)
+        } else {
+          console.log("Setting credits to default value (2)")
+          setCredits(2)
+          await supabase
+            .from('user_credits')
+            .upsert({
+              ip_address: ipAddress,
+              credits_remaining: 2
+            })
+        }
       }
     } catch (error) {
       console.error("Error resetting credits:", error)
-      setCredits(2)
+      setCredits(session?.user ? 8 : 2)
     }
   }
 
@@ -54,8 +81,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Using 1 credit. Credits before:", credits)
       
-      if (session) {
-        // For logged-in users, update credits in Supabase
+      if (session?.user) {
+        // For logged-in users, update credits in Supabase with user_id
         const { data: userData, error: userError } = await supabase
           .from('user_credits')
           .upsert({ 
@@ -93,11 +120,11 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
   // Handle auth state changes
   useEffect(() => {
-    const handleAuthChange = async (event: string, session: any) => {
+    const handleAuthChange = async (event: string, session: Session | null) => {
       console.log("Auth state changed:", event)
       setSession(session)
       
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' && session) {
         console.log("User signed in, setting credits to 8")
         
         // Initialize credits for new user

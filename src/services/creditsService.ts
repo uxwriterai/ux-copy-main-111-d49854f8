@@ -10,6 +10,7 @@ export async function getUserCredits(ipAddress: string): Promise<number> {
     .from('user_credits')
     .select('credits_remaining')
     .eq('ip_address', ipAddress)
+    .is('user_id', null)  // Only get credits for anonymous users
     .maybeSingle();
 
   if (error) {
@@ -29,7 +30,8 @@ export async function updateUserCredits(ipAddress: string, newCredits: number) {
     .upsert(
       { 
         ip_address: ipAddress, 
-        credits_remaining: newCredits 
+        credits_remaining: newCredits,
+        user_id: null  // Explicitly set user_id to null for IP-based credits
       },
       { 
         onConflict: 'ip_address'
