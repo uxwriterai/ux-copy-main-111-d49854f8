@@ -64,11 +64,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     })
 
     // Listen for auth errors
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'USER_UPDATED') {
-        const { error: authError } = supabase.auth.getSession()
-        if (authError) {
-          const errorMessage = getErrorMessage(authError)
+        const sessionResponse = await supabase.auth.getSession()
+        if (sessionResponse.error) {
+          const errorMessage = getErrorMessage(sessionResponse.error)
           setError(errorMessage)
           toast.error('Authentication Error', {
             description: errorMessage
