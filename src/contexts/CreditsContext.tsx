@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { Session } from "@supabase/supabase-js"
+import { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 
@@ -11,22 +11,14 @@ interface CreditsContextType {
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
-const getIpAddress = async (): Promise<string> => {
+async function getIpAddress() {
   try {
-    console.log("Fetching IP address...")
-    const response = await fetch('https://api.ipify.org?format=json')
-    
-    if (!response.ok) {
-      console.error('IP address fetch failed:', response.status, response.statusText)
-      throw new Error('Failed to fetch IP address')
-    }
-    
+    const response = await fetch("https://api.ipify.org?format=json")
     const data = await response.json()
-    console.log("IP address fetched:", data)
     return data.ip
   } catch (error) {
-    console.error('Error fetching IP address:', error)
-    throw error
+    console.error("Error getting IP address:", error)
+    return null
   }
 }
 
@@ -41,56 +33,56 @@ export function CreditsProvider({
 
   const fetchCredits = async () => {
     try {
-      console.log("Fetching credits...")
+      console.log("Fetching credits")
       const ipAddress = await getIpAddress()
-      console.log("IP address for credits:", ipAddress)
+      
+      if (!ipAddress) {
+        console.error("Could not get IP address")
+        return
+      }
 
       let query = supabase
         .from('user_credits')
-        .select('credits_remaining')
+        .select('*')
 
-      // If user is logged in, query by user_id
       if (session?.user) {
-        console.log("Fetching credits for user:", session.user.id)
+        // For authenticated users, get their credits
         query = query.eq('user_id', session.user.id)
       } else {
-        // Otherwise query by IP
-        console.log("Fetching credits for IP:", ipAddress)
-        query = query.eq('ip_address', ipAddress).is('user_id', null)
+        // For anonymous users, get credits by IP
+        query = query.eq('ip_address', ipAddress)
       }
 
-      const { data, error } = await query.single()
+      const { data, error } = await query.maybeSingle()
 
       if (error) {
-        console.log("No existing credits found, creating new entry")
-        // If no credits found, create new entry
+        throw error
+      }
+
+      if (!data) {
+        // If no record exists, create one
         const initialCredits = session?.user ? 6 : 2
-        const { data: newCredits, error: insertError } = await supabase
+        const { data: newData, error: insertError } = await supabase
           .from('user_credits')
           .insert({
             ip_address: ipAddress,
             credits_remaining: initialCredits,
             user_id: session?.user?.id || null
           })
-          .select('credits_remaining')
+          .select()
           .single()
 
         if (insertError) {
-          console.error("Error creating credits:", insertError)
           throw insertError
         }
 
-        console.log("New credits created:", newCredits)
         setCredits(initialCredits)
       } else {
-        console.log("Existing credits found:", data)
         setCredits(data.credits_remaining)
       }
     } catch (error) {
-      console.error("Error in fetchCredits:", error)
+      console.error("Error fetching credits:", error)
       toast.error("Failed to fetch credits")
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -108,13 +100,12 @@ export function CreditsProvider({
       if (session?.user) {
         query = query.eq('user_id', session.user.id)
       } else {
-        query = query.eq('ip_address', ipAddress).is('user_id', null)
+        query = query.eq('ip_address', ipAddress)
       }
 
       const { error } = await query
 
       if (error) {
-        console.error("Error using credit:", error)
         throw error
       }
 
@@ -122,7 +113,6 @@ export function CreditsProvider({
       return true
     } catch (error) {
       console.error("Error in useCredit:", error)
-      toast.error("Failed to use credit")
       return false
     }
   }
@@ -135,49 +125,49 @@ export function CreditsProvider({
 
   // Initialize session state
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session:", session)
-      setSession(session)
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      console.log("Initial session:", initialSession)
+      setSession(initialSession)
+      setLoading(false)
     })
+  }, [])
 
+  // Listen for auth changes
+  useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event, session)
-      setSession(session)
-
+    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      console.log("Auth state changed:", _event, newSession)
+      
       if (_event === 'SIGNED_IN') {
-        // Fetch or create credits for new user
+        // When user signs in, update their credits to 6 if they're a new user
         const ipAddress = await getIpAddress()
-        const { data: existingCredits } = await supabase
-          .from('user_credits')
-          .select('credits_remaining')
-          .eq('user_id', session.user.id)
-          .single()
-
-        if (!existingCredits) {
-          console.log("Creating credits for new user")
-          const { error: insertError } = await supabase
+        if (ipAddress && newSession?.user) {
+          const { data } = await supabase
             .from('user_credits')
-            .insert({
-              ip_address: ipAddress,
-              credits_remaining: 6,
-              user_id: session.user.id
-            })
+            .select('*')
+            .eq('user_id', newSession.user.id)
+            .maybeSingle()
 
-          if (insertError) {
-            console.error("Error creating user credits:", insertError)
-            toast.error("Failed to initialize credits")
-          } else {
-            setCredits(6)
+          if (!data) {
+            // New user, set credits to 6
+            await supabase
+              .from('user_credits')
+              .insert({
+                ip_address: ipAddress,
+                credits_remaining: 6,
+                user_id: newSession.user.id
+              })
           }
-        } else {
-          setCredits(existingCredits.credits_remaining)
         }
-      } else if (_event === 'SIGNED_OUT') {
-        // Restore IP-based credits
-        fetchCredits()
       }
+
+      if (_event === 'SIGNED_OUT') {
+        // When user signs out, reset to IP-based credits
+        resetCredits()
+      }
+
+      setSession(newSession)
     })
 
     return () => {
@@ -199,8 +189,13 @@ export function CreditsProvider({
     resetCredits,
   }
 
+  // Instead of returning null, we'll render the children with a loading state
   if (loading || credits === null) {
-    return null
+    return (
+      <CreditsContext.Provider value={{ credits: 0, useCredit, resetCredits }}>
+        {children}
+      </CreditsContext.Provider>
+    )
   }
 
   return (
