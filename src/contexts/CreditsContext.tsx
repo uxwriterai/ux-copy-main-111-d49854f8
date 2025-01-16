@@ -14,7 +14,7 @@ interface CreditsContextType {
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState<number>(8)
+  const [credits, setCredits] = useState<number>(8) // Default to 8 credits
   const [session, setSession] = useState<Session | null>(null)
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
@@ -73,7 +73,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Error resetting credits:", error)
-      setCredits(session?.user ? 8 : 8) // Changed default from 2 to 8 for non-logged users
+      setCredits(8) // Default to 8 credits for both logged-in and non-logged-in users
     }
   }
 
@@ -153,7 +153,6 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       handleAuthChange(event, session)
     })
