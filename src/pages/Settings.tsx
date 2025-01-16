@@ -8,14 +8,18 @@ import { toast } from "sonner"
 import { Eye, EyeOff } from "lucide-react"
 
 export default function Settings() {
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [formData, setFormData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [passwordVisibility, setPasswordVisibility] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false
+  })
 
   useEffect(() => {
     const getUserEmail = async () => {
@@ -39,22 +43,22 @@ export default function Settings() {
   }, [])
 
   const validatePasswords = () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
       toast.error("All password fields are required")
       return false
     }
 
-    if (newPassword.length < 6) {
+    if (formData.newPassword.length < 6) {
       toast.error("New password must be at least 6 characters long")
       return false
     }
 
-    if (newPassword !== confirmPassword) {
+    if (formData.newPassword !== formData.confirmPassword) {
       toast.error("New passwords don't match")
       return false
     }
 
-    if (currentPassword === newPassword) {
+    if (formData.currentPassword === formData.newPassword) {
       toast.error("New password must be different from your current password")
       return false
     }
@@ -70,7 +74,7 @@ export default function Settings() {
     setIsLoading(true)
     try {
       const { error } = await supabase.auth.updateUser({ 
-        password: newPassword 
+        password: formData.newPassword 
       })
 
       if (error) {
@@ -86,9 +90,11 @@ export default function Settings() {
       }
 
       toast.success("Password updated successfully")
-      setCurrentPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
+      setFormData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      })
       
     } catch (error: any) {
       console.error("Error updating password:", error)
@@ -96,6 +102,20 @@ export default function Settings() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleInputChange = (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }))
+  }
+
+  const togglePasswordVisibility = (field: keyof typeof passwordVisibility) => {
+    setPasswordVisibility(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }))
   }
 
   const PasswordInput = ({ 
@@ -159,27 +179,27 @@ export default function Settings() {
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <PasswordInput
               id="current-password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              value={formData.currentPassword}
+              onChange={handleInputChange('currentPassword')}
               label="Current Password"
-              show={showCurrentPassword}
-              onToggleShow={() => setShowCurrentPassword(!showCurrentPassword)}
+              show={passwordVisibility.currentPassword}
+              onToggleShow={() => togglePasswordVisibility('currentPassword')}
             />
             <PasswordInput
               id="new-password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              value={formData.newPassword}
+              onChange={handleInputChange('newPassword')}
               label="New Password"
-              show={showNewPassword}
-              onToggleShow={() => setShowNewPassword(!showNewPassword)}
+              show={passwordVisibility.newPassword}
+              onToggleShow={() => togglePasswordVisibility('newPassword')}
             />
             <PasswordInput
               id="confirm-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={formData.confirmPassword}
+              onChange={handleInputChange('confirmPassword')}
               label="Confirm New Password"
-              show={showConfirmPassword}
-              onToggleShow={() => setShowConfirmPassword(!showConfirmPassword)}
+              show={passwordVisibility.confirmPassword}
+              onToggleShow={() => togglePasswordVisibility('confirmPassword')}
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Password"}
