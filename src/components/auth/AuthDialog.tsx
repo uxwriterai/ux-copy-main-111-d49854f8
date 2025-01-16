@@ -155,8 +155,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   email_label: 'Enter your email below to create your account',
                   password_label: 'Password',
                   button_label: 'Sign up',
-                  social_provider_text: 'Sign up with {{provider}}',
-                  divider_text: 'OR'
+                  social_provider_text: 'Sign up with {{provider}}'
                 }
               }
             }}
