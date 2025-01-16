@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { PasswordInput } from "./PasswordInput"
+import { Loader2 } from "lucide-react"
 
 interface PasswordChangeFormProps {
   userEmail: string | null;
@@ -93,6 +94,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       })
 
       if (signInError) {
+        setIsLoading(false)
         toast({
           variant: "destructive",
           title: "Error",
@@ -100,7 +102,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
             ? "Current password is incorrect"
             : "Error verifying current password"
         })
-        setIsLoading(false)
         return
       }
 
@@ -109,6 +110,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       })
 
       if (updateError) {
+        setIsLoading(false)
         toast({
           variant: "destructive",
           title: "Error",
@@ -118,7 +120,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
               ? "Authentication error. Please try logging in again"
               : updateError.message || "Failed to update password"
         })
-        setIsLoading(false)
         return
       }
 
@@ -188,7 +189,14 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
         onChange={handleInputChange}
       />
       <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Updating..." : "Update Password"}
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Updating...
+          </>
+        ) : (
+          "Update Password"
+        )}
       </Button>
     </form>
   )
