@@ -63,22 +63,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       }
 
       // Handle authentication errors
-      if (event === 'USER_UPDATED' && !session) {
-        const errorData = (session as any)?.error
-        if (errorData) {
-          const errorMessage = getErrorMessage(errorData)
-          setError(errorMessage)
-          toast.error('Authentication Error', {
-            description: errorMessage
-          })
-        }
-      }
-    })
-
-    // Listen for auth errors using the onAuthStateChange event
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
-        const error = (session as any)._error as AuthError
+        const error = (session as any)?._error as AuthError
         if (error) {
           const errorMessage = getErrorMessage(error)
           setError(errorMessage)
@@ -87,13 +73,19 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           })
         }
       }
-    }, {
-      onError: (error) => {
-        const errorMessage = getErrorMessage(error)
-        setError(errorMessage)
-        toast.error('Authentication Error', {
-          description: errorMessage
-        })
+    })
+
+    // Listen for auth errors
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'USER_UPDATED' && !session) {
+        const errorData = (session as any)?._error
+        if (errorData) {
+          const errorMessage = getErrorMessage(errorData)
+          setError(errorMessage)
+          toast.error('Authentication Error', {
+            description: errorMessage
+          })
+        }
       }
     })
 
