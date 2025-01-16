@@ -11,6 +11,7 @@ import MicrocopyGenerator from "@/pages/MicrocopyGenerator"
 import EmptyStateGenerator from "@/pages/EmptyStateGenerator"
 import HeroCopyGenerator from "@/pages/HeroCopyGenerator"
 import LandingPageGenerator from "@/pages/LandingPageGenerator"
+import Settings from "@/pages/Settings"
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
                   <Route path="/empty-state" element={<EmptyStateGenerator />} />
                   <Route path="/hero-copy" element={<HeroCopyGenerator />} />
                   <Route path="/landing-page" element={<LandingPageGenerator />} />
+                  <Route path="/settings" element={<Settings />} />
                 </Routes>
               </main>
               <Toaster />
