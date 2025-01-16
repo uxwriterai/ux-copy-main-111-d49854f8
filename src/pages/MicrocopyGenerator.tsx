@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { toast as sonnerToast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { generateMicrocopy } from "@/services/geminiService";
 import { CopyVariant } from "@/components/microcopy/CopyVariant";
 
@@ -65,6 +66,7 @@ const MicrocopyGenerator = () => {
     additionalNotes: "",
   });
   const [generatedCopy, setGeneratedCopy] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,10 +83,14 @@ const MicrocopyGenerator = () => {
       );
       
       setGeneratedCopy(variants);
-      toast.success("Microcopy generated successfully!");
+      sonnerToast.success("Microcopy generated successfully!");
     } catch (error) {
       console.error("Error generating microcopy:", error);
-      toast.error("Failed to generate microcopy. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate microcopy. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
