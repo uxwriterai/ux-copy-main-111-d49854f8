@@ -25,7 +25,6 @@ export default function Settings() {
     const getUserEmail = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
-        console.log("Current user:", user)
         if (error) {
           console.error("Error fetching user:", error)
           toast.error("Unable to fetch user information")
@@ -95,7 +94,6 @@ export default function Settings() {
         newPassword: "",
         confirmPassword: ""
       })
-      
     } catch (error: any) {
       console.error("Error updating password:", error)
       toast.error(error.message || "An unexpected error occurred")
@@ -104,10 +102,11 @@ export default function Settings() {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof typeof formData) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [field]: e.target.value
+      [name]: value
     }))
   }
 
@@ -120,15 +119,15 @@ export default function Settings() {
 
   const PasswordInput = ({ 
     id, 
+    name,
     value, 
-    field,
     label, 
     show, 
     onToggleShow 
   }: { 
     id: string;
+    name: string;
     value: string;
-    field: keyof typeof formData;
     label: string;
     show: boolean;
     onToggleShow: () => void;
@@ -138,9 +137,10 @@ export default function Settings() {
       <div className="relative">
         <Input
           id={id}
+          name={name}
           type={show ? "text" : "password"}
           value={value}
-          onChange={(e) => handleInputChange(e, field)}
+          onChange={handleInputChange}
           required
           className="pr-10"
         />
@@ -179,24 +179,24 @@ export default function Settings() {
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <PasswordInput
               id="current-password"
+              name="currentPassword"
               value={formData.currentPassword}
-              field="currentPassword"
               label="Current Password"
               show={passwordVisibility.currentPassword}
               onToggleShow={() => togglePasswordVisibility('currentPassword')}
             />
             <PasswordInput
               id="new-password"
+              name="newPassword"
               value={formData.newPassword}
-              field="newPassword"
               label="New Password"
               show={passwordVisibility.newPassword}
               onToggleShow={() => togglePasswordVisibility('newPassword')}
             />
             <PasswordInput
               id="confirm-password"
+              name="confirmPassword"
               value={formData.confirmPassword}
-              field="confirmPassword"
               label="Confirm New Password"
               show={passwordVisibility.confirmPassword}
               onToggleShow={() => togglePasswordVisibility('confirmPassword')}
