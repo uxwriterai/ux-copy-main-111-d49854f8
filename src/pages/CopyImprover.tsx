@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useCredits } from '@/contexts/CreditsContext';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -19,7 +20,8 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const { useCredit } = useCredits();
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  const { credits, useCredit } = useCredits();
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
@@ -80,8 +82,13 @@ const Index = () => {
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
+      if (credits <= 0) {
+        setShowCreditsDialog(true);
+        return;
+      }
+
       // Check and use a credit before proceeding
-      if (!useCredit()) {
+      if (!await useCredit()) {
         throw new Error('No credits remaining');
       }
 
@@ -352,6 +359,35 @@ const Index = () => {
             )}
           </div>
         )}
+
+        <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Unlock 5x More Credits</DialogTitle>
+              <DialogDescription className="pt-2">
+                You've used all your free credits! Sign up now to get:
+                <ul className="list-disc pl-6 mt-2 space-y-1">
+                  <li>5x more credits to generate content</li>
+                  <li>Priority support</li>
+                </ul>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
+                Maybe later
+              </Button>
+              <Button onClick={() => {
+                setShowCreditsDialog(false);
+                // This will trigger the auth dialog through the sidebar context
+                document.querySelector('[data-auth-trigger="true"]')?.dispatchEvent(
+                  new MouseEvent('click', { bubbles: true })
+                );
+              }}>
+                Sign up
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
