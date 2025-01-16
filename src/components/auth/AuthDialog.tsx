@@ -17,21 +17,16 @@ import { AuthConfetti } from "./AuthConfetti"
 import { getErrorMessage } from "@/utils/authErrors"
 
 interface AuthDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  view?: 'sign_in' | 'sign_up' | 'forgotten_password';
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [currentView, setCurrentView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>(view)
-
-  useEffect(() => {
-    setCurrentView(view)
-  }, [view])
+  const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -95,7 +90,7 @@ export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogP
   }, [onOpenChange])
 
   const getAuthContent = () => {
-    switch (currentView) {
+    switch (view) {
       case 'sign_in':
         return {
           title: "Welcome back!",
@@ -148,7 +143,7 @@ export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogP
 
           <Auth
             supabaseClient={supabase}
-            view={currentView}
+            view={view}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -163,7 +158,6 @@ export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogP
                 container: 'w-full',
                 button: 'w-full',
                 input: 'w-full',
-                anchor: 'text-primary hover:text-primary/80',
               }
             }}
             localization={{
@@ -173,14 +167,12 @@ export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogP
                   password_input_placeholder: 'Your password',
                   email_label: 'Email address',
                   password_label: 'Password',
-                  link_text: "Don't have an account? Sign up",
                 },
                 sign_up: {
                   email_input_placeholder: 'name@example.com',
                   password_input_placeholder: 'Create a password',
                   email_label: 'Email address',
                   password_label: 'Password',
-                  link_text: "Already have an account? Sign in",
                 }
               }
             }}
