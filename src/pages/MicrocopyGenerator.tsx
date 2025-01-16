@@ -101,21 +101,19 @@ const MicrocopyGenerator = () => {
       setGeneratedCopy(variants);
       toastFn({
         title: "Success",
-        description: "Microcopy generated successfully!",
+        description: "Microcopy generated successfully!"
       });
     } catch (error) {
       console.error("Error generating microcopy:", error);
       toastFn({
         variant: "destructive",
         title: "Error",
-        description: "Failed to generate microcopy. Please try again.",
+        description: "Failed to generate microcopy. Please try again."
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-  // ... keep existing code (render method)
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -125,9 +123,6 @@ const MicrocopyGenerator = () => {
             <h1 className="text-3xl font-bold tracking-tight">Microcopy Generator</h1>
             <p className="text-muted-foreground">
               Generate clear and effective microcopy for your UI elements
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Credits remaining: {credits}
             </p>
           </div>
 
