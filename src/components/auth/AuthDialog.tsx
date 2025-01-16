@@ -22,11 +22,16 @@ interface AuthDialogProps {
   view: 'sign_in' | 'sign_up'
 }
 
-export function AuthDialog({ open, onOpenChange, view }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [currentView, setCurrentView] = useState(initialView)
+
+  useEffect(() => {
+    setCurrentView(initialView)
+  }, [initialView])
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -99,7 +104,7 @@ export function AuthDialog({ open, onOpenChange, view }: AuthDialogProps) {
     }
   }, [onOpenChange])
 
-  const viewContent = view === 'sign_in' 
+  const viewContent = currentView === 'sign_in' 
     ? {
         title: 'Sign in',
         description: 'Enter your email and password below to login'
@@ -136,7 +141,7 @@ export function AuthDialog({ open, onOpenChange, view }: AuthDialogProps) {
 
           <Auth
             supabaseClient={supabase}
-            view={view}
+            view={currentView}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -157,15 +162,21 @@ export function AuthDialog({ open, onOpenChange, view }: AuthDialogProps) {
               variables: {
                 sign_in: {
                   email_input_placeholder: 'name@example.com',
+                  link_text: "Don't have an account? Sign up",
                 },
                 sign_up: {
                   email_input_placeholder: 'name@example.com',
+                  link_text: "Already have an account? Sign in",
                 }
               }
             }}
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
+            onViewChange={(newView) => {
+              console.log("View changed to:", newView)
+              setCurrentView(newView as 'sign_in' | 'sign_up')
+            }}
           />
         </DialogContent>
       </Dialog>
