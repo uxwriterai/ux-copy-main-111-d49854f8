@@ -4,10 +4,11 @@ import { useSessionContext } from "@supabase/auth-helpers-react"
 import { toast } from "sonner"
 
 interface CreditsContextType {
-  credits: number
-  setCredits: (credits: number) => void
-  useCredit: () => Promise<boolean>
-  resetCredits: () => Promise<void>
+  credits: number;
+  setCredits: (credits: number) => void;
+  useCredit: () => Promise<boolean>;
+  resetCredits: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
@@ -32,148 +33,156 @@ const getIpAddress = async (): Promise<string> => {
 }
 
 export const CreditsProvider = ({ children }: { children: React.ReactNode }) => {
-  const [credits, setCredits] = useState(0)
-  const { session } = useSessionContext()
+  const [credits, setCredits] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const { session } = useSessionContext();
 
   const fetchCredits = async () => {
     try {
-      const ipAddress = await getIpAddress()
+      const ipAddress = await getIpAddress();
       if (!ipAddress) {
-        throw new Error('IP address not found')
+        throw new Error('IP address not found');
       }
 
       let query = supabase
         .from('user_credits')
         .select('credits_remaining')
-        .eq('ip_address', ipAddress)
       
-      // Add user_id condition based on session
-      if (session) {
-        query = query.eq('user_id', session.user.id)
+      // Add conditions based on authentication status
+      if (session?.user) {
+        console.log("Fetching credits for authenticated user:", session.user.id);
+        query = query.eq('user_id', session.user.id);
       } else {
-        query = query.is('user_id', null)
+        console.log("Fetching credits for anonymous user with IP:", ipAddress);
+        query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
-      const { data, error } = await query.maybeSingle()
+      const { data, error } = await query.maybeSingle();
 
       if (error) {
-        console.error("Error fetching credits from Supabase:", error)
-        throw error
+        console.error("Error fetching credits:", error);
+        throw error;
       }
 
       if (!data) {
         // Create new credits entry
-        const defaultCredits = session ? 6 : 2
+        const defaultCredits = session?.user ? 6 : 2;
+        console.log(`Creating new credits entry with ${defaultCredits} credits`);
+        
         const { error: insertError } = await supabase
           .from('user_credits')
           .insert({
             ip_address: ipAddress,
             credits_remaining: defaultCredits,
             user_id: session?.user?.id || null
-          })
+          });
 
         if (insertError) {
-          console.error("Error creating credits:", insertError)
-          throw insertError
+          console.error("Error creating credits:", insertError);
+          throw insertError;
         }
 
-        setCredits(defaultCredits)
+        setCredits(defaultCredits);
       } else {
-        setCredits(data.credits_remaining)
+        console.log("Credits found:", data.credits_remaining);
+        setCredits(data.credits_remaining);
       }
     } catch (error) {
-      console.error("Error in fetchCredits:", error)
-      toast.error("Error fetching credits. Please try again.")
+      console.error("Error in fetchCredits:", error);
+      toast.error("Error fetching credits. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   const useCredit = async (): Promise<boolean> => {
     try {
-      const ipAddress = await getIpAddress()
-      if (!credits || credits <= 0) {
-        toast.error("No credits remaining")
-        return false
+      if (credits <= 0) {
+        toast.error("No credits remaining");
+        return false;
       }
 
+      const ipAddress = await getIpAddress();
       let query = supabase
         .from('user_credits')
-        .update({ credits_remaining: credits - 1 })
-        .eq('ip_address', ipAddress)
+        .update({ credits_remaining: credits - 1 });
 
-      if (session) {
-        query = query.eq('user_id', session.user.id)
+      if (session?.user) {
+        query = query.eq('user_id', session.user.id);
       } else {
-        query = query.is('user_id', null)
+        query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
-      const { error } = await query
+      const { error } = await query;
 
       if (error) {
-        console.error("Error updating credits:", error)
-        throw error
+        console.error("Error updating credits:", error);
+        throw error;
       }
 
-      setCredits(prev => prev - 1)
-      return true
+      setCredits(prev => prev - 1);
+      return true;
     } catch (error) {
-      console.error("Error using credit:", error)
-      toast.error("Error using credit. Please try again.")
-      return false
+      console.error("Error using credit:", error);
+      toast.error("Error using credit. Please try again.");
+      return false;
     }
-  }
+  };
 
   const resetCredits = async () => {
     try {
-      const ipAddress = await getIpAddress()
-      const maxCredits = session ? 6 : 2
+      const ipAddress = await getIpAddress();
+      const maxCredits = session?.user ? 6 : 2;
 
       let query = supabase
         .from('user_credits')
-        .update({ credits_remaining: maxCredits })
-        .eq('ip_address', ipAddress)
+        .update({ credits_remaining: maxCredits });
 
-      if (session) {
-        query = query.eq('user_id', session.user.id)
+      if (session?.user) {
+        query = query.eq('user_id', session.user.id);
       } else {
-        query = query.is('user_id', null)
+        query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
-      const { error } = await query
+      const { error } = await query;
 
       if (error) {
-        console.error("Error resetting credits:", error)
-        throw error
+        console.error("Error resetting credits:", error);
+        throw error;
       }
 
-      setCredits(maxCredits)
+      setCredits(maxCredits);
     } catch (error) {
-      console.error("Error in resetCredits:", error)
-      toast.error("Error resetting credits. Please try again.")
+      console.error("Error in resetCredits:", error);
+      toast.error("Error resetting credits. Please try again.");
     }
-  }
+  };
 
+  // Fetch credits when session changes or component mounts
   useEffect(() => {
-    fetchCredits()
-  }, [session])
+    console.log("Session state changed:", session?.user?.id);
+    fetchCredits();
+  }, [session]);
 
   const value = {
     credits,
     setCredits,
     useCredit,
     resetCredits,
-  }
+    isLoading
+  };
 
   return (
     <CreditsContext.Provider value={value}>
       {children}
     </CreditsContext.Provider>
-  )
-}
+  );
+};
 
 export const useCredits = () => {
-  const context = useContext(CreditsContext)
+  const context = useContext(CreditsContext);
   if (context === undefined) {
-    throw new Error("useCredits must be used within a CreditsProvider")
+    throw new Error("useCredits must be used within a CreditsProvider");
   }
-  return context
-}
+  return context;
+};
