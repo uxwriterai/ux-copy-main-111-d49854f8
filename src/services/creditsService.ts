@@ -4,6 +4,8 @@ import type { Database } from "@/integrations/supabase/types";
 type UserCredits = Database['public']['Tables']['user_credits']['Row'];
 
 export async function getUserCredits(ipAddress: string): Promise<number> {
+  console.log("Fetching credits for IP:", ipAddress);
+  
   const { data, error } = await supabase
     .from('user_credits')
     .select('credits_remaining')
@@ -12,13 +14,16 @@ export async function getUserCredits(ipAddress: string): Promise<number> {
 
   if (error) {
     console.error('Error fetching user credits:', error);
-    return 4; // Default credits for new users
+    return 2; // Default credits for new users
   }
 
-  return data?.credits_remaining ?? 4;
+  console.log("Credits data from DB:", data);
+  return data?.credits_remaining ?? 2;
 }
 
 export async function updateUserCredits(ipAddress: string, newCredits: number) {
+  console.log("Updating credits for IP:", ipAddress, "to:", newCredits);
+  
   const { error } = await supabase
     .from('user_credits')
     .upsert(
@@ -35,6 +40,8 @@ export async function updateUserCredits(ipAddress: string, newCredits: number) {
     console.error('Error updating user credits:', error);
     throw error;
   }
+
+  console.log("Credits updated successfully");
 }
 
 export async function getGeminiApiKey() {

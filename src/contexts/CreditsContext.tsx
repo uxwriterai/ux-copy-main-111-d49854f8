@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
-import { getUserCredits } from "@/services/creditsService"
+import { getUserCredits, updateUserCredits } from "@/services/creditsService"
 
 interface CreditsContextType {
   credits: number
@@ -13,7 +13,7 @@ interface CreditsContextType {
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState<number>(8) // Default to logged-in credits
+  const [credits, setCredits] = useState<number>(8)
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
   const resetCredits = async () => {
@@ -34,26 +34,42 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         setCredits(ipCredits)
       } else {
         console.log("Setting credits to default value (2)")
-        setCredits(2) // Changed from 4 to 2 for free users
+        setCredits(2)
+        // Initialize credits for new IP
+        await updateUserCredits(ipAddress, 2)
       }
     } catch (error) {
       console.error("Error resetting credits:", error)
-      // If there's an error, default to 2 credits
-      console.log("Error occurred, defaulting to 2 credits")
-      setCredits(2) // Changed from 4 to 2 for free users
+      setCredits(2)
     }
   }
 
-  const useCredit = () => {
+  const useCredit = async () => {
     if (credits <= 0) {
       toast.error("No credits left!")
       return false
     }
 
-    console.log("Using 1 credit. Credits before:", credits)
-    setCredits(credits - 1)
-    console.log("Credits after:", credits - 1)
-    return true
+    try {
+      console.log("Using 1 credit. Credits before:", credits)
+      
+      // Get current IP address for non-logged-in users
+      const response = await fetch('https://api.ipify.org?format=json')
+      const data = await response.json()
+      const ipAddress = data.ip
+
+      // Update credits in database
+      await updateUserCredits(ipAddress, credits - 1)
+      
+      // Update local state
+      setCredits(credits - 1)
+      console.log("Credits after:", credits - 1)
+      return true
+    } catch (error) {
+      console.error("Error using credit:", error)
+      toast.error("Error updating credits. Please try again.")
+      return false
+    }
   }
 
   // Handle auth state changes
@@ -62,7 +78,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       console.log("Auth state changed:", event)
       if (event === 'SIGNED_IN') {
         console.log("User signed in, setting credits to 8")
-        setCredits(8) // Changed from 15 to 8 for logged-in users
+        setCredits(8)
         broadcastChannel.postMessage({ type: 'SIGNED_IN' })
       } else if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits")
@@ -80,7 +96,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     broadcastChannel.onmessage = async (event) => {
       console.log("Received broadcast message:", event.data)
       if (event.data.type === 'SIGNED_IN') {
-        setCredits(8) // Changed from 15 to 8 for logged-in users
+        setCredits(8)
       } else if (event.data.type === 'SIGNED_OUT') {
         await resetCredits()
       }
@@ -94,7 +110,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         await resetCredits()
       } else {
         console.log("Session found, setting credits to 8")
-        setCredits(8) // Changed from 15 to 8 for logged-in users
+        setCredits(8)
       }
     }
 

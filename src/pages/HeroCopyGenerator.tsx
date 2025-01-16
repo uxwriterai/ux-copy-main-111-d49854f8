@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { HeroForm } from "@/components/hero/HeroForm";
 import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { generateHeroCopy } from "@/services/heroService";
 import { toast } from "sonner";
 import { useCredits } from "@/contexts/CreditsContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HeroCopyVariant {
   headline: string;
@@ -15,10 +16,16 @@ interface HeroCopyVariant {
 const HeroCopyGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedVariants, setGeneratedVariants] = useState<HeroCopyVariant[]>([]);
-  const { useCredit } = useCredits();
+  const { useCredit, credits } = useCredits();
 
   const handleSubmit = async (formData: any) => {
-    // Check if we can use a credit before proceeding
+    // Check if we have any credits left
+    if (credits <= 0) {
+      toast.error("No credits remaining. Please sign in for more credits.");
+      return;
+    }
+
+    // Attempt to use a credit
     if (!useCredit()) {
       return;
     }
@@ -36,6 +43,20 @@ const HeroCopyGenerator = () => {
     }
   };
 
+  // Check auth state on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log("User is not logged in - limited credits available");
+      } else {
+        console.log("User is logged in - full credits available");
+      }
+    };
+
+    checkAuth();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container max-w-6xl">
@@ -44,6 +65,9 @@ const HeroCopyGenerator = () => {
             <h1 className="text-3xl font-bold tracking-tight">Hero Copy Generator</h1>
             <p className="text-muted-foreground">
               Generate impactful headlines, taglines, and CTAs for your hero sections
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Credits remaining: {credits}
             </p>
           </div>
 
