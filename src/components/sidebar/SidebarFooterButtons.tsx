@@ -30,13 +30,16 @@ export function SidebarFooterButtons() {
     })
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("Auth state changed:", _event, session)
       setSession(session)
       
       if (_event === 'SIGNED_OUT') {
+        console.log("User signed out, resetting state")
         setSession(null)
         resetCredits()
         navigate('/')
+        toast.success('Signed out successfully')
       }
     })
 
@@ -47,10 +50,13 @@ export function SidebarFooterButtons() {
 
   const handleLogout = async () => {
     try {
+      console.log("Attempting to sign out...")
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error("Error during sign out:", error)
-        toast.error('Error signing out')
+        toast.error('Error signing out', {
+          description: error.message
+        })
       }
     } catch (error) {
       console.error("Caught error during sign out:", error)

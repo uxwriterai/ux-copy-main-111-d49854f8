@@ -38,7 +38,7 @@ export type Database = {
           created_at: string | null
           credits_remaining: number
           id: string
-          ip_address: string
+          ip_address: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -46,7 +46,7 @@ export type Database = {
           created_at?: string | null
           credits_remaining?: number
           id?: string
-          ip_address: string
+          ip_address?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -54,7 +54,7 @@ export type Database = {
           created_at?: string | null
           credits_remaining?: number
           id?: string
-          ip_address?: string
+          ip_address?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
