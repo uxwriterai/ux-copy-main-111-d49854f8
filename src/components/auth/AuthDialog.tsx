@@ -19,19 +19,14 @@ import { getErrorMessage } from "@/utils/authErrors"
 interface AuthDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  view: 'sign_in' | 'sign_up'
 }
 
-export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [currentView, setCurrentView] = useState(initialView)
-
-  useEffect(() => {
-    setCurrentView(initialView)
-  }, [initialView])
+  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in')
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -73,6 +68,7 @@ export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialog
           if (sessionError) {
             let errorMessage = getErrorMessage(sessionError)
             
+            // Check for user not found error
             if (sessionError.message?.includes('Invalid login credentials')) {
               errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
             }
@@ -86,6 +82,7 @@ export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialog
         } catch (err) {
           let errorMessage = getErrorMessage(err)
           
+          // Check for user not found error in catch block as well
           if (err.message?.includes('Invalid login credentials')) {
             errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
           }
@@ -104,15 +101,27 @@ export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialog
     }
   }, [onOpenChange])
 
-  const viewContent = currentView === 'sign_in' 
-    ? {
-        title: 'Sign in',
-        description: 'Enter your email and password below to login'
-      }
-    : {
-        title: 'Create your account',
-        description: 'Sign up to unlock more credits and features.'
-      }
+  const getViewContent = () => {
+    switch (view) {
+      case 'sign_in':
+        return {
+          title: 'Sign in',
+          description: 'Enter your email and password below to login'
+        }
+      case 'sign_up':
+        return {
+          title: 'Create your account',
+          description: 'Sign up to unlock more credits and features.'
+        }
+      default:
+        return {
+          title: 'Sign in',
+          description: 'Enter your email and password below to login'
+        }
+    }
+  }
+
+  const viewContent = getViewContent()
 
   return (
     <>
@@ -141,7 +150,7 @@ export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialog
 
           <Auth
             supabaseClient={supabase}
-            view={currentView}
+            view={view}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -162,27 +171,18 @@ export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialog
               variables: {
                 sign_in: {
                   email_input_placeholder: 'name@example.com',
-                  link_text: "Don't have an account? Sign up",
                 },
                 sign_up: {
                   email_input_placeholder: 'name@example.com',
-                  link_text: "Already have an account? Sign in",
                 }
               }
             }}
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
-            view={currentView}
-            onChange={(event) => {
-              if (event.view) {
-                console.log("View changed to:", event.view)
-                setCurrentView(event.view as 'sign_in' | 'sign_up')
-              }
-            }}
           />
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }

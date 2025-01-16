@@ -390,8 +390,7 @@ const Index = () => {
 
         <AuthDialog 
           open={showAuthDialog} 
-          onOpenChange={setShowAuthDialog}
-          view="sign_up"
+          onOpenChange={setShowAuthDialog} 
         />
       </div>
     </div>
