@@ -95,7 +95,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
         return
       }
 
-      // Success case
+      // Success case - show success toast and reset form
       toast.success("Password updated successfully")
       resetForm()
     } catch (error: any) {
