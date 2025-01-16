@@ -96,8 +96,18 @@ export default function Settings() {
   }, [])
 
   const validatePasswords = () => {
-    if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
-      toast.error("All password fields are required")
+    if (!formData.currentPassword) {
+      toast.error("Current password is required")
+      return false
+    }
+
+    if (!formData.newPassword) {
+      toast.error("New password is required")
+      return false
+    }
+
+    if (!formData.confirmPassword) {
+      toast.error("Please confirm your new password")
       return false
     }
 
@@ -126,18 +136,30 @@ export default function Settings() {
 
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.updateUser({ 
+      // First verify the current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail || '',
+        password: formData.currentPassword
+      })
+
+      if (signInError) {
+        toast.error("Current password is incorrect")
+        setIsLoading(false)
+        return
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ 
         password: formData.newPassword 
       })
 
-      if (error) {
-        console.error("Error updating password:", error)
-        if (error.message.includes("same_password")) {
+      if (updateError) {
+        console.error("Error updating password:", updateError)
+        if (updateError.message.includes("same_password")) {
           toast.error("New password must be different from your current password")
-        } else if (error.message.includes("auth")) {
+        } else if (updateError.message.includes("auth")) {
           toast.error("Authentication error. Please try logging in again")
         } else {
-          toast.error(error.message || "Failed to update password")
+          toast.error(updateError.message || "Failed to update password")
         }
         return
       }
