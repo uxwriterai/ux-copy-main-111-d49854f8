@@ -7,8 +7,8 @@ import { CreditsProvider } from "@/contexts/CreditsContext"
 
 function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
+    <ThemeProvider>
+      <BrowserRouter>
         <CreditsProvider>
           <SidebarProvider>
             <div className="flex min-h-screen">
@@ -17,8 +17,8 @@ function App() {
             </div>
           </SidebarProvider>
         </CreditsProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

@@ -20,7 +20,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
   const getIpAddress = async () => {
     try {
-      const response = await fetch('https://api.ipify.org?format=json')
+      const response = await fetch('/functions/v1/get-ip')
       const data = await response.json()
       return data.ip
     } catch (error) {
