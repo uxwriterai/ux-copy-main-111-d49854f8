@@ -101,28 +101,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }, [onOpenChange])
 
-  const getViewContent = () => {
-    switch (view) {
-      case 'sign_in':
-        return {
-          title: 'Sign in',
-          description: 'Enter your email and password below to login'
-        }
-      case 'sign_up':
-        return {
-          title: 'Create your account',
-          description: 'Sign up to unlock more credits and features.'
-        }
-      default:
-        return {
-          title: 'Sign in',
-          description: 'Enter your email and password below to login'
-        }
-    }
-  }
-
-  const viewContent = getViewContent()
-
   return (
     <>
       <AuthConfetti 
@@ -138,8 +116,14 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{viewContent.title}</DialogTitle>
-            <DialogDescription>{viewContent.description}</DialogDescription>
+            <DialogTitle>
+              {view === 'sign_in' ? 'Sign in' : 'Create your account'}
+            </DialogTitle>
+            <DialogDescription>
+              {view === 'sign_in' 
+                ? 'Enter your email and password below to login'
+                : 'Sign up to unlock more credits and features.'}
+            </DialogDescription>
           </DialogHeader>
           
           {error && (
