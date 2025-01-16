@@ -202,7 +202,11 @@ export function SidebarFooterButtons() {
         </DialogContent>
       </Dialog>
 
-      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
+      <AuthDialog 
+        open={showAuthDialog} 
+        onOpenChange={setShowAuthDialog}
+        initialView="sign_in"
+      />
     </>
   )
 }

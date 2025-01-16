@@ -10,12 +10,13 @@ import { ForgotPasswordDialog } from "./ForgotPasswordDialog"
 interface AuthDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  initialView?: 'sign_in' | 'sign_up' | 'forgot_password'
 }
 
-export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, initialView = 'sign_in' }: AuthDialogProps) {
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgot_password'>('sign_in')
+  const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgot_password'>(initialView)
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -53,6 +54,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       subscription.unsubscribe()
     }
   }, [onOpenChange])
+
+  // Reset view to initial view when dialog is opened
+  useEffect(() => {
+    if (open) {
+      setView(initialView)
+    }
+  }, [open, initialView])
 
   return (
     <>
