@@ -88,16 +88,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }, [onOpenChange])
 
-  // Handle auth UI errors
-  const handleAuthError = (error: Error) => {
-    const errorMessage = getErrorMessage(error)
-    console.error("Auth UI error:", error)
-    setError(errorMessage)
-    toast.error('Authentication Error', {
-      description: errorMessage
-    })
-  }
-
   return (
     <>
       <AuthConfetti 
@@ -146,7 +136,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             }}
             theme={theme}
             providers={[]}
-            onError={handleAuthError}
             redirectTo={window.location.origin + window.location.pathname}
           />
         </DialogContent>
