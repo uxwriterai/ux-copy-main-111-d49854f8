@@ -91,10 +91,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       // Update the password using the verified session
       const { error: updateError } = await supabase.auth.updateUser({ 
         password: formData.newPassword 
-      }, {
-        auth: {
-          persistSession: true
-        }
       })
 
       if (updateError) {
