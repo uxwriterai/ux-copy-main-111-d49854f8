@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useCredits } from '@/contexts/CreditsContext';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AuthDialog } from "@/components/auth/AuthDialog"
 
 const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
@@ -21,6 +22,7 @@ const Index = () => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { credits, useCredit } = useCredits();
 
   const handleImageUpload = (file: File) => {
@@ -378,16 +380,18 @@ const Index = () => {
               </Button>
               <Button onClick={() => {
                 setShowCreditsDialog(false);
-                // This will trigger the auth dialog through the sidebar context
-                document.querySelector('[data-auth-trigger="true"]')?.dispatchEvent(
-                  new MouseEvent('click', { bubbles: true })
-                );
+                setShowAuthDialog(true);
               }}>
                 Sign up
               </Button>
             </div>
           </DialogContent>
         </Dialog>
+
+        <AuthDialog 
+          open={showAuthDialog} 
+          onOpenChange={setShowAuthDialog} 
+        />
       </div>
     </div>
   );
