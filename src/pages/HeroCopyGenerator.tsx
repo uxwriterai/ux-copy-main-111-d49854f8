@@ -67,9 +67,6 @@ const HeroCopyGenerator = () => {
             <p className="text-muted-foreground">
               Generate impactful headlines, taglines, and CTAs for your hero sections
             </p>
-            <p className="text-sm text-muted-foreground">
-              Credits remaining: {credits}
-            </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">

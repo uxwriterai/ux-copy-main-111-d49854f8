@@ -149,9 +149,6 @@ const LandingPageGenerator = () => {
           <p className="text-muted-foreground">
             Generate compelling copy for every section of your landing page
           </p>
-          <p className="text-sm text-muted-foreground">
-            Credits remaining: {credits}
-          </p>
         </div>
 
         <Card className="p-6">
