@@ -40,6 +40,8 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   const fetchCredits = async () => {
     try {
       console.log("Fetching credits - Session state:", session?.user?.id);
+      const ipAddress = await getIpAddress();
+      
       let query = supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -49,7 +51,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         console.log("Fetching credits for authenticated user:", session.user.id);
         query = query.eq('user_id', session.user.id);
       } else {
-        const ipAddress = await getIpAddress();
         console.log("Fetching credits for anonymous user with IP:", ipAddress);
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
@@ -62,13 +63,20 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       if (!data) {
-        // Create new credits entry
-        const defaultCredits = session?.user ? 6 : 2;
+        // Check for existing IP-based credits before creating new entry
+        const { data: existingIpCredits } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .is('user_id', null)
+          .eq('ip_address', ipAddress)
+          .maybeSingle();
+
+        const defaultCredits = existingIpCredits?.credits_remaining ?? (session?.user ? 6 : 2);
         console.log(`Creating new credits entry with ${defaultCredits} credits for ${session?.user ? 'user' : 'IP'}`);
         
         const insertData = session?.user 
           ? { user_id: session.user.id, credits_remaining: defaultCredits }
-          : { ip_address: await getIpAddress(), credits_remaining: defaultCredits };
+          : { ip_address: ipAddress, credits_remaining: defaultCredits };
         
         const { error: insertError } = await supabase
           .from('user_credits')
