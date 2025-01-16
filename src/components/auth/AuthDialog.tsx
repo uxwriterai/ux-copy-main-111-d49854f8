@@ -173,7 +173,7 @@ export function AuthDialog({ open, onOpenChange, view: initialView }: AuthDialog
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
-            onViewChange={(newView) => {
+            onView={(newView) => {
               console.log("View changed to:", newView)
               setCurrentView(newView as 'sign_in' | 'sign_up')
             }}
