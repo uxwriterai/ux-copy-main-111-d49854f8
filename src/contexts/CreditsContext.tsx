@@ -129,7 +129,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   const resetCredits = async () => {
     try {
       const ipAddress = await getIpAddress();
-      console.log("Resetting credits for IP:", ipAddress);
+      console.log("Fetching existing credits for IP:", ipAddress);
       
       const { data: existingIpCredits, error: queryError } = await supabase
         .from('user_credits')
