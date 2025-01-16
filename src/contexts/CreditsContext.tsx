@@ -13,7 +13,7 @@ interface CreditsContextType {
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState<number>(15)
+  const [credits, setCredits] = useState<number>(8) // Default to logged-in credits
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
   const resetCredits = async () => {
@@ -33,14 +33,14 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         console.log("Setting credits to IP-based credits:", ipCredits)
         setCredits(ipCredits)
       } else {
-        console.log("Setting credits to default value (4)")
-        setCredits(4)
+        console.log("Setting credits to default value (2)")
+        setCredits(2) // Changed from 4 to 2 for free users
       }
     } catch (error) {
       console.error("Error resetting credits:", error)
-      // If there's an error, default to 4 credits
-      console.log("Error occurred, defaulting to 4 credits")
-      setCredits(4)
+      // If there's an error, default to 2 credits
+      console.log("Error occurred, defaulting to 2 credits")
+      setCredits(2) // Changed from 4 to 2 for free users
     }
   }
 
@@ -61,8 +61,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     const handleAuthChange = async (event: string, session: any) => {
       console.log("Auth state changed:", event)
       if (event === 'SIGNED_IN') {
-        console.log("User signed in, setting credits to 15")
-        setCredits(15)
+        console.log("User signed in, setting credits to 8")
+        setCredits(8) // Changed from 15 to 8 for logged-in users
         broadcastChannel.postMessage({ type: 'SIGNED_IN' })
       } else if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits")
@@ -80,7 +80,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     broadcastChannel.onmessage = async (event) => {
       console.log("Received broadcast message:", event.data)
       if (event.data.type === 'SIGNED_IN') {
-        setCredits(15)
+        setCredits(8) // Changed from 15 to 8 for logged-in users
       } else if (event.data.type === 'SIGNED_OUT') {
         await resetCredits()
       }
@@ -93,8 +93,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         console.log("No session found, resetting credits")
         await resetCredits()
       } else {
-        console.log("Session found, setting credits to 15")
-        setCredits(15)
+        console.log("Session found, setting credits to 8")
+        setCredits(8) // Changed from 15 to 8 for logged-in users
       }
     }
 
