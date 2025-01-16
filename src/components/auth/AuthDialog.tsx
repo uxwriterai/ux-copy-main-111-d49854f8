@@ -163,7 +163,6 @@ export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogP
                 container: 'w-full',
                 button: 'w-full',
                 input: 'w-full',
-                anchor: 'text-primary hover:text-primary/80',
               }
             }}
             localization={{
@@ -173,14 +172,12 @@ export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogP
                   password_input_placeholder: 'Your password',
                   email_label: 'Email address',
                   password_label: 'Password',
-                  link_text: "Don't have an account? Sign up",
                 },
                 sign_up: {
                   email_input_placeholder: 'name@example.com',
                   password_input_placeholder: 'Create a password',
                   email_label: 'Email address',
                   password_label: 'Password',
-                  link_text: "Already have an account? Sign in",
                 }
               }
             }}
