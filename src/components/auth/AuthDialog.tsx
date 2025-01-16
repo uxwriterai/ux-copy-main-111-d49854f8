@@ -30,10 +30,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event)
+      console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_IN' && session?.user) {
         try {
+          console.log("Checking for existing credits for user:", session.user.id)
+          
           // Check if this is a new user by querying for existing credits
           const { data: existingCredits, error: queryError } = await supabase
             .from('user_credits')
@@ -46,23 +48,27 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             throw queryError
           }
 
+          console.log("Existing credits data:", existingCredits)
+
           // If no existing credits found, this is a new user
           if (!existingCredits) {
             console.log("New user detected, creating credits entry")
             
-            const { error: creditsError } = await supabase
+            const { data: newCredits, error: creditsError } = await supabase
               .from('user_credits')
               .insert({
                 user_id: session.user.id,
-                credits_remaining: 6  // Allocating 6 credits for new users
+                credits_remaining: 6
               })
+              .select()
+              .single()
 
             if (creditsError) {
               console.error("Error creating initial credits:", creditsError)
               throw creditsError
             }
 
-            console.log("Successfully created initial credits")
+            console.log("Successfully created initial credits:", newCredits)
             setShowConfetti(true)
             setShowWelcome(true)
             toast.success('Welcome! Your account has been created successfully.')
