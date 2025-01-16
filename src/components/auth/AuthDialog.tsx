@@ -75,10 +75,21 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       }
     })
 
-    // Listen for auth errors
-    const authListener = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.error) {
-        const errorMessage = getErrorMessage(session.error as AuthError)
+    // Listen for auth errors using the onAuthStateChange event
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
+        const error = (session as any)._error as AuthError
+        if (error) {
+          const errorMessage = getErrorMessage(error)
+          setError(errorMessage)
+          toast.error('Authentication Error', {
+            description: errorMessage
+          })
+        }
+      }
+    }, {
+      onError: (error) => {
+        const errorMessage = getErrorMessage(error)
         setError(errorMessage)
         toast.error('Authentication Error', {
           description: errorMessage
@@ -88,7 +99,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
     return () => {
       subscription.unsubscribe()
-      authListener.data.subscription.unsubscribe()
+      authSubscription.unsubscribe()
     }
   }, [onOpenChange])
 
