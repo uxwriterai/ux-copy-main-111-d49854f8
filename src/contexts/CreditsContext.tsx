@@ -67,7 +67,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if (!data) {
         // Create new credits entry
         const defaultCredits = session?.user ? 6 : 2;
-        console.log(`Creating new credits entry with ${defaultCredits} credits`);
+        console.log(`Creating new credits entry with ${defaultCredits} credits for ${session?.user ? 'user' : 'IP'}`);
         
         const { error: insertError } = await supabase
           .from('user_credits')
@@ -162,7 +162,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   useEffect(() => {
     console.log("Session state changed:", session?.user?.id);
     fetchCredits();
-  }, [session]);
+  }, [session?.user?.id]); // Only re-run when user ID changes
 
   const value = {
     credits,
