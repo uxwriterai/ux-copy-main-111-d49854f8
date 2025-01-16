@@ -112,31 +112,3 @@ Please be specific and actionable in your analysis.`;
   const result = await model.generateContent(prompt);
   return result.response.text();
 };
-
-export const improveCopy = async (inputText: string): Promise<string> => {
-  console.log("Starting copy improvement for:", inputText);
-  
-  const model = (await initializeGenAI()).getGenerativeModel({ model: "gemini-pro" });
-
-  const prompt = `Improve the following copy to make it more engaging, clear, and effective while maintaining its core message:
-
-${inputText}
-
-Please provide one improved version that:
-1. Enhances clarity and readability
-2. Makes the message more compelling
-3. Maintains the original tone and intent
-4. Uses concise and impactful language
-
-Return only the improved copy without any explanations or formatting.`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const improvedText = result.response.text();
-    console.log("Copy improvement completed:", improvedText);
-    return improvedText;
-  } catch (error) {
-    console.error("Error improving copy:", error);
-    throw error;
-  }
-};

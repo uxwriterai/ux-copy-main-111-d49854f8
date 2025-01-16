@@ -5,10 +5,7 @@ import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { generateHeroCopy } from "@/services/heroService";
 import { toast } from "sonner";
 import { useCredits } from "@/contexts/CreditsContext";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AuthDialog } from "@/components/auth/AuthDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 
 interface HeroCopyVariant {
   headline: string;
@@ -24,26 +21,20 @@ const HeroCopyGenerator = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const handleSubmit = async (formData: any) => {
+    // Check if we have any credits left
+    if (credits <= 0) {
+      setShowCreditsDialog(true);
+      return;
+    }
+
+    // Attempt to use a credit
+    const creditUsed = await useCredit();
+    if (!creditUsed) {
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (credits <= 0 && !session) {
-        setShowCreditsDialog(true);
-        return;
-      }
-
-      if (credits <= 0) {
-        toast.error("No credits remaining");
-        return;
-      }
-
-      // Check and use a credit before proceeding
-      if (!await useCredit()) {
-        toast.error("No credits remaining");
-        return;
-      }
-
-      setIsLoading(true);
       const variants = await generateHeroCopy(formData);
       setGeneratedVariants(variants);
       toast.success("Hero copy generated successfully!");
@@ -54,6 +45,20 @@ const HeroCopyGenerator = () => {
       setIsLoading(false);
     }
   };
+
+  // Check auth state on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log("User is not logged in - limited credits available");
+      } else {
+        console.log("User is logged in - full credits available");
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -97,37 +102,6 @@ const HeroCopyGenerator = () => {
               </div>
             </Card>
           </div>
-
-          <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Unlock 5x More Credits</DialogTitle>
-                <DialogDescription className="pt-2">
-                  You've used all your free credits! Sign up now to get:
-                  <ul className="list-disc pl-6 mt-2 space-y-1">
-                    <li>5x more credits to generate content</li>
-                    <li>Priority support</li>
-                  </ul>
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex gap-3 justify-end">
-                <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
-                  Maybe later
-                </Button>
-                <Button onClick={() => {
-                  setShowCreditsDialog(false);
-                  setShowAuthDialog(true);
-                }}>
-                  Sign up
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <AuthDialog 
-            open={showAuthDialog} 
-            onOpenChange={setShowAuthDialog} 
-          />
         </div>
       </div>
     </div>
