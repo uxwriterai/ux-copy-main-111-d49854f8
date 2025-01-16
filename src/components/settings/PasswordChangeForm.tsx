@@ -62,6 +62,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       newPassword: "",
       confirmPassword: ""
     })
+    setIsLoading(false)
   }
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -106,7 +107,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
     } catch (error: any) {
       console.error("Password change error:", error)
       toast.error(error.message || "An unexpected error occurred")
-    } finally {
       setIsLoading(false)
     }
   }
