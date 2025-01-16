@@ -30,7 +30,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.id)
+      console.log("Auth state changed:", event)
       
       if (event === 'SIGNED_IN' && session?.user) {
         try {
@@ -50,24 +50,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           if (!existingCredits) {
             console.log("New user detected, creating credits entry")
             
-            // Get the IP address for reference
-            const ipAddress = await fetch('https://api.ipify.org?format=json')
-              .then(res => res.json())
-              .then(data => data.ip);
-
-            // Delete any existing IP-based credits
-            await supabase
-              .from('user_credits')
-              .delete()
-              .is('user_id', null)
-              .eq('ip_address', ipAddress);
-
             const { error: creditsError } = await supabase
               .from('user_credits')
               .insert({
                 user_id: session.user.id,
-                credits_remaining: 6,
-                ip_address: ipAddress
+                credits_remaining: 6
               })
 
             if (creditsError) {
