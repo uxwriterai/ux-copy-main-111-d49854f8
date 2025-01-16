@@ -14,20 +14,20 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 const getIpAddress = async (): Promise<string> => {
   try {
-    console.log("Fetching IP address...");
-    const response = await fetch('https://api.ipify.org?format=json');
+    console.log("Fetching IP address...")
+    const response = await fetch('https://api.ipify.org?format=json')
     
     if (!response.ok) {
-      console.error('IP address fetch failed:', response.status, response.statusText);
-      throw new Error('Failed to fetch IP address');
+      console.error('IP address fetch failed:', response.status, response.statusText)
+      throw new Error('Failed to fetch IP address')
     }
     
-    const data = await response.json();
-    console.log("IP address fetched:", data);
-    return data.ip;
+    const data = await response.json()
+    console.log("IP address fetched:", data)
+    return data.ip
   } catch (error) {
-    console.error('Error fetching IP address:', error);
-    throw error;
+    console.error('Error fetching IP address:', error)
+    throw error
   }
 }
 
@@ -152,8 +152,38 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     }
   }
 
+  // Listen for auth state changes to handle credits
   useEffect(() => {
-    fetchCredits()
+    const handleAuthChange = async () => {
+      if (session) {
+        // User just logged in, ensure they have 6 credits
+        const ipAddress = await getIpAddress()
+        const { data } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .eq('user_id', session.user.id)
+          .single()
+
+        if (!data) {
+          // New user, set up their credits
+          await supabase
+            .from('user_credits')
+            .insert({
+              ip_address: ipAddress,
+              credits_remaining: 6,
+              user_id: session.user.id
+            })
+          setCredits(6)
+        } else {
+          setCredits(data.credits_remaining)
+        }
+      } else {
+        // User logged out, fetch IP-based credits
+        fetchCredits()
+      }
+    }
+
+    handleAuthChange()
   }, [session])
 
   const value = {
