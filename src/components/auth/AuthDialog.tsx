@@ -7,16 +7,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useTheme } from "@/components/ThemeProvider"
 import { useEffect, useState } from "react"
-import { AuthError } from "@supabase/supabase-js"
 import { toast } from "sonner"
-import Confetti from 'react-confetti'
-import { Button } from "@/components/ui/button"
-import { createPortal } from 'react-dom'
+import { WelcomeDialog } from "./WelcomeDialog"
+import { AuthConfetti } from "./AuthConfetti"
+import { getErrorMessage } from "@/utils/authErrors"
 
 interface AuthDialogProps {
   open: boolean
@@ -34,7 +32,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       console.log("Auth state changed:", event)
       
       if (event === 'SIGNED_IN' && session?.user) {
-        // Check if this is a new sign up by comparing timestamps
         const createdAt = new Date(session.user.created_at).getTime()
         const lastSignIn = new Date(session.user.last_sign_in_at).getTime()
         const timeDiff = Math.abs(createdAt - lastSignIn)
@@ -62,7 +59,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         toast.success('Signed out successfully')
       }
 
-      // Handle authentication errors
       if (event === 'USER_UPDATED') {
         const sessionResponse = await supabase.auth.getSession()
         if (sessionResponse.error) {
@@ -80,86 +76,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }, [onOpenChange])
 
-  const getErrorMessage = (error: AuthError | Error | string) => {
-    console.log("Processing error:", error)
-    
-    if (typeof error === 'string') {
-      return error
-    }
-
-    // Handle AuthError type
-    if ('message' in error) {
-      const message = error.message?.toLowerCase() || ''
-      
-      if (message.includes('invalid login credentials') || message.includes('invalid password')) {
-        return "Incorrect email or password. Please try again."
-      }
-      if (message.includes('user not found') || message.includes('invalid user')) {
-        return "No account found with this email address."
-      }
-      if (message.includes('email not confirmed')) {
-        return "Please verify your email address before signing in."
-      }
-      if (message.includes('email already registered')) {
-        return "An account with this email already exists."
-      }
-      if (message.includes('too many requests') || message.includes('rate limit')) {
-        return "Too many attempts. Please try again later."
-      }
-      if (message.includes('network') || message.includes('connection')) {
-        return "Network error. Please check your internet connection."
-      }
-      
-      return message || "An unexpected error occurred. Please try again."
-    }
-
-    return "An unexpected error occurred. Please try again."
-  }
-
   return (
     <>
-      {showConfetti && createPortal(
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100%', 
-          height: '100%', 
-          pointerEvents: 'none',
-          zIndex: 2147483647
-        }}>
-          <Confetti
-            width={window.innerWidth}
-            height={window.innerHeight}
-            recycle={false}
-            numberOfPieces={500}
-            onConfettiComplete={() => {
-              console.log("Confetti animation completed")
-              setShowConfetti(false)
-            }}
-          />
-        </div>,
-        document.body
-      )}
+      <AuthConfetti 
+        show={showConfetti} 
+        onComplete={() => setShowConfetti(false)} 
+      />
 
-      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">8 credits unlocked!</DialogTitle>
-            <DialogDescription className="text-center text-lg mt-4">
-              Let's get started and make something awesome.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-6">
-            <Button 
-              className="w-full"
-              onClick={() => setShowWelcome(false)}
-            >
-              Let's go!
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <WelcomeDialog 
+        open={showWelcome} 
+        onOpenChange={setShowWelcome} 
+      />
 
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
