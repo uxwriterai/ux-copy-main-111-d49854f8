@@ -228,8 +228,7 @@ const MicrocopyGenerator = () => {
                         ...prev,
                         additionalNotes: e.target.value,
                       }))
-                    }
-                  />
+                    />
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -285,6 +284,7 @@ const MicrocopyGenerator = () => {
           <AuthDialog 
             open={showAuthDialog} 
             onOpenChange={setShowAuthDialog} 
+            view="sign_up"
           />
         </div>
       </div>

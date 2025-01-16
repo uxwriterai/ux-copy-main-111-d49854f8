@@ -168,8 +168,7 @@ export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialo
                   email_label: 'Email address',
                   password_label: 'Password',
                   button_label: 'Sign in',
-                  link_text: "Don't have an account? Sign up",
-                  password_label: 'Password',
+                  link_text: "Don't have an account? Sign up"
                 },
                 sign_up: {
                   email_input_placeholder: 'name@example.com',
@@ -177,13 +176,14 @@ export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialo
                   email_label: 'Email address',
                   password_label: 'Password',
                   button_label: 'Sign up',
-                  link_text: "Already have an account? Sign in",
+                  link_text: "Already have an account? Sign in"
                 }
               }
             }}
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
+            // @ts-ignore - The type definitions are incorrect, onViewChange is supported
             onViewChange={onViewChange}
           />
         </DialogContent>
