@@ -46,7 +46,7 @@ export function ForgotPasswordDialog({
 
         <Auth
           supabaseClient={supabase}
-          view="forgot_password"
+          view="forgotten_password"
           appearance={{
             theme: ThemeSupa,
             variables: {
@@ -73,12 +73,6 @@ export function ForgotPasswordDialog({
           theme={theme}
           providers={[]}
           redirectTo={window.location.origin + window.location.pathname}
-          onError={(error) => {
-            setError(getErrorMessage(error))
-            toast.error('Authentication Error', {
-              description: getErrorMessage(error)
-            })
-          }}
         />
         
         <div className="mt-4 text-sm text-center">

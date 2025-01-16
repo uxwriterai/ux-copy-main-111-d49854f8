@@ -73,12 +73,6 @@ export function CreateAccountDialog({
           theme={theme}
           providers={[]}
           redirectTo={window.location.origin + window.location.pathname}
-          onError={(error) => {
-            setError(getErrorMessage(error))
-            toast.error('Authentication Error', {
-              description: getErrorMessage(error)
-            })
-          }}
         />
         
         <div className="mt-4 text-sm text-center">
