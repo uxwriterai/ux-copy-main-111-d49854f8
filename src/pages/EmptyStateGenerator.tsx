@@ -1,20 +1,23 @@
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
-import { useCredits } from "@/contexts/CreditsContext"
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { generateEmptyState } from "@/services/emptyStateService";
+import { CopyVariant } from "@/components/microcopy/CopyVariant";
+import { useCredits } from "@/contexts/CreditsContext";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AuthDialog } from "@/components/auth/AuthDialog";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { generateEmptyState } from "@/services/emptyStateService"
-import { CopyVariant } from "@/components/microcopy/CopyVariant"
+} from "@/components/ui/select";
 
 const ELEMENT_TYPES = [
   "search",
@@ -23,7 +26,7 @@ const ELEMENT_TYPES = [
   "profile",
   "inbox",
   "custom"
-] as const
+] as const;
 
 const TONES = [
   "professional",
@@ -31,44 +34,59 @@ const TONES = [
   "playful",
   "empathetic",
   "minimal"
-] as const
+] as const;
 
 const EmptyStateGenerator = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [elementType, setElementType] = useState<string>("")
-  const [customElementType, setCustomElementType] = useState("")
-  const [context, setContext] = useState("")
-  const [tone, setTone] = useState<string>("")
-  const [additionalNotes, setAdditionalNotes] = useState("")
-  const [variants, setVariants] = useState<{ message: string; cta: string }[]>([])
-  const { useCredit } = useCredits()
+  const [isLoading, setIsLoading] = useState(false);
+  const [elementType, setElementType] = useState<string>("");
+  const [customElementType, setCustomElementType] = useState("");
+  const [context, setContext] = useState("");
+  const [tone, setTone] = useState<string>("");
+  const [additionalNotes, setAdditionalNotes] = useState("");
+  const [variants, setVariants] = useState<{ message: string; cta: string }[]>([]);
+  const { useCredit, credits } = useCredits();
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
-    // Check if we can use a credit before proceeding
-    if (!useCredit()) {
-      return;
-    }
-
-    setIsLoading(true)
-
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (credits <= 0 && !session) {
+        setShowCreditsDialog(true);
+        return;
+      }
+
+      if (credits <= 0) {
+        toast.error("No credits remaining");
+        return;
+      }
+
+      // Check and use a credit before proceeding
+      if (!await useCredit()) {
+        toast.error("No credits remaining");
+        return;
+      }
+
+      setIsLoading(true);
       const generatedVariants = await generateEmptyState(
         elementType,
         context,
         tone,
         customElementType,
         additionalNotes
-      )
-      setVariants(generatedVariants)
-      toast.success("Empty state copy generated successfully!")
+      );
+      setVariants(generatedVariants);
+      toast.success("Empty state copy generated successfully!");
     } catch (error) {
-      toast.error("Failed to generate empty state copy. Please try again.")
+      console.error("Error generating empty state copy:", error);
+      toast.error("Failed to generate empty state copy. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background py-8">
@@ -187,10 +205,41 @@ const EmptyStateGenerator = () => {
               </div>
             </Card>
           </div>
+
+          <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Unlock 5x More Credits</DialogTitle>
+                <DialogDescription className="pt-2">
+                  You've used all your free credits! Sign up now to get:
+                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                    <li>5x more credits to generate content</li>
+                    <li>Priority support</li>
+                  </ul>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex gap-3 justify-end">
+                <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
+                  Maybe later
+                </Button>
+                <Button onClick={() => {
+                  setShowCreditsDialog(false);
+                  setShowAuthDialog(true);
+                }}>
+                  Sign up
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <AuthDialog 
+            open={showAuthDialog} 
+            onOpenChange={setShowAuthDialog} 
+          />
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default EmptyStateGenerator
+export default EmptyStateGenerator;

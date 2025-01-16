@@ -18,6 +18,7 @@ import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { useCredits } from "@/contexts/CreditsContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AuthDialog } from "@/components/auth/AuthDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 type ElementType = 
   | "button"
@@ -78,8 +79,19 @@ const MicrocopyGenerator = () => {
     e.preventDefault();
     
     try {
-      if (credits <= 0) {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (credits <= 0 && !session) {
         setShowCreditsDialog(true);
+        return;
+      }
+
+      if (credits <= 0) {
+        toastFn({
+          variant: "destructive",
+          title: "Error",
+          description: "No credits remaining. Please sign up for more credits.",
+        });
         return;
       }
 
