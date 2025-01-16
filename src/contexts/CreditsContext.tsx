@@ -127,27 +127,44 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   const resetCredits = async () => {
     try {
-      const maxCredits = session?.user ? 6 : 2;
-
-      let query = supabase
+      // When resetting credits (e.g., on logout), we want to fetch the IP-based credits
+      const ipAddress = await getIpAddress();
+      
+      // First, check if there's an existing IP-based entry
+      const { data: existingIpCredits, error: queryError } = await supabase
         .from('user_credits')
-        .update({ credits_remaining: maxCredits });
+        .select('credits_remaining')
+        .is('user_id', null)
+        .eq('ip_address', ipAddress)
+        .maybeSingle();
 
-      if (session?.user) {
-        query = query.eq('user_id', session.user.id);
+      if (queryError) {
+        console.error("Error checking IP credits:", queryError);
+        throw queryError;
+      }
+
+      if (existingIpCredits) {
+        // If IP-based credits exist, use those
+        console.log("Found existing IP-based credits:", existingIpCredits.credits_remaining);
+        setCredits(existingIpCredits.credits_remaining);
       } else {
-        const ipAddress = await getIpAddress();
-        query = query.is('user_id', null).eq('ip_address', ipAddress);
+        // If no IP-based credits exist, create a new entry with 2 credits
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            ip_address: ipAddress,
+            credits_remaining: 2,
+            user_id: null
+          });
+
+        if (insertError) {
+          console.error("Error creating IP credits:", insertError);
+          throw insertError;
+        }
+
+        console.log("Created new IP-based credits with 2 credits");
+        setCredits(2);
       }
-
-      const { error } = await query;
-
-      if (error) {
-        console.error("Error resetting credits:", error);
-        throw error;
-      }
-
-      setCredits(maxCredits);
     } catch (error) {
       console.error("Error in resetCredits:", error);
       toast.error("Error resetting credits. Please try again.");
