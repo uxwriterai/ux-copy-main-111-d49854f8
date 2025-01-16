@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+import { Eye, EyeOff } from "lucide-react"
 
 export default function Settings() {
   const [currentPassword, setCurrentPassword] = useState("")
@@ -12,35 +13,59 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
     const getUserEmail = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      console.log("Current user:", user)
-      if (user?.email) {
-        setUserEmail(user.email)
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        console.log("Current user:", user)
+        if (error) {
+          console.error("Error fetching user:", error)
+          toast.error("Unable to fetch user information")
+          return
+        }
+        if (user?.email) {
+          setUserEmail(user.email)
+        }
+      } catch (error) {
+        console.error("Error in getUserEmail:", error)
+        toast.error("Failed to load user information")
       }
     }
     getUserEmail()
   }, [])
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (newPassword !== confirmPassword) {
-      toast.error("New passwords don't match")
-      return
+  const validatePasswords = () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("All password fields are required")
+      return false
     }
 
     if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters")
-      return
+      toast.error("New password must be at least 6 characters long")
+      return false
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords don't match")
+      return false
     }
 
     if (currentPassword === newPassword) {
       toast.error("New password must be different from your current password")
-      return
+      return false
     }
+
+    return true
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validatePasswords()) return
 
     setIsLoading(true)
     try {
@@ -49,23 +74,70 @@ export default function Settings() {
       })
 
       if (error) {
+        console.error("Error updating password:", error)
         if (error.message.includes("same_password")) {
-          throw new Error("New password must be different from your current password")
+          toast.error("New password must be different from your current password")
+        } else if (error.message.includes("auth")) {
+          toast.error("Authentication error. Please try logging in again")
+        } else {
+          toast.error(error.message || "Failed to update password")
         }
-        throw error
+        return
       }
 
       toast.success("Password updated successfully")
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
+      
     } catch (error: any) {
       console.error("Error updating password:", error)
-      toast.error(error.message || "Error updating password")
+      toast.error(error.message || "An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
   }
+
+  const PasswordInput = ({ 
+    id, 
+    value, 
+    onChange, 
+    label, 
+    show, 
+    onToggleShow 
+  }: { 
+    id: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    label: string;
+    show: boolean;
+    onToggleShow: () => void;
+  }) => (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          required
+          className="pr-10"
+        />
+        <button
+          type="button"
+          onClick={onToggleShow}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+        >
+          {show ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+        </button>
+      </div>
+    </div>
+  )
 
   return (
     <div className="container max-w-2xl py-12">
@@ -85,36 +157,30 @@ export default function Settings() {
           </div>
           
           <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
-              <Input
-                id="current-password"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
+            <PasswordInput
+              id="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              label="Current Password"
+              show={showCurrentPassword}
+              onToggleShow={() => setShowCurrentPassword(!showCurrentPassword)}
+            />
+            <PasswordInput
+              id="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              label="New Password"
+              show={showNewPassword}
+              onToggleShow={() => setShowNewPassword(!showNewPassword)}
+            />
+            <PasswordInput
+              id="confirm-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              label="Confirm New Password"
+              show={showConfirmPassword}
+              onToggleShow={() => setShowConfirmPassword(!showConfirmPassword)}
+            />
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Password"}
             </Button>
