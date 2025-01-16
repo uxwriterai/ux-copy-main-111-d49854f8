@@ -105,18 +105,23 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     switch (view) {
       case 'sign_in':
         return {
-          title: "Welcome back",
-          description: "Enter your credentials to access your account"
+          title: "Welcome back!",
+          description: "Sign in to your account to continue your journey"
         }
       case 'sign_up':
         return {
-          title: "Create your account",
-          description: "Join us to unlock all features and start creating amazing content"
+          title: "Join our community",
+          description: "Create an account to unlock premium features and start creating"
+        }
+      case 'forgotten_password':
+        return {
+          title: "Reset your password",
+          description: "Enter your email and we'll send you instructions to reset your password"
         }
       default:
         return {
-          title: "Reset password",
-          description: "Enter your email and we'll send you instructions to reset your password"
+          title: "Authentication",
+          description: "Please complete the required steps"
         }
     }
   }
