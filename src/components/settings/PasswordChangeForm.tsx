@@ -75,40 +75,32 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
 
     setIsLoading(true)
     try {
-      // First sign out to clear any existing sessions
-      await supabase.auth.signOut()
-      
-      // Sign in with current password to verify it
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      // First verify the current password by signing in
+      const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
         email: userEmail,
         password: formData.currentPassword,
       })
 
-      if (signInError) {
+      if (signInError || !session) {
         console.error("Password verification error:", signInError)
         toast.error("Current password is incorrect. Please try again.")
         setIsLoading(false)
         return
       }
 
-      // Get the fresh session after signing in
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError || !session) {
-        console.error("Session error:", sessionError)
-        toast.error("Authentication error. Please try again.")
-        setIsLoading(false)
-        return
-      }
-
-      // Update password with the fresh session
+      // Update the password using the verified session
       const { error: updateError } = await supabase.auth.updateUser({ 
         password: formData.newPassword 
+      }, {
+        auth: {
+          persistSession: true
+        }
       })
 
       if (updateError) {
         console.error("Password update error:", updateError)
         toast.error(updateError.message || "Failed to update password")
+        setIsLoading(false)
         return
       }
 
