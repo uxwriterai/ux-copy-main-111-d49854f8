@@ -1,4 +1,4 @@
-import { Moon, Sun, PanelLeft, PanelLeftClose, LogIn, LogOut } from "lucide-react"
+import { Moon, Sun, PanelLeft, PanelLeftClose, LogIn, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ThemeProvider"
 import { useSidebar } from "@/components/ui/sidebar"
@@ -109,6 +109,18 @@ export function SidebarFooterButtons() {
           </Badge>
         </div>
       )}
+      
+      {session && (
+        <Button 
+          variant="ghost" 
+          className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
+          onClick={() => navigate('/settings')}
+        >
+          <Settings className="h-5 w-5" />
+          <span className="group-data-[collapsible=icon]:hidden">Settings</span>
+        </Button>
+      )}
+
       {!session ? (
         <Button 
           variant="ghost" 
