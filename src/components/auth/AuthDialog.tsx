@@ -49,14 +49,15 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           
           try {
             // First check if user already has credits
-            const { data: existingCredits } = await supabase
+            const { data: existingCredits, error: queryError } = await supabase
               .from('user_credits')
               .select('credits_remaining')
               .eq('user_id', session.user.id)
-              .single()
 
-            if (!existingCredits) {
-              // Create initial credits for new user
+            // If no credits exist or there was an error querying, create new credits
+            if (!existingCredits?.length || queryError) {
+              console.log("No existing credits found, creating new entry")
+              
               const { error: creditsError } = await supabase
                 .from('user_credits')
                 .insert({
@@ -74,6 +75,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 setShowWelcome(true)
                 toast.success('Welcome! Your account has been created successfully.')
               }
+            } else {
+              console.log("User already has credits:", existingCredits)
+              setShowWelcome(true)
+              toast.success('Welcome back!')
             }
           } catch (err) {
             console.error("Error handling new user credits:", err)
