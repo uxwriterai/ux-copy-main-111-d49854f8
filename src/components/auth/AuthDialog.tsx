@@ -61,10 +61,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         setError("")
         toast.success('Signed out successfully')
       }
-    })
 
-    // Listen for auth errors
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      // Handle authentication errors
       if (event === 'USER_UPDATED') {
         const sessionResponse = await supabase.auth.getSession()
         if (sessionResponse.error) {
@@ -79,41 +77,43 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
     return () => {
       subscription.unsubscribe()
-      authSubscription.unsubscribe()
     }
   }, [onOpenChange])
 
   const getErrorMessage = (error: AuthError | Error | string) => {
     console.log("Processing error:", error)
     
-    // Handle the case where error is a string
     if (typeof error === 'string') {
-      return error;
+      return error
     }
 
-    // Extract message from error object
-    const message = error.message?.toLowerCase() || '';
-    
-    if (message.includes('invalid login credentials') || message.includes('invalid password')) {
-      return "Incorrect email or password. Please try again.";
+    // Handle AuthError type
+    if ('message' in error) {
+      const message = error.message?.toLowerCase() || ''
+      
+      if (message.includes('invalid login credentials') || message.includes('invalid password')) {
+        return "Incorrect email or password. Please try again."
+      }
+      if (message.includes('user not found') || message.includes('invalid user')) {
+        return "No account found with this email address."
+      }
+      if (message.includes('email not confirmed')) {
+        return "Please verify your email address before signing in."
+      }
+      if (message.includes('email already registered')) {
+        return "An account with this email already exists."
+      }
+      if (message.includes('too many requests') || message.includes('rate limit')) {
+        return "Too many attempts. Please try again later."
+      }
+      if (message.includes('network') || message.includes('connection')) {
+        return "Network error. Please check your internet connection."
+      }
+      
+      return message || "An unexpected error occurred. Please try again."
     }
-    if (message.includes('user not found') || message.includes('invalid user')) {
-      return "No account found with this email address.";
-    }
-    if (message.includes('email not confirmed')) {
-      return "Please verify your email address before signing in.";
-    }
-    if (message.includes('email already registered')) {
-      return "An account with this email already exists.";
-    }
-    if (message.includes('too many requests') || message.includes('rate limit')) {
-      return "Too many attempts. Please try again later.";
-    }
-    if (message.includes('network') || message.includes('connection')) {
-      return "Network error. Please check your internet connection.";
-    }
-    
-    return message || "An unexpected error occurred. Please try again.";
+
+    return "An unexpected error occurred. Please try again."
   }
 
   return (
