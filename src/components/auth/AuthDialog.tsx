@@ -26,7 +26,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
+  const [currentView, setCurrentView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -90,7 +90,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   }, [onOpenChange])
 
   const getAuthContent = () => {
-    switch (view) {
+    switch (currentView) {
       case 'sign_in':
         return {
           title: "Welcome back!",
@@ -115,6 +115,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   }
 
   const content = getAuthContent()
+
+  // Function to handle view changes from Auth UI
+  const handleViewChange = (view: 'sign_in' | 'sign_up' | 'forgotten_password') => {
+    console.log("View changed to:", view)
+    setCurrentView(view)
+  }
 
   return (
     <>
@@ -143,7 +149,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
           <Auth
             supabaseClient={supabase}
-            view={view}
+            view={currentView}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -179,6 +185,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
+            onViewChange={handleViewChange}
           />
         </DialogContent>
       </Dialog>
