@@ -1,13 +1,12 @@
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
+import { Session } from "@supabase/supabase-js"
 import { supabase } from "@/integrations/supabase/client"
-import { useSessionContext } from "@supabase/auth-helpers-react"
 import { toast } from "sonner"
 
 interface CreditsContextType {
   credits: number
-  setCredits: (credits: number) => void
   useCredit: () => Promise<boolean>
-  resetCredits: () => Promise<void>
+  resetCredits: () => void
 }
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
@@ -31,164 +30,167 @@ const getIpAddress = async (): Promise<string> => {
   }
 }
 
-export const CreditsProvider = ({ children }: { children: React.ReactNode }) => {
-  const [credits, setCredits] = useState(0)
-  const { session } = useSessionContext()
+export function CreditsProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const [credits, setCredits] = useState(2)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
 
   const fetchCredits = async () => {
     try {
+      console.log("Fetching credits...")
       const ipAddress = await getIpAddress()
-      if (!ipAddress) {
-        throw new Error('IP address not found')
-      }
+      console.log("IP address for credits:", ipAddress)
 
       let query = supabase
         .from('user_credits')
         .select('credits_remaining')
-        .eq('ip_address', ipAddress)
-      
-      // Add user_id condition based on session
-      if (session) {
+
+      // If user is logged in, query by user_id
+      if (session?.user) {
+        console.log("Fetching credits for user:", session.user.id)
         query = query.eq('user_id', session.user.id)
       } else {
-        query = query.is('user_id', null)
+        // Otherwise query by IP
+        console.log("Fetching credits for IP:", ipAddress)
+        query = query.eq('ip_address', ipAddress).is('user_id', null)
       }
 
-      const { data, error } = await query.maybeSingle()
+      const { data, error } = await query.single()
 
       if (error) {
-        console.error("Error fetching credits from Supabase:", error)
-        throw error
-      }
-
-      if (!data) {
-        // Create new credits entry
-        const defaultCredits = session ? 6 : 2
-        const { error: insertError } = await supabase
+        console.log("No existing credits found, creating new entry")
+        // If no credits found, create new entry
+        const initialCredits = session?.user ? 6 : 2
+        const { data: newCredits, error: insertError } = await supabase
           .from('user_credits')
           .insert({
             ip_address: ipAddress,
-            credits_remaining: defaultCredits,
+            credits_remaining: initialCredits,
             user_id: session?.user?.id || null
           })
+          .select('credits_remaining')
+          .single()
 
         if (insertError) {
           console.error("Error creating credits:", insertError)
           throw insertError
         }
 
-        setCredits(defaultCredits)
+        console.log("New credits created:", newCredits)
+        setCredits(initialCredits)
       } else {
+        console.log("Existing credits found:", data)
         setCredits(data.credits_remaining)
       }
     } catch (error) {
       console.error("Error in fetchCredits:", error)
-      toast.error("Error fetching credits. Please try again.")
+      toast.error("Failed to fetch credits")
+    } finally {
+      setLoading(false)
     }
   }
 
   const useCredit = async (): Promise<boolean> => {
     try {
-      const ipAddress = await getIpAddress()
-      if (!credits || credits <= 0) {
-        toast.error("No credits remaining")
+      if (credits <= 0) {
         return false
       }
 
+      const ipAddress = await getIpAddress()
       let query = supabase
         .from('user_credits')
         .update({ credits_remaining: credits - 1 })
-        .eq('ip_address', ipAddress)
 
-      if (session) {
+      if (session?.user) {
         query = query.eq('user_id', session.user.id)
       } else {
-        query = query.is('user_id', null)
+        query = query.eq('ip_address', ipAddress).is('user_id', null)
       }
 
       const { error } = await query
 
       if (error) {
-        console.error("Error updating credits:", error)
+        console.error("Error using credit:", error)
         throw error
       }
 
       setCredits(prev => prev - 1)
       return true
     } catch (error) {
-      console.error("Error using credit:", error)
-      toast.error("Error using credit. Please try again.")
+      console.error("Error in useCredit:", error)
+      toast.error("Failed to use credit")
       return false
     }
   }
 
-  const resetCredits = async () => {
-    try {
-      const ipAddress = await getIpAddress()
-      const maxCredits = session ? 6 : 2
-
-      let query = supabase
-        .from('user_credits')
-        .update({ credits_remaining: maxCredits })
-        .eq('ip_address', ipAddress)
-
-      if (session) {
-        query = query.eq('user_id', session.user.id)
-      } else {
-        query = query.is('user_id', null)
-      }
-
-      const { error } = await query
-
-      if (error) {
-        console.error("Error resetting credits:", error)
-        throw error
-      }
-
-      setCredits(maxCredits)
-    } catch (error) {
-      console.error("Error in resetCredits:", error)
-      toast.error("Error resetting credits. Please try again.")
-    }
+  const resetCredits = () => {
+    console.log("Resetting credits state")
+    setCredits(2)
   }
 
-  // Listen for auth state changes to handle credits
+  // Initialize session state
   useEffect(() => {
-    const handleAuthChange = async () => {
-      if (session) {
-        // User just logged in, ensure they have 6 credits
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session:", session)
+      setSession(session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("Auth state changed:", _event, session)
+      setSession(session)
+
+      if (_event === 'SIGNED_IN') {
+        // Fetch or create credits for new user
         const ipAddress = await getIpAddress()
-        const { data } = await supabase
+        const { data: existingCredits } = await supabase
           .from('user_credits')
           .select('credits_remaining')
           .eq('user_id', session.user.id)
           .single()
 
-        if (!data) {
-          // New user, set up their credits
-          await supabase
+        if (!existingCredits) {
+          console.log("Creating credits for new user")
+          const { error: insertError } = await supabase
             .from('user_credits')
             .insert({
               ip_address: ipAddress,
               credits_remaining: 6,
               user_id: session.user.id
             })
-          setCredits(6)
+
+          if (insertError) {
+            console.error("Error creating user credits:", insertError)
+            toast.error("Failed to initialize credits")
+          } else {
+            setCredits(6)
+          }
         } else {
-          setCredits(data.credits_remaining)
+          setCredits(existingCredits.credits_remaining)
         }
-      } else {
-        // User logged out, fetch IP-based credits
+      } else if (_event === 'SIGNED_OUT') {
+        // Restore IP-based credits
         fetchCredits()
       }
-    }
+    })
 
-    handleAuthChange()
-  }, [session])
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Fetch initial credits
+  useEffect(() => {
+    if (!loading) {
+      fetchCredits()
+    }
+  }, [session, loading])
 
   const value = {
     credits,
-    setCredits,
     useCredit,
     resetCredits,
   }
@@ -200,7 +202,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   )
 }
 
-export const useCredits = () => {
+export function useCredits() {
   const context = useContext(CreditsContext)
   if (context === undefined) {
     throw new Error("useCredits must be used within a CreditsProvider")
