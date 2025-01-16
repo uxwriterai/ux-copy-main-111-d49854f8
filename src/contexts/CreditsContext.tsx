@@ -39,11 +39,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   const fetchCredits = async () => {
     try {
-      const ipAddress = await getIpAddress();
-      if (!ipAddress) {
-        throw new Error('IP address not found');
-      }
-
       let query = supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -53,6 +48,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         console.log("Fetching credits for authenticated user:", session.user.id);
         query = query.eq('user_id', session.user.id);
       } else {
+        const ipAddress = await getIpAddress();
         console.log("Fetching credits for anonymous user with IP:", ipAddress);
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
@@ -69,13 +65,13 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         const defaultCredits = session?.user ? 6 : 2;
         console.log(`Creating new credits entry with ${defaultCredits} credits for ${session?.user ? 'user' : 'IP'}`);
         
+        const insertData = session?.user 
+          ? { user_id: session.user.id, credits_remaining: defaultCredits }
+          : { ip_address: await getIpAddress(), credits_remaining: defaultCredits };
+        
         const { error: insertError } = await supabase
           .from('user_credits')
-          .insert({
-            ip_address: ipAddress,
-            credits_remaining: defaultCredits,
-            user_id: session?.user?.id || null
-          });
+          .insert(insertData);
 
         if (insertError) {
           console.error("Error creating credits:", insertError);
@@ -102,7 +98,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         return false;
       }
 
-      const ipAddress = await getIpAddress();
       let query = supabase
         .from('user_credits')
         .update({ credits_remaining: credits - 1 });
@@ -110,6 +105,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if (session?.user) {
         query = query.eq('user_id', session.user.id);
       } else {
+        const ipAddress = await getIpAddress();
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
@@ -131,7 +127,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   const resetCredits = async () => {
     try {
-      const ipAddress = await getIpAddress();
       const maxCredits = session?.user ? 6 : 2;
 
       let query = supabase
@@ -141,6 +136,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if (session?.user) {
         query = query.eq('user_id', session.user.id);
       } else {
+        const ipAddress = await getIpAddress();
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
