@@ -26,6 +26,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in')
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -115,9 +116,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Welcome</DialogTitle>
+            <DialogTitle>
+              {view === 'sign_in' ? 'Sign in' : 'Create your account'}
+            </DialogTitle>
             <DialogDescription>
-              Sign in to unlock more credits and features.
+              {view === 'sign_in' 
+                ? 'Enter your email and password below to login'
+                : 'Sign up to unlock more credits and features.'}
             </DialogDescription>
           </DialogHeader>
           
@@ -129,7 +134,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
           <Auth
             supabaseClient={supabase}
-            view="sign_in"
+            view={view}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -146,9 +151,20 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 input: 'w-full',
               }
             }}
+            localization={{
+              variables: {
+                sign_in: {
+                  email_input_placeholder: 'name@example.com',
+                },
+                sign_up: {
+                  email_input_placeholder: 'name@example.com',
+                }
+              }
+            }}
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
+            onViewChange={(newView) => setView(newView as 'sign_in' | 'sign_up')}
           />
         </DialogContent>
       </Dialog>
