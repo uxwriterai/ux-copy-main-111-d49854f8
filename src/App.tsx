@@ -18,9 +18,9 @@ function App() {
       <ThemeProvider>
         <CreditsProvider>
           <SidebarProvider>
-            <div className="flex min-h-screen">
+            <div className="flex min-h-screen w-full">
               <AppSidebar />
-              <main className="flex-1">
+              <main className="flex-1 w-full">
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/copy-improver" element={<CopyImprover />} />
