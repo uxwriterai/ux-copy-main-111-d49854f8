@@ -21,6 +21,7 @@ export function SidebarFooterButtons() {
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
+  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -195,6 +196,7 @@ export function SidebarFooterButtons() {
             <Button onClick={() => {
               setShowCreditsDialog(false)
               setShowAuthDialog(true)
+              setView('sign_up') // Set the initial view to sign_up
             }}>
               Sign up
             </Button>
@@ -205,7 +207,7 @@ export function SidebarFooterButtons() {
       <AuthDialog 
         open={showAuthDialog} 
         onOpenChange={setShowAuthDialog}
-        initialView="sign_in"
+        initialView={view} // Use the view state instead of hardcoded 'sign_in'
       />
     </>
   )
