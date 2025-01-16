@@ -40,6 +40,12 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   const fetchCredits = async () => {
     try {
       console.log("Fetching credits, session state:", session?.user?.id);
+      
+      if (isSessionLoading) {
+        console.log("Session is still loading, waiting...");
+        return;
+      }
+
       let query = supabase
         .from('user_credits')
         .select('credits_remaining')
