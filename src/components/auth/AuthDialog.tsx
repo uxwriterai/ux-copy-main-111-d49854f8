@@ -45,10 +45,25 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         })
         
         if (timeDiff < 5000) {
-          console.log("New user detected, showing welcome message and confetti")
-          setShowConfetti(true)
-          setShowWelcome(true)
-          toast.success('Welcome! Your account has been created successfully.')
+          console.log("New user detected, creating credits entry")
+          // Create initial credits for new user
+          const { error: creditsError } = await supabase
+            .from('user_credits')
+            .insert({
+              user_id: session.user.id,
+              credits_remaining: 6,
+              ip_address: await getIpAddress()
+            })
+
+          if (creditsError) {
+            console.error("Error creating initial credits:", creditsError)
+            toast.error('Error creating initial credits')
+          } else {
+            console.log("Successfully created initial credits")
+            setShowConfetti(true)
+            setShowWelcome(true)
+            toast.success('Welcome! Your account has been created successfully.')
+          }
         } else {
           toast.success('Welcome back!')
         }
@@ -88,6 +103,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       subscription.unsubscribe()
     }
   }, [onOpenChange])
+
+  // Helper function to get IP address
+  const getIpAddress = async (): Promise<string> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json')
+      const data = await response.json()
+      return data.ip
+    } catch (error) {
+      console.error('Error fetching IP:', error)
+      return '0.0.0.0' // fallback IP
+    }
+  }
 
   const getAuthContent = () => {
     switch (view) {
