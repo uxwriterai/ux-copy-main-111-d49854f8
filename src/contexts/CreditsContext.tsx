@@ -35,7 +35,7 @@ export function CreditsProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [credits, setCredits] = useState(2)
+  const [credits, setCredits] = useState<number | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -95,11 +95,11 @@ export function CreditsProvider({
   }
 
   const useCredit = async (): Promise<boolean> => {
-    try {
-      if (credits <= 0) {
-        return false
-      }
+    if (!credits || credits <= 0) {
+      return false
+    }
 
+    try {
       const ipAddress = await getIpAddress()
       let query = supabase
         .from('user_credits')
@@ -118,7 +118,7 @@ export function CreditsProvider({
         throw error
       }
 
-      setCredits(prev => prev - 1)
+      setCredits(prev => (prev !== null ? prev - 1 : null))
       return true
     } catch (error) {
       console.error("Error in useCredit:", error)
@@ -129,7 +129,8 @@ export function CreditsProvider({
 
   const resetCredits = () => {
     console.log("Resetting credits state")
-    setCredits(2)
+    setCredits(null)
+    fetchCredits()
   }
 
   // Initialize session state
@@ -179,20 +180,27 @@ export function CreditsProvider({
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      console.log("Cleaning up auth subscription")
+      subscription.unsubscribe()
+    }
   }, [])
 
   // Fetch initial credits
   useEffect(() => {
-    if (!loading) {
+    if (!loading && credits === null) {
       fetchCredits()
     }
-  }, [session, loading])
+  }, [session, loading, credits])
 
   const value = {
-    credits,
+    credits: credits ?? 0,
     useCredit,
     resetCredits,
+  }
+
+  if (loading || credits === null) {
+    return null
   }
 
   return (
