@@ -180,7 +180,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
-            onViewChange={(newView) => setView(newView)}
           />
         </DialogContent>
       </Dialog>
