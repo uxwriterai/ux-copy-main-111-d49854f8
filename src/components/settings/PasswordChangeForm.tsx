@@ -2,7 +2,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
 import { PasswordInput } from "./PasswordInput"
-import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface PasswordChangeFormProps {
@@ -15,7 +14,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
     newPassword: "",
     confirmPassword: ""
   })
-  const [isLoading, setIsLoading] = useState(false)
   const [passwordVisibility, setPasswordVisibility] = useState({
     currentPassword: false,
     newPassword: false,
@@ -62,7 +60,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       newPassword: "",
       confirmPassword: ""
     })
-    setIsLoading(false)
   }
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -74,7 +71,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       return
     }
 
-    setIsLoading(true)
     try {
       // First verify the current password by signing in
       const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
@@ -85,7 +81,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       if (signInError || !session) {
         console.error("Password verification error:", signInError)
         toast.error("Current password is incorrect. Please try again.")
-        setIsLoading(false)
         return
       }
 
@@ -97,7 +92,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       if (updateError) {
         console.error("Password update error:", updateError)
         toast.error(updateError.message || "Failed to update password")
-        setIsLoading(false)
         return
       }
 
@@ -107,7 +101,6 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
     } catch (error: any) {
       console.error("Password change error:", error)
       toast.error(error.message || "An unexpected error occurred")
-      setIsLoading(false)
     }
   }
 
@@ -155,15 +148,8 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
         onToggleShow={() => togglePasswordVisibility('confirmPassword')}
         onChange={handleInputChange}
       />
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Updating...
-          </>
-        ) : (
-          "Update Password"
-        )}
+      <Button type="submit" className="w-full">
+        Update Password
       </Button>
     </form>
   )
