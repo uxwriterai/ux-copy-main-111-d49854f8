@@ -110,8 +110,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         }
       case 'sign_up':
         return {
-          title: "Join our community",
-          description: "Create an account to unlock premium features and start creating"
+          title: "Create an account",
+          description: "Join our community and unlock all features"
         }
       case 'forgotten_password':
         return {
