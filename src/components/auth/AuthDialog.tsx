@@ -26,7 +26,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in')
+  const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
