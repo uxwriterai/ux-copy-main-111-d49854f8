@@ -76,7 +76,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
     setIsLoading(true)
     try {
       // First verify the current password by attempting to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: userEmail,
         password: formData.currentPassword,
       })
@@ -88,9 +88,9 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
         return
       }
 
-      // If current password is verified, proceed with password update
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: formData.newPassword
+      // If current password is verified, proceed with password update using the new session
+      const { error: updateError } = await supabase.auth.updateUser({ 
+        password: formData.newPassword 
       })
 
       if (updateError) {
