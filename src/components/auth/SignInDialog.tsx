@@ -61,7 +61,6 @@ export function SignInDialog({
               container: 'w-full',
               button: 'w-full',
               input: 'w-full',
-              anchor: 'hidden',
             }
           }}
           localization={{

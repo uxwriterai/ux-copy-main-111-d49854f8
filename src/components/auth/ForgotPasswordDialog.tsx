@@ -59,7 +59,6 @@ export function ForgotPasswordDialog({
               container: 'w-full',
               button: 'w-full',
               input: 'w-full',
-              anchor: 'hidden',
             }
           }}
           localization={{

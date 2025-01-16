@@ -59,7 +59,6 @@ export function CreateAccountDialog({
               container: 'w-full',
               button: 'w-full',
               input: 'w-full',
-              anchor: 'hidden',
             }
           }}
           localization={{
