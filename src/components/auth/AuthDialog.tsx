@@ -32,6 +32,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event)
+      
       if (event === 'SIGNED_IN' && session?.user) {
         // Check if this is a new sign up by comparing timestamps
         const createdAt = new Date(session.user.created_at).getTime()
@@ -49,17 +50,27 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           console.log("New user detected, showing welcome message and confetti")
           setShowConfetti(true)
           setShowWelcome(true)
+          toast.success('Welcome! Your account has been created successfully.')
+        } else {
+          toast.success('Welcome back!')
         }
         onOpenChange(false)
-        toast.success('Signed in successfully')
       }
+
       if (event === 'SIGNED_OUT') {
         setError("")
+        toast.success('Signed out successfully')
       }
+
+      // Handle authentication errors
       if (event === 'USER_UPDATED' && !session) {
         const errorData = (session as any)?.error
         if (errorData) {
-          setError(getErrorMessage(errorData))
+          const errorMessage = getErrorMessage(errorData)
+          setError(errorMessage)
+          toast.error('Authentication Error', {
+            description: errorMessage
+          })
         }
       }
     })
@@ -73,6 +84,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         return "Invalid email or password. Please check your credentials and try again."
       case "User not found":
         return "No account found with these credentials."
+      case "Email not confirmed":
+        return "Please verify your email address before signing in."
+      case "Email already registered":
+        return "An account with this email already exists."
       default:
         return error.message
     }
@@ -88,7 +103,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           width: '100%', 
           height: '100%', 
           pointerEvents: 'none',
-          zIndex: 2147483647 // Maximum possible z-index value
+          zIndex: 2147483647
         }}>
           <Confetti
             width={window.innerWidth}
