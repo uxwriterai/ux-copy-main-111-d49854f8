@@ -185,6 +185,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
+            onViewChange={(newView) => {
+              console.log("View changed to:", newView)
+              setView(newView as 'sign_in' | 'sign_up' | 'forgotten_password')
+            }}
           />
         </DialogContent>
       </Dialog>
