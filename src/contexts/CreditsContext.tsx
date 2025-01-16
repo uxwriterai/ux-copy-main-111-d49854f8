@@ -127,7 +127,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   const resetCredits = async () => {
     try {
-      // When resetting credits (e.g., on logout), we want to fetch the IP-based credits
       const ipAddress = await getIpAddress();
       
       // First, check if there's an existing IP-based entry
@@ -144,11 +143,8 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       if (existingIpCredits) {
-        // If IP-based credits exist, use those
-        console.log("Found existing IP-based credits:", existingIpCredits.credits_remaining);
         setCredits(existingIpCredits.credits_remaining);
       } else {
-        // If no IP-based credits exist, create a new entry with 2 credits
         const { error: insertError } = await supabase
           .from('user_credits')
           .insert({
@@ -162,7 +158,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           throw insertError;
         }
 
-        console.log("Created new IP-based credits with 2 credits");
         setCredits(2);
       }
     } catch (error) {
@@ -171,11 +166,10 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  // Fetch credits when session changes or component mounts
   useEffect(() => {
     console.log("Session state changed:", session?.user?.id);
     fetchCredits();
-  }, [session?.user?.id]); // Only re-run when user ID changes
+  }, [session?.user?.id]);
 
   const value = {
     credits,
