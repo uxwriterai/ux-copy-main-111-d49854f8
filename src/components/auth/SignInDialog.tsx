@@ -11,8 +11,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useTheme } from "@/components/ThemeProvider"
 import { useState } from "react"
-import { toast } from "sonner"
-import { getErrorMessage } from "@/utils/authErrors"
 
 interface SignInDialogProps {
   open: boolean
@@ -76,21 +74,6 @@ export function SignInDialog({
           providers={[]}
           redirectTo={window.location.origin + window.location.pathname}
         />
-        
-        <div className="mt-4 text-sm text-center space-y-2">
-          <button 
-            onClick={onForgotPassword}
-            className="text-primary hover:underline block w-full"
-          >
-            Forgot password?
-          </button>
-          <button 
-            onClick={onCreateAccount}
-            className="text-primary hover:underline block w-full"
-          >
-            Don't have an account? Create one
-          </button>
-        </div>
       </DialogContent>
     </Dialog>
   )
