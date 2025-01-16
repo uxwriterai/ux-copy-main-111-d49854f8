@@ -147,7 +147,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             }}
             theme={theme}
             providers={[]}
-            redirectTo={window.location.origin}
+            redirectTo={window.location.origin + window.location.pathname}
           />
         </DialogContent>
       </Dialog>
