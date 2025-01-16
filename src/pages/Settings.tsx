@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,18 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    const getUserEmail = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      console.log("Current user:", user)
+      if (user?.email) {
+        setUserEmail(user.email)
+      }
+    }
+    getUserEmail()
+  }, [])
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,7 +66,14 @@ export default function Settings() {
             Manage your account settings and password
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label>Email Address</Label>
+            <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+              {userEmail || 'Loading...'}
+            </div>
+          </div>
+          
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="current-password">Current Password</Label>
