@@ -11,7 +11,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { generateLandingPageCopy } from "@/services/landingPageService";
 import { LandingPageResult } from "@/components/landing-page/LandingPageResult";
 import { useCredits } from "@/contexts/CreditsContext";
@@ -58,6 +58,8 @@ const LandingPageGenerator = () => {
   const [sections, setSections] = useState([]);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const { toast } = useToast();
+  const { credits, useCredit } = useCredits();
   const [formData, setFormData] = useState({
     productName: "",
     industry: "",
@@ -67,7 +69,6 @@ const LandingPageGenerator = () => {
     keyFeatures: "",
     additionalContext: "",
   });
-  const { credits, useCredit } = useCredits();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -90,18 +91,31 @@ const LandingPageGenerator = () => {
       }
 
       // Check and use a credit before proceeding
-      if (!await useCredit()) {
-        throw new Error('No credits remaining');
+      const creditUsed = await useCredit();
+      if (!creditUsed) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No credits remaining. Please sign up for more credits.",
+        });
+        return;
       }
 
       setIsLoading(true);
       const generatedSections = await generateLandingPageCopy(formData);
       setSections(generatedSections);
       setShowResults(true);
-      toast.success("Landing page copy generated successfully!");
+      toast({
+        title: "Success",
+        description: "Landing page copy generated successfully!",
+      });
     } catch (error) {
       console.error("Error generating landing page copy:", error);
-      toast.error("Failed to generate landing page copy. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate landing page copy. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }

@@ -2,27 +2,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI("AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w");
 
-// Helper function to check credits before making API calls
-const checkCreditsAndGetModel = () => {
-  // Get credits context from sessionStorage and IP
-  const ip = sessionStorage.getItem('current_ip');
-  if (!ip) {
-    throw new Error('IP address not found');
-  }
-  
-  const credits = sessionStorage.getItem(`credits_${ip}`);
-  const remainingCredits = credits ? parseInt(credits) : 0;
-  
-  if (remainingCredits <= 0) {
-    throw new Error('No credits remaining');
-  }
-  
-  // Reduce credits by 1
-  sessionStorage.setItem(`credits_${ip}`, (remainingCredits - 1).toString());
-  
-  return genAI.getGenerativeModel({ model: "gemini-pro" });
-};
-
 interface LandingPageRequest {
   productName: string;
   industry: string;
@@ -34,7 +13,7 @@ interface LandingPageRequest {
 }
 
 export const generateLandingPageCopy = async (request: LandingPageRequest) => {
-  const model = checkCreditsAndGetModel();
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
   const prompt = `Create landing page copy for ${request.productName} with the following details:
 
@@ -73,8 +52,10 @@ Generate clear, concise, and engaging copy for each section. The copy should be 
 Keep the copy concise, impactful, and focused on the value proposition. Use the ${request.tone.toLowerCase()} tone throughout.`;
 
   try {
+    console.log("Generating landing page copy...");
     const result = await model.generateContent(prompt);
     const response = result.response.text();
+    console.log("Successfully generated landing page copy");
     
     // Parse the response into sections
     const sections = response
