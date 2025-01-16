@@ -33,71 +33,48 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       console.log("Auth state changed:", event)
       
       if (event === 'SIGNED_IN' && session?.user) {
-        const createdAt = new Date(session.user.created_at).getTime()
-        const lastSignIn = new Date(session.user.last_sign_in_at).getTime()
-        const timeDiff = Math.abs(createdAt - lastSignIn)
-        
-        console.log("Time comparison:", {
-          createdAt,
-          lastSignIn,
-          timeDiff,
-          isNewUser: timeDiff < 5000
-        })
-        
-        if (timeDiff < 5000) {
+        // Check if this is a new user by querying for existing credits
+        const { data: existingCredits, error: queryError } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+
+        if (queryError) {
+          console.error("Error checking existing credits:", queryError)
+        }
+
+        // If no existing credits found, this is a new user
+        if (!existingCredits) {
           console.log("New user detected, creating credits entry")
           
           try {
-            // First delete any IP-based credits for this user
-            const { error: deleteError } = await supabase
+            const { error: creditsError } = await supabase
               .from('user_credits')
-              .delete()
-              .is('user_id', null)
-              .eq('ip_address', await getIpAddress())
+              .insert({
+                user_id: session.user.id,
+                credits_remaining: 6,
+                ip_address: await getIpAddress()
+              })
 
-            if (deleteError) {
-              console.error("Error deleting IP-based credits:", deleteError)
-            }
-
-            // Then check for existing user credits
-            const { data: existingCredits, error: queryError } = await supabase
-              .from('user_credits')
-              .select('credits_remaining')
-              .eq('user_id', session.user.id)
-
-            // If no credits exist or there was an error querying, create new credits
-            if (!existingCredits?.length || queryError) {
-              console.log("No existing credits found, creating new entry")
-              
-              const { error: creditsError } = await supabase
-                .from('user_credits')
-                .insert({
-                  user_id: session.user.id,
-                  credits_remaining: 6,
-                  ip_address: await getIpAddress()
-                })
-
-              if (creditsError) {
-                console.error("Error creating initial credits:", creditsError)
-                toast.error('Error creating initial credits')
-              } else {
-                console.log("Successfully created initial credits")
-                setShowConfetti(true)
-                setShowWelcome(true)
-                toast.success('Welcome! Your account has been created successfully.')
-              }
+            if (creditsError) {
+              console.error("Error creating initial credits:", creditsError)
+              toast.error('Error creating initial credits')
             } else {
-              console.log("User already has credits:", existingCredits)
+              console.log("Successfully created initial credits")
+              setShowConfetti(true)
               setShowWelcome(true)
-              toast.success('Welcome back!')
+              toast.success('Welcome! Your account has been created successfully.')
             }
           } catch (err) {
             console.error("Error handling new user credits:", err)
             toast.error('Error setting up your account')
           }
         } else {
+          console.log("Existing user detected with credits:", existingCredits)
           toast.success('Welcome back!')
         }
+        
         setError("")
         onOpenChange(false)
       }
