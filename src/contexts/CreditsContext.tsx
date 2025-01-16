@@ -14,7 +14,7 @@ interface CreditsContextType {
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
-  const [credits, setCredits] = useState<number>(8)
+  const [credits, setCredits] = useState<number>(2) // Default to non-logged in user limit
   const [session, setSession] = useState<Session | null>(null)
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
@@ -35,16 +35,18 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       const ipAddress = await getIpAddress()
       if (!ipAddress) {
         console.error("Could not fetch IP address")
-        setCredits(8)
+        setCredits(session ? 6 : 2) // Set default based on auth status
         return
       }
 
       const userCredits = await getUserCredits(ipAddress)
-      console.log("Setting credits to:", userCredits)
-      setCredits(userCredits)
+      const maxCredits = session ? 6 : 2 // Max credits based on auth status
+      const finalCredits = Math.min(userCredits, maxCredits)
+      console.log("Setting credits to:", finalCredits)
+      setCredits(finalCredits)
     } catch (error) {
       console.error("Error resetting credits:", error)
-      setCredits(8)
+      setCredits(session ? 6 : 2) // Set default based on auth status
     }
   }
 
@@ -78,11 +80,11 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       
       if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in, resetting credits")
+        console.log("User signed in, resetting credits to logged-in limit")
         await resetCredits()
         broadcastChannel.postMessage({ type: 'SIGNED_IN' })
       } else if (event === 'SIGNED_OUT') {
-        console.log("User signed out, resetting credits")
+        console.log("User signed out, resetting credits to non-logged-in limit")
         await resetCredits()
         broadcastChannel.postMessage({ type: 'SIGNED_OUT' })
       }
