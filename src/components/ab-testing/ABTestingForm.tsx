@@ -168,6 +168,7 @@ export const ABTestingForm = () => {
       <AuthDialog 
         open={showAuthDialog} 
         onOpenChange={setShowAuthDialog} 
+        view="sign_up"
       />
     </>
   );

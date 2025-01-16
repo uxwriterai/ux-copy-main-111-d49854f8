@@ -18,7 +18,9 @@ export function SidebarFooterButtons() {
   const { state, toggleSidebar } = useSidebar()
   const { credits, resetCredits } = useCredits()
   const isCollapsed = state === "collapsed"
-  const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const [showSignInDialog, setShowSignInDialog] = useState(false)
+  const [showSignUpDialog, setShowSignUpDialog] = useState(false)
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const navigate = useNavigate()
@@ -91,6 +93,24 @@ export function SidebarFooterButtons() {
     }
   }
 
+  const handleViewChange = (view: 'sign_in' | 'sign_up' | 'forgotten_password') => {
+    setShowSignInDialog(false)
+    setShowSignUpDialog(false)
+    setShowForgotPasswordDialog(false)
+
+    switch (view) {
+      case 'sign_in':
+        setShowSignInDialog(true)
+        break
+      case 'sign_up':
+        setShowSignUpDialog(true)
+        break
+      case 'forgotten_password':
+        setShowForgotPasswordDialog(true)
+        break
+    }
+  }
+
   return (
     <>
       {!isCollapsed && (
@@ -125,7 +145,7 @@ export function SidebarFooterButtons() {
         <Button 
           variant="ghost" 
           className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
-          onClick={() => setShowAuthDialog(true)}
+          onClick={() => setShowSignInDialog(true)}
         >
           <LogIn className="h-5 w-5" />
           <span className="group-data-[collapsible=icon]:hidden">Sign in</span>
@@ -194,7 +214,7 @@ export function SidebarFooterButtons() {
             </Button>
             <Button onClick={() => {
               setShowCreditsDialog(false)
-              setShowAuthDialog(true)
+              setShowSignUpDialog(true)
             }}>
               Sign up
             </Button>
@@ -202,7 +222,26 @@ export function SidebarFooterButtons() {
         </DialogContent>
       </Dialog>
 
-      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
+      <AuthDialog 
+        open={showSignInDialog} 
+        onOpenChange={setShowSignInDialog}
+        view="sign_in"
+        onViewChange={handleViewChange}
+      />
+
+      <AuthDialog 
+        open={showSignUpDialog} 
+        onOpenChange={setShowSignUpDialog}
+        view="sign_up"
+        onViewChange={handleViewChange}
+      />
+
+      <AuthDialog 
+        open={showForgotPasswordDialog} 
+        onOpenChange={setShowForgotPasswordDialog}
+        view="forgotten_password"
+        onViewChange={handleViewChange}
+      />
     </>
   )
 }

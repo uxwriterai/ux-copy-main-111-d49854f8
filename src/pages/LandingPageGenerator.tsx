@@ -301,6 +301,7 @@ const LandingPageGenerator = () => {
         <AuthDialog 
           open={showAuthDialog} 
           onOpenChange={setShowAuthDialog} 
+          view="sign_up"
         />
       </div>
     </div>
