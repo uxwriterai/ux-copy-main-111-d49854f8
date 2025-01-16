@@ -1,16 +1,15 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { PasswordInput } from "./PasswordInput"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface PasswordChangeFormProps {
   userEmail: string | null;
 }
 
 export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
-  const { toast } = useToast()
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -25,56 +24,32 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
 
   const validatePasswords = () => {
     if (!formData.currentPassword) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Current password is required"
-      })
+      toast.error("Current password is required")
       return false
     }
 
     if (!formData.newPassword) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "New password is required"
-      })
+      toast.error("New password is required")
       return false
     }
 
     if (!formData.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please confirm your new password"
-      })
+      toast.error("Please confirm your new password")
       return false
     }
 
     if (formData.newPassword.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "New password must be at least 6 characters long"
-      })
+      toast.error("New password must be at least 6 characters long")
       return false
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "New passwords don't match"
-      })
+      toast.error("New passwords don't match")
       return false
     }
 
     if (formData.currentPassword === formData.newPassword) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "New password must be different from your current password"
-      })
+      toast.error("New password must be different from your current password")
       return false
     }
 
@@ -86,11 +61,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
     
     if (!validatePasswords()) return
     if (!userEmail) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "User email not found. Please try logging in again."
-      })
+      toast.error("User email not found. Please try logging in again.")
       return
     }
 
@@ -107,18 +78,10 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       if (signInError) {
         setIsLoading(false)
         // Check specifically for invalid credentials
-        if (signInError.message.includes("Invalid login credentials")) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Current password is incorrect. Please try again."
-          })
+        if (signInError.message?.includes("Invalid login credentials")) {
+          toast.error("Current password is incorrect. Please try again.")
         } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to verify current password. Please try again."
-          })
+          toast.error("Failed to verify current password. Please try again.")
         }
         return
       }
@@ -131,19 +94,12 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       if (updateError) {
         console.error("Password update error:", updateError)
         setIsLoading(false)
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: updateError.message || "Failed to update password"
-        })
+        toast.error(updateError.message || "Failed to update password")
         return
       }
 
       // Success case
-      toast({
-        title: "Success",
-        description: "Password updated successfully"
-      })
+      toast.success("Password updated successfully")
       
       // Reset form
       setFormData({
@@ -153,11 +109,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
       })
     } catch (error: any) {
       console.error("Password change error:", error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "An unexpected error occurred"
-      })
+      toast.error(error.message || "An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
