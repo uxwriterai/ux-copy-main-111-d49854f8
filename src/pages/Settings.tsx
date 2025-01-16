@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/integrations/supabase/client"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Eye, EyeOff } from "lucide-react"
 
 interface PasswordInputProps { 
@@ -80,11 +80,7 @@ export default function Settings() {
         const { data: { user }, error } = await supabase.auth.getUser()
         if (error) {
           console.error("Error fetching user:", error)
-          toast({
-            title: "Error",
-            description: "Unable to fetch user information",
-            variant: "destructive",
-          })
+          toast.error("Unable to fetch user information")
           return
         }
         if (user?.email) {
@@ -92,11 +88,7 @@ export default function Settings() {
         }
       } catch (error) {
         console.error("Error in getUserEmail:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load user information",
-          variant: "destructive",
-        })
+        toast.error("Failed to load user information")
       }
     }
     getUserEmail()
@@ -104,56 +96,32 @@ export default function Settings() {
 
   const validatePasswords = () => {
     if (!formData.currentPassword) {
-      toast({
-        title: "Validation Error",
-        description: "Current password is required",
-        variant: "destructive",
-      })
+      toast.error("Current password is required")
       return false
     }
 
     if (!formData.newPassword) {
-      toast({
-        title: "Validation Error",
-        description: "New password is required",
-        variant: "destructive",
-      })
+      toast.error("New password is required")
       return false
     }
 
     if (!formData.confirmPassword) {
-      toast({
-        title: "Validation Error",
-        description: "Please confirm your new password",
-        variant: "destructive",
-      })
+      toast.error("Please confirm your new password")
       return false
     }
 
     if (formData.newPassword.length < 6) {
-      toast({
-        title: "Validation Error",
-        description: "New password must be at least 6 characters long",
-        variant: "destructive",
-      })
+      toast.error("New password must be at least 6 characters long")
       return false
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      toast({
-        title: "Validation Error",
-        description: "New passwords don't match",
-        variant: "destructive",
-      })
+      toast.error("New passwords don't match")
       return false
     }
 
     if (formData.currentPassword === formData.newPassword) {
-      toast({
-        title: "Validation Error",
-        description: "New password must be different from your current password",
-        variant: "destructive",
-      })
+      toast.error("New password must be different from your current password")
       return false
     }
 
@@ -174,12 +142,12 @@ export default function Settings() {
       })
 
       if (signInError) {
-        toast({
-          title: "Authentication Error",
-          description: "Current password is incorrect",
-          variant: "destructive",
-        })
-        setIsLoading(false)
+        console.error("Error verifying current password:", signInError)
+        if (signInError.message.includes("Invalid login credentials")) {
+          toast.error("Current password is incorrect")
+        } else {
+          toast.error("Error verifying current password")
+        }
         return
       }
 
@@ -190,31 +158,16 @@ export default function Settings() {
       if (updateError) {
         console.error("Error updating password:", updateError)
         if (updateError.message.includes("same_password")) {
-          toast({
-            title: "Update Error",
-            description: "New password must be different from your current password",
-            variant: "destructive",
-          })
+          toast.error("New password must be different from your current password")
         } else if (updateError.message.includes("auth")) {
-          toast({
-            title: "Authentication Error",
-            description: "Authentication error. Please try logging in again",
-            variant: "destructive",
-          })
+          toast.error("Authentication error. Please try logging in again")
         } else {
-          toast({
-            title: "Update Error",
-            description: updateError.message || "Failed to update password",
-            variant: "destructive",
-          })
+          toast.error(updateError.message || "Failed to update password")
         }
         return
       }
 
-      toast({
-        title: "Success",
-        description: "Password updated successfully",
-      })
+      toast.success("Password updated successfully")
       setFormData({
         currentPassword: "",
         newPassword: "",
@@ -222,11 +175,7 @@ export default function Settings() {
       })
     } catch (error: any) {
       console.error("Error updating password:", error)
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive",
-      })
+      toast.error(error.message || "An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
