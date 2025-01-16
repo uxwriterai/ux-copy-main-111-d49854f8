@@ -228,7 +228,8 @@ const MicrocopyGenerator = () => {
                         ...prev,
                         additionalNotes: e.target.value,
                       }))
-                    />
+                    }
+                  />
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
