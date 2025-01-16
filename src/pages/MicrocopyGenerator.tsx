@@ -71,7 +71,7 @@ const MicrocopyGenerator = () => {
   const [generatedCopy, setGeneratedCopy] = useState<string[]>([]);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [authView, setAuthView] = useState<'sign_in' | 'sign_up'>('sign_in');
+  const [authView, setAuthView] = useState<'sign_in' | 'sign_up'>('sign_up');
   const { toast: toastFn } = useToast();
   const { credits, useCredit } = useCredits();
 
