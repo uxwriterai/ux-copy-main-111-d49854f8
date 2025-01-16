@@ -66,9 +66,9 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     // Listen for auth errors
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'USER_UPDATED') {
-        const error = supabase.auth.getError()
-        if (error) {
-          const errorMessage = getErrorMessage(error)
+        const { error: authError } = supabase.auth.getSession()
+        if (authError) {
+          const errorMessage = getErrorMessage(authError)
           setError(errorMessage)
           toast.error('Authentication Error', {
             description: errorMessage
@@ -83,7 +83,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }, [onOpenChange])
 
-  const getErrorMessage = (error: AuthError) => {
+  const getErrorMessage = (error: AuthError | Error | string) => {
     console.log("Processing error:", error)
     
     // Handle the case where error is a string
@@ -91,21 +91,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       return error;
     }
 
-    // Extract message from error object or response body
-    let message = '';
-    try {
-      if (error.message) {
-        message = error.message;
-      } else if (typeof error.body === 'string') {
-        const body = JSON.parse(error.body);
-        message = body.message || body.error_description || 'An unexpected error occurred';
-      }
-    } catch (e) {
-      console.error('Error parsing error message:', e);
-      message = error.message || 'An unexpected error occurred';
-    }
-
-    message = message.toLowerCase();
+    // Extract message from error object
+    const message = error.message?.toLowerCase() || '';
     
     if (message.includes('invalid login credentials') || message.includes('invalid password')) {
       return "Incorrect email or password. Please try again.";
