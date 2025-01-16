@@ -56,6 +56,14 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
     return true
   }
 
+  const resetForm = () => {
+    setFormData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    })
+  }
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -94,13 +102,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
 
       // Success case
       toast.success("Password updated successfully")
-      
-      // Reset form
-      setFormData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      })
+      resetForm()
     } catch (error: any) {
       console.error("Password change error:", error)
       toast.error(error.message || "An unexpected error occurred")
