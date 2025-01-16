@@ -37,13 +37,23 @@ export default function Settings() {
       return
     }
 
+    if (currentPassword === newPassword) {
+      toast.error("New password must be different from your current password")
+      return
+    }
+
     setIsLoading(true)
     try {
       const { error } = await supabase.auth.updateUser({ 
         password: newPassword 
       })
 
-      if (error) throw error
+      if (error) {
+        if (error.message.includes("same_password")) {
+          throw new Error("New password must be different from your current password")
+        }
+        throw error
+      }
 
       toast.success("Password updated successfully")
       setCurrentPassword("")
