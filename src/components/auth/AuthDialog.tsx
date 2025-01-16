@@ -62,17 +62,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       }
 
       // Handle auth errors
-      if (event === 'USER_UPDATED') {
+      if (event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
         try {
           const { data, error: sessionError } = await supabase.auth.getSession()
           if (sessionError) {
             let errorMessage = getErrorMessage(sessionError)
-            
-            // Check for user not found error
-            if (sessionError.message?.includes('Invalid login credentials')) {
-              errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
-            }
-            
             console.error("Auth session error:", sessionError)
             setError(errorMessage)
             toast.error('Authentication Error', {
@@ -81,12 +75,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           }
         } catch (err) {
           let errorMessage = getErrorMessage(err)
-          
-          // Check for user not found error in catch block as well
-          if (err.message?.includes('Invalid login credentials')) {
-            errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
-          }
-          
           console.error("Auth error:", err)
           setError(errorMessage)
           toast.error('Authentication Error', {
@@ -176,9 +164,15 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               variables: {
                 sign_in: {
                   email_input_placeholder: 'name@example.com',
+                  password_input_placeholder: 'Your password',
+                  email_label: 'Email address',
+                  password_label: 'Password',
                 },
                 sign_up: {
                   email_input_placeholder: 'name@example.com',
+                  password_input_placeholder: 'Create a password',
+                  email_label: 'Email address',
+                  password_label: 'Password',
                 }
               }
             }}
