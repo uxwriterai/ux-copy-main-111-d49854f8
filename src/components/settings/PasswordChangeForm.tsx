@@ -67,27 +67,27 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
 
     setIsLoading(true)
     try {
-      // First verify the current password by attempting to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: userEmail,
-        password: formData.currentPassword,
-      })
-
-      if (signInError) {
-        console.error("Password verification error:", signInError)
-        toast.error("Current password is incorrect. Please try again.")
-        setIsLoading(false)
-        return
-      }
-
-      // If current password is verified, proceed with password update
+      // Update password directly using updateUser
       const { error: updateError } = await supabase.auth.updateUser({
-        password: formData.newPassword
+        password: formData.newPassword,
+      }, {
+        // Pass the current password in the options
+        passwordOptions: {
+          currentPassword: formData.currentPassword
+        }
       })
 
       if (updateError) {
         console.error("Password update error:", updateError)
-        toast.error(updateError.message || "Failed to update password")
+        
+        // Handle specific error messages
+        if (updateError.message?.toLowerCase().includes('invalid_credentials') || 
+            updateError.message?.toLowerCase().includes('invalid login credentials')) {
+          toast.error("Current password is incorrect. Please try again.")
+        } else {
+          toast.error(updateError.message || "Failed to update password")
+        }
+        
         setIsLoading(false)
         return
       }
