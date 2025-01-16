@@ -7,19 +7,20 @@ interface CreditsContextType {
   credits: number
   setCredits: (credits: number) => void
   resetCredits: () => Promise<void>
-  useCredit: () => Promise<boolean>  // Updated return type to Promise<boolean>
+  useCredit: () => Promise<boolean>
 }
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const [credits, setCredits] = useState<number>(8)
+  const [session, setSession] = useState<any>(null)
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
   const resetCredits = async () => {
     console.log("Resetting credits...")
     try {
-      // Get user's IP address
+      // Get user's IP address for non-logged-in users
       const response = await fetch('https://api.ipify.org?format=json')
       const data = await response.json()
       const ipAddress = data.ip
@@ -46,23 +47,41 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
   const useCredit = async () => {
     if (credits <= 0) {
-      toast.error("No credits left!")
+      toast.error("No credits remaining!")
       return false
     }
 
     try {
       console.log("Using 1 credit. Credits before:", credits)
       
-      // Get current IP address for non-logged-in users
-      const response = await fetch('https://api.ipify.org?format=json')
-      const data = await response.json()
-      const ipAddress = data.ip
+      if (session) {
+        // For logged-in users, update credits in Supabase
+        const { data: userData, error: userError } = await supabase
+          .from('user_credits')
+          .upsert({ 
+            user_id: session.user.id,
+            credits_remaining: credits - 1 
+          })
+          .select()
+          .single()
 
-      // Update credits in database
-      await updateUserCredits(ipAddress, credits - 1)
-      
-      // Update local state
-      setCredits(credits - 1)
+        if (userError) {
+          console.error("Error updating user credits:", userError)
+          toast.error("Error updating credits. Please try again.")
+          return false
+        }
+
+        setCredits(userData.credits_remaining)
+      } else {
+        // For non-logged-in users, update credits based on IP
+        const response = await fetch('https://api.ipify.org?format=json')
+        const data = await response.json()
+        const ipAddress = data.ip
+
+        await updateUserCredits(ipAddress, credits - 1)
+        setCredits(credits - 1)
+      }
+
       console.log("Credits after:", credits - 1)
       return true
     } catch (error) {
@@ -76,8 +95,23 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleAuthChange = async (event: string, session: any) => {
       console.log("Auth state changed:", event)
+      setSession(session)
+      
       if (event === 'SIGNED_IN') {
         console.log("User signed in, setting credits to 8")
+        
+        // Initialize credits for new user
+        const { error } = await supabase
+          .from('user_credits')
+          .upsert({ 
+            user_id: session.user.id,
+            credits_remaining: 8 
+          })
+
+        if (error) {
+          console.error("Error initializing user credits:", error)
+        }
+
         setCredits(8)
         broadcastChannel.postMessage({ type: 'SIGNED_IN' })
       } else if (event === 'SIGNED_OUT') {
@@ -105,12 +139,33 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
     // Initialize credits based on current session
     const initializeCredits = async () => {
       const { data: { session } } = await supabase.auth.getSession()
+      setSession(session)
+      
       if (!session) {
         console.log("No session found, resetting credits")
         await resetCredits()
       } else {
-        console.log("Session found, setting credits to 8")
-        setCredits(8)
+        // Get credits for logged-in user
+        const { data: userData, error } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .eq('user_id', session.user.id)
+          .single()
+
+        if (error || !userData) {
+          console.log("No credits found for user, initializing with 8")
+          setCredits(8)
+          // Initialize credits for new user
+          await supabase
+            .from('user_credits')
+            .upsert({ 
+              user_id: session.user.id,
+              credits_remaining: 8 
+            })
+        } else {
+          console.log("Found existing credits:", userData.credits_remaining)
+          setCredits(userData.credits_remaining)
+        }
       }
     }
 
