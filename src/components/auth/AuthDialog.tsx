@@ -113,11 +113,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       />
 
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] p-6">
           <DialogHeader>
-            <DialogTitle>Welcome</DialogTitle>
-            <DialogDescription>
-              Sign in to unlock more credits and features.
+            <DialogTitle className="text-2xl font-bold">Create your account</DialogTitle>
+            <DialogDescription className="text-base">
+              Already have an account? <button onClick={() => {}} className="text-primary hover:underline">Sign in</button>
             </DialogDescription>
           </DialogHeader>
           
@@ -129,7 +129,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
           <Auth
             supabaseClient={supabase}
-            view="sign_in"
+            view="sign_up"
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -141,13 +141,26 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 }
               },
               className: {
-                container: 'w-full',
-                button: 'w-full',
-                input: 'w-full',
+                container: 'w-full space-y-4',
+                button: 'w-full bg-background hover:bg-secondary border-[1px] border-border text-foreground font-medium py-2 px-4 rounded-md flex items-center justify-center gap-2',
+                input: 'w-full bg-background border-[1px] border-border text-foreground rounded-md p-2',
+                divider: 'my-4 text-center text-sm text-muted-foreground',
+                label: 'text-sm text-muted-foreground mb-1 block',
+                message: 'text-sm text-muted-foreground mt-2',
               }
             }}
-            theme={theme}
-            providers={[]}
+            localization={{
+              variables: {
+                sign_up: {
+                  email_label: 'Enter your email below to create your account',
+                  password_label: 'Password',
+                  button_label: 'Sign up',
+                  social_provider_text: 'Sign up with {{provider}}',
+                  divider_text: 'OR'
+                }
+              }
+            }}
+            providers={["github", "google"]}
             redirectTo={window.location.origin + window.location.pathname}
           />
         </DialogContent>
