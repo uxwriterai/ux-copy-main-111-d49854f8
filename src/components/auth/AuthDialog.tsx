@@ -16,6 +16,7 @@ import { AuthError } from "@supabase/supabase-js"
 import { toast } from "sonner"
 import Confetti from 'react-confetti'
 import { Button } from "@/components/ui/button"
+import { createPortal } from 'react-dom'
 
 interface AuthDialogProps {
   open: boolean
@@ -79,8 +80,16 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   return (
     <>
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 100000 }}>
-        {showConfetti && (
+      {showConfetti && createPortal(
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          width: '100%', 
+          height: '100%', 
+          pointerEvents: 'none',
+          zIndex: 2147483647 // Maximum possible z-index value
+        }}>
           <Confetti
             width={window.innerWidth}
             height={window.innerHeight}
@@ -91,8 +100,9 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               setShowConfetti(false)
             }}
           />
-        )}
-      </div>
+        </div>,
+        document.body
+      )}
 
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="sm:max-w-[425px]">
