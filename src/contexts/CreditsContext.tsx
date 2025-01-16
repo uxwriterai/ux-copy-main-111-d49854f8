@@ -15,16 +15,9 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 const getIpAddress = async (): Promise<string> => {
   try {
-    console.log("Fetching IP address...");
     const response = await fetch('https://api.ipify.org?format=json');
-    
-    if (!response.ok) {
-      console.error('IP address fetch failed:', response.status, response.statusText);
-      throw new Error('Failed to fetch IP address');
-    }
-    
+    if (!response.ok) throw new Error('Failed to fetch IP address');
     const data = await response.json();
-    console.log("IP address fetched:", data);
     return data.ip;
   } catch (error) {
     console.error('Error fetching IP address:', error);
@@ -39,7 +32,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   const fetchCredits = async () => {
     try {
-      console.log("Fetching credits, session state:", session?.user?.id);
+      console.log("Fetching credits, session state:", !!session?.user);
       
       if (isSessionLoading) {
         console.log("Session is still loading, waiting...");
@@ -51,11 +44,11 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         .select('credits_remaining')
       
       if (session?.user) {
-        console.log("Fetching credits for authenticated user:", session.user.id);
+        console.log("Fetching credits for user:", session.user.id);
         query = query.eq('user_id', session.user.id);
       } else {
         const ipAddress = await getIpAddress();
-        console.log("Fetching credits for anonymous user with IP:", ipAddress);
+        console.log("Fetching credits for IP:", ipAddress);
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
@@ -68,22 +61,24 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
       if (!data) {
         const defaultCredits = session?.user ? 6 : 2;
-        console.log(`Creating new credits entry with ${defaultCredits} credits for ${session?.user ? 'user' : 'IP'}`);
+        console.log(`Creating new credits entry with ${defaultCredits} credits`);
         
         const insertData = session?.user 
           ? { user_id: session.user.id, credits_remaining: defaultCredits }
           : { ip_address: await getIpAddress(), credits_remaining: defaultCredits };
         
-        const { error: insertError } = await supabase
+        const { error: insertError, data: insertedData } = await supabase
           .from('user_credits')
-          .insert(insertData);
+          .insert(insertData)
+          .select('credits_remaining')
+          .single();
 
         if (insertError) {
           console.error("Error creating credits:", insertError);
           throw insertError;
         }
 
-        setCredits(defaultCredits);
+        setCredits(insertedData.credits_remaining);
       } else {
         console.log("Credits found:", data.credits_remaining);
         setCredits(data.credits_remaining);
@@ -114,14 +109,14 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
-      const { error } = await query;
+      const { error, data } = await query.select('credits_remaining').single();
 
       if (error) {
         console.error("Error updating credits:", error);
         throw error;
       }
 
-      setCredits(prev => prev - 1);
+      setCredits(data.credits_remaining);
       return true;
     } catch (error) {
       console.error("Error using credit:", error);
@@ -133,37 +128,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   const resetCredits = async () => {
     try {
       const ipAddress = await getIpAddress();
-      
-      const { data: existingIpCredits, error: queryError } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .is('user_id', null)
-        .eq('ip_address', ipAddress)
-        .maybeSingle();
-
-      if (queryError) {
-        console.error("Error checking IP credits:", queryError);
-        throw queryError;
-      }
-
-      if (existingIpCredits) {
-        setCredits(existingIpCredits.credits_remaining);
-      } else {
-        const { error: insertError } = await supabase
-          .from('user_credits')
-          .insert({
-            ip_address: ipAddress,
-            credits_remaining: 2,
-            user_id: null
-          });
-
-        if (insertError) {
-          console.error("Error creating IP credits:", insertError);
-          throw insertError;
-        }
-
-        setCredits(2);
-      }
+      await fetchCredits();
     } catch (error) {
       console.error("Error in resetCredits:", error);
       toast.error("Error resetting credits. Please try again.");
@@ -172,7 +137,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   useEffect(() => {
     if (!isSessionLoading) {
-      console.log("Session state changed:", session?.user?.id);
+      console.log("Session state changed, fetching credits...");
       fetchCredits();
     }
   }, [session?.user?.id, isSessionLoading]);
