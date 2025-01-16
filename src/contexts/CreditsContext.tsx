@@ -40,12 +40,19 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Query Supabase for existing credits
-      const { data, error } = await supabase
+      let query = supabase
         .from('user_credits')
         .select('credits_remaining')
         .eq('ip_address', ipAddress)
-        .is('user_id', session ? session.user.id : null)
-        .maybeSingle()
+      
+      // Add user_id condition based on session
+      if (session) {
+        query = query.eq('user_id', session.user.id)
+      } else {
+        query = query.is('user_id', null)
+      }
+
+      const { data, error } = await query.maybeSingle()
 
       if (error) {
         console.error("Error fetching credits from Supabase:", error)
