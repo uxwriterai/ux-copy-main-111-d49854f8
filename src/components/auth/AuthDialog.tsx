@@ -33,77 +33,59 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       console.log("Auth state changed:", event)
       
       if (event === 'SIGNED_IN' && session?.user) {
-        // Check if this is a new user by querying for existing credits
-        const { data: existingCredits, error: queryError } = await supabase
-          .from('user_credits')
-          .select('credits_remaining')
-          .eq('user_id', session.user.id)
-          .maybeSingle()
+        try {
+          // Check if this is a new user by querying for existing credits
+          const { data: existingCredits, error: queryError } = await supabase
+            .from('user_credits')
+            .select('credits_remaining')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
 
-        if (queryError) {
-          console.error("Error checking existing credits:", queryError)
-        }
+          if (queryError) {
+            console.error("Error checking existing credits:", queryError)
+            throw queryError
+          }
 
-        // If no existing credits found, this is a new user
-        if (!existingCredits) {
-          console.log("New user detected, creating credits entry")
-          
-          try {
+          // If no existing credits found, this is a new user
+          if (!existingCredits) {
+            console.log("New user detected, creating credits entry")
+            
             const { error: creditsError } = await supabase
               .from('user_credits')
               .insert({
                 user_id: session.user.id,
-                credits_remaining: 6,
-                ip_address: await getIpAddress()
+                credits_remaining: 6
               })
 
             if (creditsError) {
               console.error("Error creating initial credits:", creditsError)
-              toast.error('Error creating initial credits')
-            } else {
-              console.log("Successfully created initial credits")
-              setShowConfetti(true)
-              setShowWelcome(true)
-              toast.success('Welcome! Your account has been created successfully.')
+              throw creditsError
             }
-          } catch (err) {
-            console.error("Error handling new user credits:", err)
-            toast.error('Error setting up your account')
+
+            console.log("Successfully created initial credits")
+            setShowConfetti(true)
+            setShowWelcome(true)
+            toast.success('Welcome! Your account has been created successfully.')
+          } else {
+            console.log("Existing user detected with credits:", existingCredits)
+            toast.success('Welcome back!')
           }
-        } else {
-          console.log("Existing user detected with credits:", existingCredits)
-          toast.success('Welcome back!')
+          
+          setError("")
+          onOpenChange(false)
+        } catch (err) {
+          console.error("Error handling user credits:", err)
+          const errorMessage = getErrorMessage(err)
+          setError(errorMessage)
+          toast.error('Error setting up your account', {
+            description: errorMessage
+          })
         }
-        
-        setError("")
-        onOpenChange(false)
       }
 
       if (event === 'SIGNED_OUT') {
         setError("")
         toast.success('Signed out successfully')
-      }
-
-      // Handle auth errors
-      if (event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
-        try {
-          const { data, error: sessionError } = await supabase.auth.getSession()
-          if (sessionError) {
-            let errorMessage = getErrorMessage(sessionError)
-            console.error("Auth session error:", sessionError)
-            setError(errorMessage)
-            toast.error('Authentication Error', {
-              description: errorMessage
-            })
-          }
-        } catch (err) {
-          let errorMessage = getErrorMessage(err)
-          console.error("Auth error:", err)
-          setError(errorMessage)
-          toast.error('Authentication Error', {
-            description: errorMessage
-          })
-        }
       }
     })
 
@@ -111,18 +93,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       subscription.unsubscribe()
     }
   }, [onOpenChange])
-
-  // Helper function to get IP address
-  const getIpAddress = async (): Promise<string> => {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json')
-      const data = await response.json()
-      return data.ip
-    } catch (error) {
-      console.error('Error fetching IP:', error)
-      return '0.0.0.0' // fallback IP
-    }
-  }
 
   const getAuthContent = () => {
     switch (view) {
