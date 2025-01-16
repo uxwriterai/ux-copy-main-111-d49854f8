@@ -65,7 +65,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         try {
           const { data, error: sessionError } = await supabase.auth.getSession()
           if (sessionError) {
-            const errorMessage = getErrorMessage(sessionError)
+            let errorMessage = getErrorMessage(sessionError)
+            
+            // Check for user not found error
+            if (sessionError.message?.includes('Invalid login credentials')) {
+              errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
+            }
+            
             console.error("Auth session error:", sessionError)
             setError(errorMessage)
             toast.error('Authentication Error', {
@@ -73,7 +79,13 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             })
           }
         } catch (err) {
-          const errorMessage = getErrorMessage(err)
+          let errorMessage = getErrorMessage(err)
+          
+          // Check for user not found error in catch block as well
+          if (err.message?.includes('Invalid login credentials')) {
+            errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
+          }
+          
           console.error("Auth error:", err)
           setError(errorMessage)
           toast.error('Authentication Error', {
