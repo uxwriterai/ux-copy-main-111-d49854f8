@@ -7,6 +7,60 @@ import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 import { Eye, EyeOff } from "lucide-react"
 
+interface PasswordInputProps { 
+  id: string;
+  name: string;
+  value: string;
+  label: string;
+  show: boolean;
+  onToggleShow: () => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+// Moved outside to prevent re-renders
+const PasswordInput = ({ 
+  id, 
+  name,
+  value, 
+  label, 
+  show, 
+  onToggleShow,
+  onChange
+}: PasswordInputProps) => {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          name={name}
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          required
+          className="pr-10"
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onToggleShow()
+          }}
+          tabIndex={-1}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+        >
+          {show ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Settings() {
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -104,7 +158,7 @@ export default function Settings() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }))
@@ -115,50 +169,6 @@ export default function Settings() {
       ...prev,
       [field]: !prev[field]
     }))
-  }
-
-  const PasswordInput = ({ 
-    id, 
-    name,
-    value, 
-    label, 
-    show, 
-    onToggleShow 
-  }: { 
-    id: string;
-    name: string;
-    value: string;
-    label: string;
-    show: boolean;
-    onToggleShow: () => void;
-  }) => {
-    return (
-      <div className="space-y-2">
-        <Label htmlFor={id}>{label}</Label>
-        <div className="relative">
-          <Input
-            id={id}
-            name={name}
-            type={show ? "text" : "password"}
-            value={value}
-            onChange={handleInputChange}
-            required
-            className="pr-10"
-          />
-          <button
-            type="button"
-            onClick={onToggleShow}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-          >
-            {show ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -186,6 +196,7 @@ export default function Settings() {
               label="Current Password"
               show={passwordVisibility.currentPassword}
               onToggleShow={() => togglePasswordVisibility('currentPassword')}
+              onChange={handleInputChange}
             />
             <PasswordInput
               id="new-password"
@@ -194,6 +205,7 @@ export default function Settings() {
               label="New Password"
               show={passwordVisibility.newPassword}
               onToggleShow={() => togglePasswordVisibility('newPassword')}
+              onChange={handleInputChange}
             />
             <PasswordInput
               id="confirm-password"
@@ -202,6 +214,7 @@ export default function Settings() {
               label="Confirm New Password"
               show={passwordVisibility.confirmPassword}
               onToggleShow={() => togglePasswordVisibility('confirmPassword')}
+              onChange={handleInputChange}
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Password"}
