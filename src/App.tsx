@@ -21,8 +21,8 @@ function App() {
   return (
     <ThemeProvider>
       <CreditsProvider>
-        <Router>
-          <SidebarProvider>
+        <SidebarProvider>
+          <Router>
             <div className="flex min-h-screen">
               <AppSidebar />
               <main className="flex-1 overflow-y-auto">
@@ -43,8 +43,8 @@ function App() {
               </main>
             </div>
             <Toaster />
-          </SidebarProvider>
-        </Router>
+          </Router>
+        </SidebarProvider>
       </CreditsProvider>
     </ThemeProvider>
   )
