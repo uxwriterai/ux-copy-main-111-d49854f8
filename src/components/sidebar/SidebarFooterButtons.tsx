@@ -33,7 +33,6 @@ export function SidebarFooterButtons() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log("Auth state changed:", _event, session?.user?.id)
-      setSession(session)
       
       if (_event === 'SIGNED_OUT') {
         console.log("User signed out, resetting state")
@@ -41,6 +40,8 @@ export function SidebarFooterButtons() {
         resetCredits()
         navigate('/')
         toast.success('Signed out successfully')
+      } else {
+        setSession(session)
       }
     })
 
@@ -52,6 +53,11 @@ export function SidebarFooterButtons() {
   const handleLogout = async () => {
     try {
       console.log("Attempting to sign out...", session?.user?.id)
+      
+      // First clear local session
+      setSession(null)
+      
+      // Then sign out from Supabase
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error("Error during sign out:", error)
@@ -61,17 +67,23 @@ export function SidebarFooterButtons() {
         return
       }
       
-      // Force clear the session if sign out was successful
-      console.log("Sign out successful, forcing session clear")
-      setSession(null)
+      // Force a full reset of the application state
+      console.log("Sign out successful, resetting application state")
       resetCredits()
       navigate('/')
+      
+      // Clear any stored auth data from localStorage
+      window.localStorage.removeItem('supabase.auth.token')
+      
+      toast.success('Signed out successfully')
       
     } catch (error) {
       console.error("Caught error during sign out:", error)
       toast.error('Error signing out')
     }
   }
+
+  // ... keep existing code (UI rendering for credits badge, buttons, and dialogs)
 
   return (
     <>
