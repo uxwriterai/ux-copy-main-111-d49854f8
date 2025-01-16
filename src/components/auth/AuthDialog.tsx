@@ -116,12 +116,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   const content = getAuthContent()
 
-  // Function to handle view changes from Auth UI
-  const handleViewChange = (view: 'sign_in' | 'sign_up' | 'forgotten_password') => {
-    console.log("View changed to:", view)
-    setCurrentView(view)
-  }
-
   return (
     <>
       <AuthConfetti 
@@ -185,7 +179,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
-            onViewChange={handleViewChange}
+            viewProps={{
+              sign_in: {
+                onChange: () => setCurrentView('sign_in')
+              },
+              sign_up: {
+                onChange: () => setCurrentView('sign_up')
+              },
+              forgotten_password: {
+                onChange: () => setCurrentView('forgotten_password')
+              }
+            }}
           />
         </DialogContent>
       </Dialog>
