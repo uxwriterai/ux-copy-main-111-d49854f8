@@ -17,17 +17,21 @@ import { AuthConfetti } from "./AuthConfetti"
 import { getErrorMessage } from "@/utils/authErrors"
 
 interface AuthDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  view: 'sign_in' | 'sign_up' | 'forgotten_password'
-  onViewChange?: (view: 'sign_in' | 'sign_up' | 'forgotten_password') => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  view?: 'sign_in' | 'sign_up' | 'forgotten_password';
 }
 
-export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [currentView, setCurrentView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>(view)
+
+  useEffect(() => {
+    setCurrentView(view)
+  }, [view])
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -62,6 +66,7 @@ export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialo
         toast.success('Signed out successfully')
       }
 
+      // Handle auth errors
       if (event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
         try {
           const { data, error: sessionError } = await supabase.auth.getSession()
@@ -90,7 +95,7 @@ export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialo
   }, [onOpenChange])
 
   const getAuthContent = () => {
-    switch (view) {
+    switch (currentView) {
       case 'sign_in':
         return {
           title: "Welcome back!",
@@ -143,7 +148,7 @@ export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialo
 
           <Auth
             supabaseClient={supabase}
-            view={view}
+            view={currentView}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -158,6 +163,7 @@ export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialo
                 container: 'w-full',
                 button: 'w-full',
                 input: 'w-full',
+                anchor: 'text-primary hover:text-primary/80',
               }
             }}
             localization={{
@@ -167,24 +173,20 @@ export function AuthDialog({ open, onOpenChange, view, onViewChange }: AuthDialo
                   password_input_placeholder: 'Your password',
                   email_label: 'Email address',
                   password_label: 'Password',
-                  button_label: 'Sign in',
-                  link_text: "Don't have an account? Sign up"
+                  link_text: "Don't have an account? Sign up",
                 },
                 sign_up: {
                   email_input_placeholder: 'name@example.com',
                   password_input_placeholder: 'Create a password',
                   email_label: 'Email address',
                   password_label: 'Password',
-                  button_label: 'Sign up',
-                  link_text: "Already have an account? Sign in"
+                  link_text: "Already have an account? Sign in",
                 }
               }
             }}
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
-            // @ts-ignore - The type definitions are incorrect, onViewChange is supported
-            onViewChange={onViewChange}
           />
         </DialogContent>
       </Dialog>

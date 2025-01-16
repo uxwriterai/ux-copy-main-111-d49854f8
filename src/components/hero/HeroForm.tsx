@@ -290,7 +290,6 @@ export const HeroForm = ({ onSubmit, isLoading }: HeroFormProps) => {
       <AuthDialog 
         open={showAuthDialog} 
         onOpenChange={setShowAuthDialog} 
-        view="sign_up"
       />
     </>
   );

@@ -57,7 +57,9 @@ const LandingPageGenerator = () => {
   const [showResults, setShowResults] = useState(false);
   const [sections, setSections] = useState([]);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showSignUpDialog, setShowSignUpDialog] = useState(false);
+  const [showSignInDialog, setShowSignInDialog] = useState(false);
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
   const { toast } = useToast();
   const { credits, useCredit } = useCredits();
   const [formData, setFormData] = useState({
@@ -133,6 +135,25 @@ const LandingPageGenerator = () => {
       keyFeatures: "",
       additionalContext: "",
     });
+  };
+
+  const handleAuthLinkClick = (e: React.MouseEvent<HTMLElement>, type: 'sign_up' | 'sign_in' | 'forgotten_password') => {
+    e.preventDefault();
+    setShowSignUpDialog(false);
+    setShowSignInDialog(false);
+    setShowForgotPasswordDialog(false);
+    
+    switch(type) {
+      case 'sign_up':
+        setShowSignUpDialog(true);
+        break;
+      case 'sign_in':
+        setShowSignInDialog(true);
+        break;
+      case 'forgotten_password':
+        setShowForgotPasswordDialog(true);
+        break;
+    }
   };
 
   if (showResults) {
@@ -290,7 +311,7 @@ const LandingPageGenerator = () => {
               </Button>
               <Button onClick={() => {
                 setShowCreditsDialog(false);
-                setShowAuthDialog(true);
+                setShowSignUpDialog(true);
               }}>
                 Sign up
               </Button>
@@ -299,9 +320,21 @@ const LandingPageGenerator = () => {
         </Dialog>
 
         <AuthDialog 
-          open={showAuthDialog} 
-          onOpenChange={setShowAuthDialog} 
+          open={showSignUpDialog} 
+          onOpenChange={setShowSignUpDialog}
           view="sign_up"
+        />
+
+        <AuthDialog 
+          open={showSignInDialog} 
+          onOpenChange={setShowSignInDialog}
+          view="sign_in"
+        />
+
+        <AuthDialog 
+          open={showForgotPasswordDialog} 
+          onOpenChange={setShowForgotPasswordDialog}
+          view="forgotten_password"
         />
       </div>
     </div>

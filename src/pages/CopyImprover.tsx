@@ -391,7 +391,6 @@ const Index = () => {
         <AuthDialog 
           open={showAuthDialog} 
           onOpenChange={setShowAuthDialog} 
-          view="sign_up"
         />
       </div>
     </div>
