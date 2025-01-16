@@ -47,7 +47,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         console.log("Fetching credits for logged-in user:", session.user.id)
         const { data: userCredits, error: userError } = await supabase
           .from('user_credits')
-          .select('credits_remaining')
+          .select('credits_remaining, created_at')
           .eq('user_id', session.user.id)
           .maybeSingle()
 
@@ -70,6 +70,28 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           if (insertError) {
             console.error("Error creating user credits:", insertError)
             throw insertError
+          }
+
+          setCredits(6)
+          return
+        }
+
+        // Check if this is a new signup within the last minute
+        const createdAt = new Date(userCredits.created_at)
+        const now = new Date()
+        const timeDiff = Math.abs(now.getTime() - createdAt.getTime())
+        const isNewSignup = timeDiff < 60000 // 1 minute
+
+        if (isNewSignup && userCredits.credits_remaining === 0) {
+          console.log("New signup detected, updating to 6 credits")
+          const { error: updateError } = await supabase
+            .from('user_credits')
+            .update({ credits_remaining: 6 })
+            .eq('user_id', session.user.id)
+
+          if (updateError) {
+            console.error("Error updating new user credits:", updateError)
+            throw updateError
           }
 
           setCredits(6)
