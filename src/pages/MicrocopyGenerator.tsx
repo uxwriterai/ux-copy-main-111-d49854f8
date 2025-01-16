@@ -11,10 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast as sonnerToast } from "sonner";
+import { toast } from "sonner";
 import { useToast } from "@/hooks/use-toast";
 import { generateMicrocopy } from "@/services/geminiService";
 import { CopyVariant } from "@/components/microcopy/CopyVariant";
+import { useCredits } from "@/contexts/CreditsContext";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AuthDialog } from "@/components/auth/AuthDialog";
 
 type ElementType = 
   | "button"
@@ -66,13 +69,26 @@ const MicrocopyGenerator = () => {
     additionalNotes: "",
   });
   const [generatedCopy, setGeneratedCopy] = useState<string[]>([]);
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { toast } = useToast();
+  const { credits, useCredit } = useCredits();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
     try {
+      if (credits <= 0) {
+        setShowCreditsDialog(true);
+        return;
+      }
+
+      // Check and use a credit before proceeding
+      if (!await useCredit()) {
+        throw new Error('No credits remaining');
+      }
+
+      setIsLoading(true);
       const variants = await generateMicrocopy(
         request.elementType,
         request.context,
@@ -83,7 +99,7 @@ const MicrocopyGenerator = () => {
       );
       
       setGeneratedCopy(variants);
-      sonnerToast.success("Microcopy generated successfully!");
+      toast.success("Microcopy generated successfully!");
     } catch (error) {
       console.error("Error generating microcopy:", error);
       toast({
@@ -96,6 +112,8 @@ const MicrocopyGenerator = () => {
     }
   };
 
+  // ... keep existing code (render method)
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container max-w-4xl">
@@ -104,6 +122,9 @@ const MicrocopyGenerator = () => {
             <h1 className="text-3xl font-bold tracking-tight">Microcopy Generator</h1>
             <p className="text-muted-foreground">
               Generate clear and effective microcopy for your UI elements
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Credits remaining: {credits}
             </p>
           </div>
 
@@ -236,6 +257,37 @@ const MicrocopyGenerator = () => {
               </div>
             </Card>
           </div>
+
+          <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Unlock 5x More Credits</DialogTitle>
+                <DialogDescription className="pt-2">
+                  You've used all your free credits! Sign up now to get:
+                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                    <li>5x more credits to generate content</li>
+                    <li>Priority support</li>
+                  </ul>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex gap-3 justify-end">
+                <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
+                  Maybe later
+                </Button>
+                <Button onClick={() => {
+                  setShowCreditsDialog(false);
+                  setShowAuthDialog(true);
+                }}>
+                  Sign up
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <AuthDialog 
+            open={showAuthDialog} 
+            onOpenChange={setShowAuthDialog} 
+          />
         </div>
       </div>
     </div>
