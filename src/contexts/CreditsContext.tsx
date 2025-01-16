@@ -14,15 +14,20 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 const getIpAddress = async (): Promise<string> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-ip`)
+    console.log("Fetching IP address...");
+    const response = await fetch('https://api.ipify.org?format=json');
+    
     if (!response.ok) {
-      throw new Error('Failed to fetch IP address')
+      console.error('IP address fetch failed:', response.status, response.statusText);
+      throw new Error('Failed to fetch IP address');
     }
-    const data = await response.json()
-    return data.ip
+    
+    const data = await response.json();
+    console.log("IP address fetched:", data);
+    return data.ip;
   } catch (error) {
-    console.error('Error fetching IP address:', error)
-    throw error
+    console.error('Error fetching IP address:', error);
+    throw error;
   }
 }
 
