@@ -42,9 +42,9 @@ const PasswordInput = ({
         <button
           type="button"
           onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onToggleShow()
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleShow();
           }}
           tabIndex={-1}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
@@ -57,8 +57,8 @@ const PasswordInput = ({
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default function Settings() {
   const { toast } = useToast()
@@ -77,27 +77,17 @@ export default function Settings() {
 
   useEffect(() => {
     const getUserEmail = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser()
-        if (error) {
-          console.error("Error fetching user:", error)
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Unable to fetch user information"
-          })
-          return
-        }
-        if (user?.email) {
-          setUserEmail(user.email)
-        }
-      } catch (error) {
-        console.error("Error in getUserEmail:", error)
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to load user information"
+          description: "Unable to fetch user information"
         })
+        return
+      }
+      if (user?.email) {
+        setUserEmail(user.email)
       }
     }
     getUserEmail()
@@ -175,20 +165,14 @@ export default function Settings() {
       })
 
       if (signInError) {
-        console.error("Error verifying current password:", signInError)
-        if (signInError.message.includes("Invalid login credentials")) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Current password is incorrect"
-          })
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Error verifying current password"
-          })
-        }
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: signInError.message.includes("Invalid login credentials") 
+            ? "Current password is incorrect"
+            : "Error verifying current password"
+        })
+        setIsLoading(false)
         return
       }
 
@@ -197,26 +181,16 @@ export default function Settings() {
       })
 
       if (updateError) {
-        console.error("Error updating password:", updateError)
-        if (updateError.message.includes("same_password")) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "New password must be different from your current password"
-          })
-        } else if (updateError.message.includes("auth")) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Authentication error. Please try logging in again"
-          })
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: updateError.message || "Failed to update password"
-          })
-        }
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: updateError.message.includes("same_password")
+            ? "New password must be different from your current password"
+            : updateError.message.includes("auth")
+              ? "Authentication error. Please try logging in again"
+              : updateError.message || "Failed to update password"
+        })
+        setIsLoading(false)
         return
       }
 
@@ -231,7 +205,6 @@ export default function Settings() {
         confirmPassword: ""
       })
     } catch (error: any) {
-      console.error("Error updating password:", error)
       toast({
         variant: "destructive",
         title: "Error",
