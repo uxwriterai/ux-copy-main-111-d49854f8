@@ -156,6 +156,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           <Auth
             supabaseClient={supabase}
             view={view}
+            onViewChange={newView => {
+              // @ts-ignore - the types from supabase are not complete
+              setView(newView)
+            }}
             appearance={{
               theme: ThemeSupa,
               variables: {
