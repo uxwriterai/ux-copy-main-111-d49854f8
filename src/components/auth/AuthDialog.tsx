@@ -54,7 +54,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               .from('user_credits')
               .insert({
                 user_id: session.user.id,
-                credits_remaining: 6
+                credits_remaining: 6  // Allocating 6 credits for new users
               })
 
             if (creditsError) {
