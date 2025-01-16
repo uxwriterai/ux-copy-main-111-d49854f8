@@ -26,7 +26,8 @@ const HeroCopyGenerator = () => {
     }
 
     // Attempt to use a credit
-    if (!useCredit()) {
+    const creditUsed = await useCredit();
+    if (!creditUsed) {
       return;
     }
 

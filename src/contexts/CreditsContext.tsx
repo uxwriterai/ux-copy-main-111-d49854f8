@@ -7,7 +7,7 @@ interface CreditsContextType {
   credits: number
   setCredits: (credits: number) => void
   resetCredits: () => Promise<void>
-  useCredit: () => boolean
+  useCredit: () => Promise<boolean>  // Updated return type to Promise<boolean>
 }
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
