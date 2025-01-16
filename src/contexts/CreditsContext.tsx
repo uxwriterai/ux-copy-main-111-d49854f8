@@ -14,20 +14,20 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined)
 
 const getIpAddress = async (): Promise<string> => {
   try {
-    console.log("Fetching IP address...")
-    const response = await fetch('https://api.ipify.org?format=json')
+    console.log("Fetching IP address...");
+    const response = await fetch('https://api.ipify.org?format=json');
     
     if (!response.ok) {
-      console.error('IP address fetch failed:', response.status, response.statusText)
-      throw new Error('Failed to fetch IP address')
+      console.error('IP address fetch failed:', response.status, response.statusText);
+      throw new Error('Failed to fetch IP address');
     }
     
-    const data = await response.json()
-    console.log("IP address fetched:", data)
-    return data.ip
+    const data = await response.json();
+    console.log("IP address fetched:", data);
+    return data.ip;
   } catch (error) {
-    console.error('Error fetching IP address:', error)
-    throw error
+    console.error('Error fetching IP address:', error);
+    throw error;
   }
 }
 
@@ -42,100 +42,45 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         throw new Error('IP address not found')
       }
 
-      // If user is logged in, try to get their credits first
-      if (session?.user) {
-        console.log("Fetching credits for logged-in user:", session.user.id)
-        const { data: userCredits, error: userError } = await supabase
-          .from('user_credits')
-          .select('credits_remaining, created_at')
-          .eq('user_id', session.user.id)
-          .maybeSingle()
-
-        if (userError) {
-          console.error("Error fetching user credits:", userError)
-          throw userError
-        }
-
-        // If no user credits found, create new entry with 6 credits for new signup
-        if (!userCredits) {
-          console.log("New user signup detected, setting 6 credits")
-          const { error: insertError } = await supabase
-            .from('user_credits')
-            .insert({
-              user_id: session.user.id,
-              ip_address: ipAddress,
-              credits_remaining: 6
-            })
-
-          if (insertError) {
-            console.error("Error creating user credits:", insertError)
-            throw insertError
-          }
-
-          setCredits(6)
-          return
-        }
-
-        // Check if this is a new signup within the last minute
-        const createdAt = new Date(userCredits.created_at)
-        const now = new Date()
-        const timeDiff = Math.abs(now.getTime() - createdAt.getTime())
-        const isNewSignup = timeDiff < 60000 // 1 minute
-
-        if (isNewSignup && userCredits.credits_remaining === 0) {
-          console.log("New signup detected, updating to 6 credits")
-          const { error: updateError } = await supabase
-            .from('user_credits')
-            .update({ credits_remaining: 6 })
-            .eq('user_id', session.user.id)
-
-          if (updateError) {
-            console.error("Error updating new user credits:", updateError)
-            throw updateError
-          }
-
-          setCredits(6)
-          return
-        }
-
-        setCredits(userCredits.credits_remaining)
-        return
-      }
-
-      // If not logged in, get IP-based credits
-      console.log("Fetching IP-based credits for:", ipAddress)
-      const { data: ipCredits, error: ipError } = await supabase
+      let query = supabase
         .from('user_credits')
         .select('credits_remaining')
-        .is('user_id', null)
         .eq('ip_address', ipAddress)
-        .maybeSingle()
-
-      if (ipError) {
-        console.error("Error fetching IP credits:", ipError)
-        throw ipError
+      
+      // Add user_id condition based on session
+      if (session) {
+        query = query.eq('user_id', session.user.id)
+      } else {
+        query = query.is('user_id', null)
       }
 
-      if (!ipCredits) {
-        // Create new IP-based credits entry with 2 credits
+      const { data, error } = await query.maybeSingle()
+
+      if (error) {
+        console.error("Error fetching credits from Supabase:", error)
+        throw error
+      }
+
+      if (!data) {
+        // Create new credits entry
+        const defaultCredits = session ? 6 : 2
         const { error: insertError } = await supabase
           .from('user_credits')
           .insert({
             ip_address: ipAddress,
-            credits_remaining: 2,
-            user_id: null
+            credits_remaining: defaultCredits,
+            user_id: session?.user?.id || null
           })
 
         if (insertError) {
-          console.error("Error creating IP credits:", insertError)
+          console.error("Error creating credits:", insertError)
           throw insertError
         }
 
-        setCredits(2)
-        return
+        setCredits(defaultCredits)
+      } else {
+        setCredits(data.credits_remaining)
       }
-
-      setCredits(ipCredits.credits_remaining)
     } catch (error) {
       console.error("Error in fetchCredits:", error)
       toast.error("Error fetching credits. Please try again.")
@@ -155,7 +100,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         .update({ credits_remaining: credits - 1 })
         .eq('ip_address', ipAddress)
 
-      if (session?.user) {
+      if (session) {
         query = query.eq('user_id', session.user.id)
       } else {
         query = query.is('user_id', null)
@@ -180,24 +125,27 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   const resetCredits = async () => {
     try {
       const ipAddress = await getIpAddress()
-      
-      // If user is signing out, we need to get their IP-based credits
-      const { data: ipCredits, error: ipError } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .is('user_id', null)
-        .eq('ip_address', ipAddress)
-        .maybeSingle()
+      const maxCredits = session ? 6 : 2
 
-      if (ipError) {
-        console.error("Error fetching IP credits during reset:", ipError)
-        throw ipError
+      let query = supabase
+        .from('user_credits')
+        .update({ credits_remaining: maxCredits })
+        .eq('ip_address', ipAddress)
+
+      if (session) {
+        query = query.eq('user_id', session.user.id)
+      } else {
+        query = query.is('user_id', null)
       }
 
-      const creditsToSet = ipCredits?.credits_remaining ?? 2
+      const { error } = await query
 
-      console.log("Resetting credits to IP-based value:", creditsToSet)
-      setCredits(creditsToSet)
+      if (error) {
+        console.error("Error resetting credits:", error)
+        throw error
+      }
+
+      setCredits(maxCredits)
     } catch (error) {
       console.error("Error in resetCredits:", error)
       toast.error("Error resetting credits. Please try again.")
