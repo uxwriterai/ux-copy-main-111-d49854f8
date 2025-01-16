@@ -71,7 +71,7 @@ const MicrocopyGenerator = () => {
   const [generatedCopy, setGeneratedCopy] = useState<string[]>([]);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const { toast } = useToast();
+  const { toast: toastFn } = useToast();
   const { credits, useCredit } = useCredits();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,10 +99,13 @@ const MicrocopyGenerator = () => {
       );
       
       setGeneratedCopy(variants);
-      toast.success("Microcopy generated successfully!");
+      toastFn({
+        title: "Success",
+        description: "Microcopy generated successfully!",
+      });
     } catch (error) {
       console.error("Error generating microcopy:", error);
-      toast({
+      toastFn({
         variant: "destructive",
         title: "Error",
         description: "Failed to generate microcopy. Please try again.",
