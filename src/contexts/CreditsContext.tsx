@@ -35,15 +35,15 @@ const getIpAddress = async (): Promise<string> => {
 export const CreditsProvider = ({ children }: { children: React.ReactNode }) => {
   const [credits, setCredits] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
-  const { session } = useSessionContext();
+  const { session, isLoading: isSessionLoading } = useSessionContext();
 
   const fetchCredits = async () => {
     try {
+      console.log("Fetching credits, session state:", session?.user?.id);
       let query = supabase
         .from('user_credits')
         .select('credits_remaining')
       
-      // Add conditions based on authentication status
       if (session?.user) {
         console.log("Fetching credits for authenticated user:", session.user.id);
         query = query.eq('user_id', session.user.id);
@@ -61,7 +61,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       if (!data) {
-        // Create new credits entry
         const defaultCredits = session?.user ? 6 : 2;
         console.log(`Creating new credits entry with ${defaultCredits} credits for ${session?.user ? 'user' : 'IP'}`);
         
@@ -129,7 +128,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     try {
       const ipAddress = await getIpAddress();
       
-      // First, check if there's an existing IP-based entry
       const { data: existingIpCredits, error: queryError } = await supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -167,9 +165,11 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   };
 
   useEffect(() => {
-    console.log("Session state changed:", session?.user?.id);
-    fetchCredits();
-  }, [session?.user?.id]);
+    if (!isSessionLoading) {
+      console.log("Session state changed:", session?.user?.id);
+      fetchCredits();
+    }
+  }, [session?.user?.id, isSessionLoading]);
 
   const value = {
     credits,
