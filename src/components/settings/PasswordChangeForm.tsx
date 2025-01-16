@@ -88,7 +88,17 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
         return
       }
 
-      // If current password is verified, proceed with password update using the new session
+      // Get the current session after signing in
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        console.error("No session found after sign in")
+        toast.error("Authentication error. Please try again.")
+        setIsLoading(false)
+        return
+      }
+
+      // Update the password using the current session
       const { error: updateError } = await supabase.auth.updateUser({ 
         password: formData.newPassword 
       })
