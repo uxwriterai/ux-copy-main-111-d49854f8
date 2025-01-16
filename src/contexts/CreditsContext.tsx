@@ -39,14 +39,49 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      const userCredits = await getUserCredits(ipAddress)
-      const maxCredits = session ? 6 : 2 // Max credits based on auth status
-      const finalCredits = Math.min(userCredits, maxCredits)
+      // Query Supabase for existing credits
+      const { data, error } = await supabase
+        .from('user_credits')
+        .select('credits_remaining')
+        .eq('ip_address', ipAddress)
+        .is('user_id', session ? session.user.id : null)
+        .maybeSingle()
+
+      if (error) {
+        console.error("Error fetching credits from Supabase:", error)
+        setCredits(session ? 6 : 2)
+        return
+      }
+
+      // If no record exists, create one with default credits
+      if (!data) {
+        const defaultCredits = session ? 6 : 2
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            ip_address: ipAddress,
+            credits_remaining: defaultCredits,
+            user_id: session?.user?.id || null
+          })
+
+        if (insertError) {
+          console.error("Error creating new credits record:", insertError)
+          setCredits(defaultCredits)
+          return
+        }
+
+        setCredits(defaultCredits)
+        return
+      }
+
+      // Use existing credits, but ensure they don't exceed the maximum
+      const maxCredits = session ? 6 : 2
+      const finalCredits = Math.min(data.credits_remaining, maxCredits)
       console.log("Setting credits to:", finalCredits)
       setCredits(finalCredits)
     } catch (error) {
       console.error("Error resetting credits:", error)
-      setCredits(session ? 6 : 2) // Set default based on auth status
+      setCredits(session ? 6 : 2)
     }
   }
 
@@ -63,8 +98,24 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         return false
       }
 
-      await updateUserCredits(ipAddress, credits - 1)
-      setCredits(credits - 1)
+      const newCredits = credits - 1
+      const { error } = await supabase
+        .from('user_credits')
+        .upsert({
+          ip_address: ipAddress,
+          credits_remaining: newCredits,
+          user_id: session?.user?.id || null
+        }, {
+          onConflict: 'ip_address,user_id'
+        })
+
+      if (error) {
+        console.error("Error updating credits in Supabase:", error)
+        toast.error("Error updating credits. Please try again.")
+        return false
+      }
+
+      setCredits(newCredits)
       return true
     } catch (error) {
       console.error("Error using credit:", error)
