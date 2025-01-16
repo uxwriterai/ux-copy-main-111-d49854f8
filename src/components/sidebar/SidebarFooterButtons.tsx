@@ -26,17 +26,14 @@ export function SidebarFooterButtons() {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session:", session)
       setSession(session)
     })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session)
       setSession(session)
       
       if (_event === 'SIGNED_OUT') {
-        console.log("User signed out, resetting state...")
         setSession(null)
         resetCredits()
         navigate('/')
@@ -44,50 +41,20 @@ export function SidebarFooterButtons() {
     })
 
     return () => {
-      console.log("Cleaning up auth subscription")
       subscription.unsubscribe()
     }
   }, [navigate, resetCredits])
 
   const handleLogout = async () => {
     try {
-      console.log("Attempting to sign out...")
-      
-      // First check if we have a valid session
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
-      
-      if (!currentSession) {
-        console.log("No active session found, cleaning up local state")
-        setSession(null)
-        resetCredits()
-        navigate('/')
-        return
-      }
-
-      // Remove the session from localStorage to prevent token issues
-      localStorage.removeItem('sb-ztksesbncfpyzwwyllkv-auth-token')
-      
-      // Then attempt to sign out
       const { error } = await supabase.auth.signOut()
-      
       if (error) {
         console.error("Error during sign out:", error)
-        // Even if there's an error, we want to clean up the local state
-        setSession(null)
-        resetCredits()
-        navigate('/')
-        toast.error('Error during sign out, but local session cleared')
-      } else {
-        console.log("Successfully signed out")
-        toast.success('Signed out successfully')
+        toast.error('Error signing out')
       }
     } catch (error) {
       console.error("Caught error during sign out:", error)
-      // Clean up local state even if there's an error
-      setSession(null)
-      resetCredits()
-      navigate('/')
-      toast.error('Error during sign out, but local session cleared')
+      toast.error('Error signing out')
     }
   }
 
@@ -158,6 +125,7 @@ export function SidebarFooterButtons() {
           </>
         )}
       </Button>
+
       <Button
         variant="ghost"
         className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
