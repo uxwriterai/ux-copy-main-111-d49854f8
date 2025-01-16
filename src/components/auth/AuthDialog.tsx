@@ -61,26 +61,14 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         setError("")
         toast.success('Signed out successfully')
       }
-
-      // Handle authentication errors
-      if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
-        const error = (session as any)?._error as AuthError
-        if (error) {
-          const errorMessage = getErrorMessage(error)
-          setError(errorMessage)
-          toast.error('Authentication Error', {
-            description: errorMessage
-          })
-        }
-      }
     })
 
     // Listen for auth errors
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'USER_UPDATED' && !session) {
-        const errorData = (session as any)?._error
-        if (errorData) {
-          const errorMessage = getErrorMessage(errorData)
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'USER_UPDATED') {
+        const error = supabase.auth.getError()
+        if (error) {
+          const errorMessage = getErrorMessage(error)
           setError(errorMessage)
           toast.error('Authentication Error', {
             description: errorMessage
@@ -96,10 +84,31 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   }, [onOpenChange])
 
   const getErrorMessage = (error: AuthError) => {
-    const message = error.message?.toLowerCase() || '';
+    console.log("Processing error:", error)
+    
+    // Handle the case where error is a string
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    // Extract message from error object or response body
+    let message = '';
+    try {
+      if (error.message) {
+        message = error.message;
+      } else if (typeof error.body === 'string') {
+        const body = JSON.parse(error.body);
+        message = body.message || body.error_description || 'An unexpected error occurred';
+      }
+    } catch (e) {
+      console.error('Error parsing error message:', e);
+      message = error.message || 'An unexpected error occurred';
+    }
+
+    message = message.toLowerCase();
     
     if (message.includes('invalid login credentials') || message.includes('invalid password')) {
-      return "Incorrect password. Please try again.";
+      return "Incorrect email or password. Please try again.";
     }
     if (message.includes('user not found') || message.includes('invalid user')) {
       return "No account found with this email address.";
@@ -110,18 +119,14 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     if (message.includes('email already registered')) {
       return "An account with this email already exists.";
     }
-    
-    // Handle rate limiting
     if (message.includes('too many requests') || message.includes('rate limit')) {
       return "Too many attempts. Please try again later.";
     }
-    
-    // Handle network errors
     if (message.includes('network') || message.includes('connection')) {
       return "Network error. Please check your internet connection.";
     }
     
-    return error.message || "An unexpected error occurred. Please try again.";
+    return message || "An unexpected error occurred. Please try again.";
   }
 
   return (
