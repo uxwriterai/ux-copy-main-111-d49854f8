@@ -48,7 +48,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           console.log("New user detected, creating credits entry")
           
           try {
-            // First check if user already has credits
+            // First delete any IP-based credits for this user
+            const { error: deleteError } = await supabase
+              .from('user_credits')
+              .delete()
+              .is('user_id', null)
+              .eq('ip_address', await getIpAddress())
+
+            if (deleteError) {
+              console.error("Error deleting IP-based credits:", deleteError)
+            }
+
+            // Then check for existing user credits
             const { data: existingCredits, error: queryError } = await supabase
               .from('user_credits')
               .select('credits_remaining')
