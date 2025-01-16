@@ -85,31 +85,51 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
     e.preventDefault()
     
     if (!validatePasswords()) return
+    if (!userEmail) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "User email not found. Please try logging in again."
+      })
+      return
+    }
 
     setIsLoading(true)
     try {
-      // First verify the current password
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: userEmail || '',
+      // First verify the current password by attempting to sign in
+      const { error: signInError, data } = await supabase.auth.signInWithPassword({
+        email: userEmail,
         password: formData.currentPassword
       })
 
+      console.log("Sign in attempt result:", { error: signInError, data })
+
       if (signInError) {
         setIsLoading(false)
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Current password is incorrect"
-        })
+        // Check specifically for invalid credentials
+        if (signInError.message.includes("Invalid login credentials")) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Current password is incorrect. Please try again."
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to verify current password. Please try again."
+          })
+        }
         return
       }
 
-      // Then update to the new password
+      // If verification successful, proceed with password update
       const { error: updateError } = await supabase.auth.updateUser({ 
         password: formData.newPassword 
       })
 
       if (updateError) {
+        console.error("Password update error:", updateError)
         setIsLoading(false)
         toast({
           variant: "destructive",
@@ -132,6 +152,7 @@ export const PasswordChangeForm = ({ userEmail }: PasswordChangeFormProps) => {
         confirmPassword: ""
       })
     } catch (error: any) {
+      console.error("Password change error:", error)
       toast({
         variant: "destructive",
         title: "Error",
