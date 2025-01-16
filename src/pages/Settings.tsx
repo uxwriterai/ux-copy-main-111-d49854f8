@@ -104,7 +104,7 @@ export default function Settings() {
     }
   }
 
-  const handleInputChange = (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof typeof formData) => {
     setFormData(prev => ({
       ...prev,
       [field]: e.target.value
@@ -121,14 +121,14 @@ export default function Settings() {
   const PasswordInput = ({ 
     id, 
     value, 
-    onChange, 
+    field,
     label, 
     show, 
     onToggleShow 
   }: { 
     id: string;
     value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    field: keyof typeof formData;
     label: string;
     show: boolean;
     onToggleShow: () => void;
@@ -140,7 +140,7 @@ export default function Settings() {
           id={id}
           type={show ? "text" : "password"}
           value={value}
-          onChange={onChange}
+          onChange={(e) => handleInputChange(e, field)}
           required
           className="pr-10"
         />
@@ -180,7 +180,7 @@ export default function Settings() {
             <PasswordInput
               id="current-password"
               value={formData.currentPassword}
-              onChange={handleInputChange('currentPassword')}
+              field="currentPassword"
               label="Current Password"
               show={passwordVisibility.currentPassword}
               onToggleShow={() => togglePasswordVisibility('currentPassword')}
@@ -188,7 +188,7 @@ export default function Settings() {
             <PasswordInput
               id="new-password"
               value={formData.newPassword}
-              onChange={handleInputChange('newPassword')}
+              field="newPassword"
               label="New Password"
               show={passwordVisibility.newPassword}
               onToggleShow={() => togglePasswordVisibility('newPassword')}
@@ -196,7 +196,7 @@ export default function Settings() {
             <PasswordInput
               id="confirm-password"
               value={formData.confirmPassword}
-              onChange={handleInputChange('confirmPassword')}
+              field="confirmPassword"
               label="Confirm New Password"
               show={passwordVisibility.confirmPassword}
               onToggleShow={() => togglePasswordVisibility('confirmPassword')}
