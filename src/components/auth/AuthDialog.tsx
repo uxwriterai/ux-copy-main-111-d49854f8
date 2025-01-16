@@ -19,14 +19,14 @@ import { getErrorMessage } from "@/utils/authErrors"
 interface AuthDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  view: 'sign_in' | 'sign_up'
 }
 
-export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, view }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [view, setView] = useState<'sign_in' | 'sign_up'>('sign_in')
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -68,7 +68,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           if (sessionError) {
             let errorMessage = getErrorMessage(sessionError)
             
-            // Check for user not found error
             if (sessionError.message?.includes('Invalid login credentials')) {
               errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
             }
@@ -82,7 +81,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         } catch (err) {
           let errorMessage = getErrorMessage(err)
           
-          // Check for user not found error in catch block as well
           if (err.message?.includes('Invalid login credentials')) {
             errorMessage = "Uh oh! We couldn't find your account. Please double-check your credentials."
           }
@@ -101,27 +99,15 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   }, [onOpenChange])
 
-  const getViewContent = () => {
-    switch (view) {
-      case 'sign_in':
-        return {
-          title: 'Sign in',
-          description: 'Enter your email and password below to login'
-        }
-      case 'sign_up':
-        return {
-          title: 'Create your account',
-          description: 'Sign up to unlock more credits and features.'
-        }
-      default:
-        return {
-          title: 'Sign in',
-          description: 'Enter your email and password below to login'
-        }
-    }
-  }
-
-  const viewContent = getViewContent()
+  const viewContent = view === 'sign_in' 
+    ? {
+        title: 'Sign in',
+        description: 'Enter your email and password below to login'
+      }
+    : {
+        title: 'Create your account',
+        description: 'Sign up to unlock more credits and features.'
+      }
 
   return (
     <>
