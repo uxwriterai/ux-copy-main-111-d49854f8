@@ -17,16 +17,21 @@ import { AuthConfetti } from "./AuthConfetti"
 import { getErrorMessage } from "@/utils/authErrors"
 
 interface AuthDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  view?: 'sign_in' | 'sign_up' | 'forgotten_password';
 }
 
-export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, view = 'sign_in' }: AuthDialogProps) {
   const { theme } = useTheme()
   const [error, setError] = useState<string>("")
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
+  const [currentView, setCurrentView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>(view)
+
+  useEffect(() => {
+    setCurrentView(view)
+  }, [view])
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -90,7 +95,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   }, [onOpenChange])
 
   const getAuthContent = () => {
-    switch (view) {
+    switch (currentView) {
       case 'sign_in':
         return {
           title: "Welcome back!",
@@ -143,7 +148,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
           <Auth
             supabaseClient={supabase}
-            view={view}
+            view={currentView}
             appearance={{
               theme: ThemeSupa,
               variables: {
