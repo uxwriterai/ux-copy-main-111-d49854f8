@@ -18,9 +18,17 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const broadcastChannel = new BroadcastChannel('auth_channel')
 
+  const getIpAddress = async () => {
+    const response = await fetch('https://api.ipify.org?format=json')
+    const data = await response.json()
+    return data.ip
+  }
+
   const resetCredits = async () => {
     console.log("Resetting credits...")
     try {
+      const ipAddress = await getIpAddress()
+      
       if (session?.user) {
         // For logged-in users, check their credits in the database
         const { data: userData, error } = await supabase
@@ -36,7 +44,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
             .from('user_credits')
             .upsert({
               user_id: session.user.id,
-              credits_remaining: 8
+              credits_remaining: 8,
+              ip_address: ipAddress
             })
         } else {
           console.log("Setting credits to user-based credits:", userData.credits_remaining)
@@ -44,11 +53,6 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         // For non-logged-in users, use IP-based credits
-        const response = await fetch('https://api.ipify.org?format=json')
-        const data = await response.json()
-        const ipAddress = data.ip
-        console.log("User IP address:", ipAddress)
-
         const ipCredits = await getUserCredits(ipAddress)
         console.log("Credits found for IP:", ipCredits)
 
@@ -62,7 +66,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
             .from('user_credits')
             .upsert({
               ip_address: ipAddress,
-              credits_remaining: 2
+              credits_remaining: 2,
+              user_id: null
             })
         }
       }
@@ -80,6 +85,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
 
     try {
       console.log("Using 1 credit. Credits before:", credits)
+      const ipAddress = await getIpAddress()
       
       if (session?.user) {
         // For logged-in users, update credits in Supabase with user_id
@@ -87,7 +93,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
           .from('user_credits')
           .upsert({ 
             user_id: session.user.id,
-            credits_remaining: credits - 1 
+            credits_remaining: credits - 1,
+            ip_address: ipAddress
           })
           .select()
           .single()
@@ -101,10 +108,6 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         setCredits(userData.credits_remaining)
       } else {
         // For non-logged-in users, update credits based on IP
-        const response = await fetch('https://api.ipify.org?format=json')
-        const data = await response.json()
-        const ipAddress = data.ip
-
         await updateUserCredits(ipAddress, credits - 1)
         setCredits(credits - 1)
       }
@@ -126,13 +129,15 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
       
       if (event === 'SIGNED_IN' && session) {
         console.log("User signed in, setting credits to 8")
+        const ipAddress = await getIpAddress()
         
         // Initialize credits for new user
         const { error } = await supabase
           .from('user_credits')
           .upsert({ 
             user_id: session.user.id,
-            credits_remaining: 8 
+            credits_remaining: 8,
+            ip_address: ipAddress
           })
 
         if (error) {
@@ -172,6 +177,7 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
         console.log("No session found, resetting credits")
         await resetCredits()
       } else {
+        const ipAddress = await getIpAddress()
         // Get credits for logged-in user
         const { data: userData, error } = await supabase
           .from('user_credits')
@@ -187,7 +193,8 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
             .from('user_credits')
             .upsert({ 
               user_id: session.user.id,
-              credits_remaining: 8 
+              credits_remaining: 8,
+              ip_address: ipAddress
             })
         } else {
           console.log("Found existing credits:", userData.credits_remaining)
