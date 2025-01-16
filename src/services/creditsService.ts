@@ -15,11 +15,11 @@ export async function getUserCredits(ipAddress: string): Promise<number> {
 
   if (error) {
     console.error('Error fetching user credits:', error);
-    return 2; // Default credits for new users
+    return 8; // Default credits for new users (changed from 2 to 8)
   }
 
   console.log("Credits data from DB:", data);
-  return data?.credits_remaining ?? 2;
+  return data?.credits_remaining ?? 8; // Changed from 2 to 8
 }
 
 export async function updateUserCredits(ipAddress: string, newCredits: number) {

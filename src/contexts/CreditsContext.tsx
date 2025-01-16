@@ -60,20 +60,20 @@ export function CreditsProvider({ children }: { children: React.ReactNode }) {
           console.log("Setting credits to IP-based credits:", ipCredits)
           setCredits(ipCredits)
         } else {
-          console.log("Setting credits to default value (2)")
-          setCredits(2)
+          console.log("Setting credits to default value (8)")
+          setCredits(8)
           await supabase
             .from('user_credits')
             .upsert({
               ip_address: ipAddress,
-              credits_remaining: 2,
+              credits_remaining: 8,
               user_id: null
             })
         }
       }
     } catch (error) {
       console.error("Error resetting credits:", error)
-      setCredits(session?.user ? 8 : 2)
+      setCredits(session?.user ? 8 : 8) // Changed default from 2 to 8 for non-logged users
     }
   }
 
