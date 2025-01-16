@@ -104,7 +104,7 @@ export default function Settings() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }))
@@ -131,33 +131,35 @@ export default function Settings() {
     label: string;
     show: boolean;
     onToggleShow: () => void;
-  }) => (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <div className="relative">
-        <Input
-          id={id}
-          name={name}
-          type={show ? "text" : "password"}
-          value={value}
-          onChange={handleInputChange}
-          required
-          className="pr-10"
-        />
-        <button
-          type="button"
-          onClick={onToggleShow}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-        >
-          {show ? (
-            <EyeOff className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
-        </button>
+  }) => {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={id}>{label}</Label>
+        <div className="relative">
+          <Input
+            id={id}
+            name={name}
+            type={show ? "text" : "password"}
+            value={value}
+            onChange={handleInputChange}
+            required
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={onToggleShow}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            {show ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="container max-w-2xl py-12">
