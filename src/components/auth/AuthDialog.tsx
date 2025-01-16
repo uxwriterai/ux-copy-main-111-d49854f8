@@ -43,10 +43,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           createdAt,
           lastSignIn,
           timeDiff,
-          isNewUser: timeDiff < 5000 // Consider new if timestamps are within 5 seconds
+          isNewUser: timeDiff < 5000
         })
         
-        if (timeDiff < 5000) { // If timestamps are within 5 seconds, consider it a new signup
+        if (timeDiff < 5000) {
           console.log("New user detected, showing welcome message and confetti")
           setShowConfetti(true)
           setShowWelcome(true)
@@ -79,18 +79,32 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   }, [onOpenChange])
 
   const getErrorMessage = (error: AuthError) => {
-    switch (error.message) {
-      case "Invalid login credentials":
-        return "Invalid email or password. Please check your credentials and try again."
-      case "User not found":
-        return "No account found with these credentials."
-      case "Email not confirmed":
-        return "Please verify your email address before signing in."
-      case "Email already registered":
-        return "An account with this email already exists."
-      default:
-        return error.message
+    const message = error.message?.toLowerCase() || '';
+    
+    if (message.includes('invalid login credentials') || message.includes('invalid password')) {
+      return "Incorrect password. Please try again.";
     }
+    if (message.includes('user not found') || message.includes('invalid user')) {
+      return "No account found with this email address.";
+    }
+    if (message.includes('email not confirmed')) {
+      return "Please verify your email address before signing in.";
+    }
+    if (message.includes('email already registered')) {
+      return "An account with this email already exists.";
+    }
+    
+    // Handle rate limiting
+    if (message.includes('too many requests') || message.includes('rate limit')) {
+      return "Too many attempts. Please try again later.";
+    }
+    
+    // Handle network errors
+    if (message.includes('network') || message.includes('connection')) {
+      return "Network error. Please check your internet connection.";
+    }
+    
+    return error.message || "An unexpected error occurred. Please try again.";
   }
 
   return (
