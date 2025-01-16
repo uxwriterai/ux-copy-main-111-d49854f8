@@ -11,12 +11,13 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { generateLandingPageCopy } from "@/services/landingPageService";
 import { LandingPageResult } from "@/components/landing-page/LandingPageResult";
 import { useCredits } from "@/contexts/CreditsContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AuthDialog } from "@/components/auth/AuthDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const INDUSTRIES = [
   "Technology",
@@ -58,7 +59,6 @@ const LandingPageGenerator = () => {
   const [sections, setSections] = useState([]);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const { toast } = useToast();
   const { credits, useCredit } = useCredits();
   const [formData, setFormData] = useState({
     productName: "",
@@ -85,19 +85,21 @@ const LandingPageGenerator = () => {
     e.preventDefault();
     
     try {
-      if (credits <= 0) {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (credits <= 0 && !session) {
         setShowCreditsDialog(true);
         return;
       }
 
+      if (credits <= 0) {
+        toast.error("No credits remaining");
+        return;
+      }
+
       // Check and use a credit before proceeding
-      const creditUsed = await useCredit();
-      if (!creditUsed) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No credits remaining. Please sign up for more credits.",
-        });
+      if (!await useCredit()) {
+        toast.error("No credits remaining");
         return;
       }
 
@@ -105,17 +107,10 @@ const LandingPageGenerator = () => {
       const generatedSections = await generateLandingPageCopy(formData);
       setSections(generatedSections);
       setShowResults(true);
-      toast({
-        title: "Success",
-        description: "Landing page copy generated successfully!",
-      });
+      toast.success("Landing page copy generated successfully!");
     } catch (error) {
       console.error("Error generating landing page copy:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to generate landing page copy. Please try again.",
-      });
+      toast.error("Failed to generate landing page copy. Please try again.");
     } finally {
       setIsLoading(false);
     }
