@@ -51,6 +51,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         } else {
           toast.success('Welcome back!')
         }
+        setError("")
         onOpenChange(false)
       }
 
@@ -59,10 +60,21 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         toast.success('Signed out successfully')
       }
 
+      // Handle auth errors
       if (event === 'USER_UPDATED') {
-        const sessionResponse = await supabase.auth.getSession()
-        if (sessionResponse.error) {
-          const errorMessage = getErrorMessage(sessionResponse.error)
+        try {
+          const { data, error: sessionError } = await supabase.auth.getSession()
+          if (sessionError) {
+            const errorMessage = getErrorMessage(sessionError)
+            console.error("Auth session error:", sessionError)
+            setError(errorMessage)
+            toast.error('Authentication Error', {
+              description: errorMessage
+            })
+          }
+        } catch (err) {
+          const errorMessage = getErrorMessage(err)
+          console.error("Auth error:", err)
           setError(errorMessage)
           toast.error('Authentication Error', {
             description: errorMessage
@@ -75,6 +87,16 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       subscription.unsubscribe()
     }
   }, [onOpenChange])
+
+  // Handle auth UI errors
+  const handleAuthError = (error: Error) => {
+    const errorMessage = getErrorMessage(error)
+    console.error("Auth UI error:", error)
+    setError(errorMessage)
+    toast.error('Authentication Error', {
+      description: errorMessage
+    })
+  }
 
   return (
     <>
@@ -124,6 +146,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             }}
             theme={theme}
             providers={[]}
+            onError={handleAuthError}
             redirectTo={window.location.origin + window.location.pathname}
           />
         </DialogContent>

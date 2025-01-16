@@ -1,7 +1,7 @@
 import { AuthError } from "@supabase/supabase-js"
 
 export const getErrorMessage = (error: AuthError | Error | string) => {
-  console.log("Processing error:", error)
+  console.log("Processing auth error:", error)
   
   if (typeof error === 'string') {
     return error
@@ -10,6 +10,7 @@ export const getErrorMessage = (error: AuthError | Error | string) => {
   if ('message' in error) {
     const message = error.message?.toLowerCase() || ''
     
+    // Handle specific Supabase auth error messages
     if (message.includes('invalid login credentials') || message.includes('invalid password')) {
       return "Incorrect email or password. Please try again."
     }
@@ -27,6 +28,9 @@ export const getErrorMessage = (error: AuthError | Error | string) => {
     }
     if (message.includes('network') || message.includes('connection')) {
       return "Network error. Please check your internet connection."
+    }
+    if (message.includes('body stream already read')) {
+      return "An error occurred during authentication. Please try again."
     }
     
     return message || "An unexpected error occurred. Please try again."
