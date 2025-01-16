@@ -12,6 +12,9 @@ serve(async (req) => {
 
   try {
     const key = Deno.env.get('GEMINI_API_KEY')
+    if (!key) {
+      throw new Error('GEMINI_API_KEY not found')
+    }
     
     return new Response(
       JSON.stringify({ value: key }),

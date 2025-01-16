@@ -9,10 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useCredits } from '@/contexts/CreditsContext';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { AuthDialog } from "@/components/auth/AuthDialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AuthDialog } from "@/components/auth/AuthDialog";
+import { supabase } from "@/integrations/supabase/client";
 
-const GEMINI_API_KEY = 'AIzaSyCt-KOMsVnxcUToFVGpbAAgnusgEiyYS9w';
 const MAX_SUGGESTIONS = 15;
 
 const Index = () => {
@@ -98,6 +98,15 @@ const Index = () => {
         throw new Error('Image size must be less than 4MB');
       }
 
+      // Get the API key from Supabase Edge Function
+      const { data: { value: apiKey }, error: keyError } = await supabase
+        .functions.invoke('get-gemini-key');
+
+      if (keyError || !apiKey) {
+        console.error('Error fetching API key:', keyError);
+        throw new Error('Failed to get API key');
+      }
+
       const base64Image = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
@@ -158,7 +167,7 @@ const Index = () => {
       `;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
