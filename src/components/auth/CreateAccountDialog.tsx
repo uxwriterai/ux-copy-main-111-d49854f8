@@ -59,7 +59,7 @@ export function CreateAccountDialog({
               container: 'w-full',
               button: 'w-full',
               input: 'w-full',
-              anchor: 'hidden', // Hide Supabase's default links
+              anchor: 'hidden',
             }
           }}
           localization={{
@@ -73,15 +73,6 @@ export function CreateAccountDialog({
           providers={[]}
           redirectTo={window.location.origin + window.location.pathname}
         />
-        
-        <div className="mt-4 text-sm text-center">
-          <button 
-            onClick={onSignIn}
-            className="text-primary hover:underline block w-full"
-          >
-            Already have an account? Sign in
-          </button>
-        </div>
       </DialogContent>
     </Dialog>
   )

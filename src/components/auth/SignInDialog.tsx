@@ -61,7 +61,7 @@ export function SignInDialog({
               container: 'w-full',
               button: 'w-full',
               input: 'w-full',
-              anchor: 'hidden', // Hide Supabase's default links
+              anchor: 'hidden',
             }
           }}
           localization={{
