@@ -53,17 +53,17 @@ const Index = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="container max-w-6xl py-12">
-      <div className="text-center mb-12">
+    <div className="container max-w-6xl py-12 mx-auto flex flex-col items-center">
+      <div className="text-center mb-12 max-w-2xl">
         <h1 className="text-4xl font-bold mb-4">UX Writing Tools</h1>
         <p className="text-lg text-muted-foreground">
           A collection of AI-powered tools to help you write better UX copy
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full justify-items-center">
         {tools.map((tool) => (
-          <Card key={tool.route} className="group hover:shadow-lg transition-all">
+          <Card key={tool.route} className="group hover:shadow-lg transition-all w-full max-w-sm">
             <CardHeader>
               <div className="flex items-center gap-4">
                 <div className="p-2 rounded-lg bg-primary/10 text-primary">
