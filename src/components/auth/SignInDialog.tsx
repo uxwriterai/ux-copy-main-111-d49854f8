@@ -61,6 +61,7 @@ export function SignInDialog({
               container: 'w-full',
               button: 'w-full',
               input: 'w-full',
+              anchor: 'hidden', // Hide Supabase's default links
             }
           }}
           localization={{
@@ -74,6 +75,21 @@ export function SignInDialog({
           providers={[]}
           redirectTo={window.location.origin + window.location.pathname}
         />
+        
+        <div className="mt-4 text-sm text-center space-y-2">
+          <button 
+            onClick={onForgotPassword}
+            className="text-primary hover:underline block w-full"
+          >
+            Forgot password?
+          </button>
+          <button 
+            onClick={onCreateAccount}
+            className="text-primary hover:underline block w-full"
+          >
+            Don't have an account? Create one
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   )
