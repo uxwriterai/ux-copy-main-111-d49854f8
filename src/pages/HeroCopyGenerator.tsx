@@ -17,11 +17,13 @@ const HeroCopyGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedVariants, setGeneratedVariants] = useState<HeroCopyVariant[]>([]);
   const { useCredit, credits } = useCredits();
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const handleSubmit = async (formData: any) => {
     // Check if we have any credits left
     if (credits <= 0) {
-      toast.error("No credits remaining. Please sign in for more credits.");
+      setShowCreditsDialog(true);
       return;
     }
 

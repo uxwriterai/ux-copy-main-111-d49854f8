@@ -21,7 +21,8 @@ export const ABTestingForm = () => {
   const [variationA, setVariationA] = useState<ABTestVariation>({ text: "" });
   const [variationB, setVariationB] = useState<ABTestVariation>({ text: "" });
   const [showResults, setShowResults] = useState(false);
-  const { useCredit } = useCredits();
+  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
+  const { useCredit, credits } = useCredits();
 
   const handleImageUpload = (variation: "A" | "B") => (file: File) => {
     if (variation === "A") {
@@ -34,15 +35,20 @@ export const ABTestingForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
+    
     try {
+      if (credits <= 0) {
+        setShowCreditsDialog(true);
+        return;
+      }
+
       // Check and use a credit before proceeding
-      if (!useCredit()) {
+      if (!await useCredit()) {
         toast.error("No credits remaining");
         return;
       }
 
+      setIsLoading(true);
       const result = await analyzeABTest(variationA, variationB);
       setResults(result);
       setShowResults(true);
