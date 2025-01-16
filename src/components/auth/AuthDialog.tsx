@@ -79,25 +79,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   return (
     <>
-      {showConfetti && (
-        <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
-          recycle={false}
-          numberOfPieces={500}
-          onConfettiComplete={() => {
-            console.log("Confetti animation completed")
-            setShowConfetti(false)
-          }}
-        />
-      )}
-      
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">🎉 Welcome Aboard!</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-center">8 credits unlocked!</DialogTitle>
             <DialogDescription className="text-center text-lg mt-4">
-              You've unlocked 15 credits to start creating amazing content!
+              Let's get started and make something awesome.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-6">
@@ -105,11 +92,25 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               className="w-full"
               onClick={() => setShowWelcome(false)}
             >
-              Let's Roll
+              Let's go!
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={500}
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999 }}
+          onConfettiComplete={() => {
+            console.log("Confetti animation completed")
+            setShowConfetti(false)
+          }}
+        />
+      )}
 
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
