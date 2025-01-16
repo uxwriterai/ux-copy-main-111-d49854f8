@@ -79,8 +79,22 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   return (
     <>
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={500}
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 100000 }}
+          onConfettiComplete={() => {
+            console.log("Confetti animation completed")
+            setShowConfetti(false)
+          }}
+        />
+      )}
+
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px]" style={{ zIndex: 99999 }}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">8 credits unlocked!</DialogTitle>
             <DialogDescription className="text-center text-lg mt-4">
@@ -97,20 +111,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {showConfetti && (
-        <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
-          recycle={false}
-          numberOfPieces={500}
-          style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999 }}
-          onConfettiComplete={() => {
-            console.log("Confetti animation completed")
-            setShowConfetti(false)
-          }}
-        />
-      )}
 
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[425px]">
