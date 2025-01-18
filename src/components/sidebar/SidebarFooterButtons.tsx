@@ -5,98 +5,21 @@ import { useSidebar } from "@/components/ui/sidebar"
 import { useCredits } from "@/contexts/CreditsContext"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { AuthDialog } from "@/components/auth/AuthDialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { supabase } from "@/integrations/supabase/client"
-import { toast } from "sonner"
 import { useNavigate } from "react-router-dom"
-import { Session } from "@supabase/supabase-js"
+import { useAuthState } from "@/hooks/useAuthState"
 
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
   const { state, toggleSidebar } = useSidebar()
-  const { credits, resetCredits } = useCredits()
+  const { credits } = useCredits()
   const isCollapsed = state === "collapsed"
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
-  const [session, setSession] = useState<Session | null>(null)
-  const [isSigningOut, setIsSigningOut] = useState(false)
   const navigate = useNavigate()
-
-  // Handle initial session and auth state changes
-  useEffect(() => {
-    let mounted = true
-
-    async function initializeAuth() {
-      try {
-        // Get initial session
-        const { data: { session: currentSession } } = await supabase.auth.getSession()
-        if (mounted) {
-          console.log("Initial session state:", currentSession ? "logged in" : "not logged in")
-          setSession(currentSession)
-          setIsSigningOut(false)
-        }
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
-          if (!mounted) return
-
-          console.log("Auth state changed:", event, newSession ? "session present" : "no session")
-          
-          if (event === 'SIGNED_OUT') {
-            setSession(null)
-            setIsSigningOut(false)
-            resetCredits()
-            navigate('/')
-          } else if (event === 'SIGNED_IN' && newSession) {
-            setSession(newSession)
-            setIsSigningOut(false)
-          }
-        })
-
-        return () => {
-          mounted = false
-          subscription.unsubscribe()
-        }
-      } catch (error) {
-        console.error("Error initializing auth:", error)
-        if (mounted) {
-          setSession(null)
-          setIsSigningOut(false)
-        }
-      }
-    }
-
-    initializeAuth()
-  }, [resetCredits, navigate])
-
-  const handleLogout = async () => {
-    if (isSigningOut) {
-      console.log("Already signing out, ignoring request")
-      return
-    }
-
-    console.log("Starting sign out process...")
-    setIsSigningOut(true)
-
-    try {
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        console.error("Sign out error:", error)
-        throw error
-      }
-
-      console.log("Sign out API call successful")
-    } catch (error) {
-      console.error("Error during sign out:", error)
-      setIsSigningOut(false)
-      toast.error('Error signing out. Please try again.')
-    }
-  }
-
-  // ... keep existing code (UI rendering for credits badge, settings button, theme toggle, etc)
+  const { session, isSigningOut, handleSignOut } = useAuthState()
 
   return (
     <>
@@ -141,7 +64,7 @@ export function SidebarFooterButtons() {
         <Button 
           variant="ghost" 
           className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
-          onClick={handleLogout}
+          onClick={handleSignOut}
           disabled={isSigningOut}
         >
           <LogOut className="h-5 w-5" />
