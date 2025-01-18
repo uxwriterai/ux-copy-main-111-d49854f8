@@ -27,7 +27,6 @@ export const useCreditsManagement = (session: Session | null) => {
       setInitialized(true);
     } catch (error) {
       console.error("Error in fetchCredits:", error);
-      // Keep previous state on error, but still mark as initialized
       setInitialized(true);
     } finally {
       setIsLoading(false);
@@ -70,6 +69,7 @@ export const useCreditsManagement = (session: Session | null) => {
     isLoading,
     setIsLoading,
     initialized,
+    setInitialized,
     fetchCredits
   };
 };

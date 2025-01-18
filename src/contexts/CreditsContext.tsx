@@ -16,6 +16,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     isLoading,
     setIsLoading,
     initialized,
+    setInitialized,
     fetchCredits
   } = useCreditsManagement(session);
 
@@ -40,16 +41,15 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       console.log("Auth state changed:", event);
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits state");
-        setIsLoading(true); // Set loading state before fetching new credits
-        setCredits(null); // Reset credits state
+        setIsLoading(true);
+        setInitialized(false); // Reset initialized state
+        setCredits(null);
         
         try {
           console.log("Fetching IP-based credits");
-          await fetchCredits(); // Fetch new IP-based credits
+          await fetchCredits();
         } catch (error) {
           console.error("Error fetching IP-based credits:", error);
-        } finally {
-          setIsLoading(false); // Ensure loading state is cleared
         }
       }
     });
@@ -58,7 +58,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       console.log("Cleaning up auth state listener");
       subscription.unsubscribe();
     };
-  }, [fetchCredits, setCredits, setIsLoading]);
+  }, [fetchCredits, setCredits, setIsLoading, setInitialized]);
 
   const value = {
     credits: credits ?? 0,
