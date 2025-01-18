@@ -66,26 +66,35 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
           user_id: userId,
           credits_remaining: newCredits
         }, {
-          onConflict: 'user_id'
+          onConflict: 'user_id',
+          ignoreDuplicates: false
         });
 
       if (error) throw error;
     } else {
-      // For anonymous users, upsert by IP
+      // For anonymous users, first delete any existing record
       const ipAddress = await getIpAddress();
       console.log('Updating credits for IP:', ipAddress);
       
-      const { error } = await supabase
+      // First, delete any existing record for this IP
+      const { error: deleteError } = await supabase
         .from('user_credits')
-        .upsert({
+        .delete()
+        .eq('ip_address', ipAddress)
+        .is('user_id', null);
+
+      if (deleteError) throw deleteError;
+
+      // Then insert the new record
+      const { error: insertError } = await supabase
+        .from('user_credits')
+        .insert({
           ip_address: ipAddress,
           credits_remaining: newCredits,
           user_id: null
-        }, {
-          onConflict: 'ip_address'
         });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
     }
 
     console.log('Credits updated successfully');
