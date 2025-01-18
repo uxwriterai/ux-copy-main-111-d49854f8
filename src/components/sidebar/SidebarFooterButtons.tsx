@@ -40,32 +40,48 @@ export function SidebarFooterButtons() {
   }, [])
 
   const handleLogout = async () => {
-    if (isSigningOut) return
+    if (isSigningOut) {
+      console.log("Already signing out, ignoring request")
+      return
+    }
     
     setIsSigningOut(true)
-    console.log("Attempting to sign out...")
+    console.log("Starting sign out process...")
 
     try {
-      // First reset local state
+      // Reset local state first to ensure UI feedback
       setSession(null)
       resetCredits()
       
-      // Attempt to sign out from Supabase with retry logic
       let attempts = 0
-      const maxAttempts = 3
+      const maxAttempts = 5 // Increased max attempts
       let signOutSuccess = false
+      
+      const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
       while (attempts < maxAttempts && !signOutSuccess) {
         try {
+          console.log(`Attempt ${attempts + 1} to sign out`)
           const { error } = await supabase.auth.signOut()
+          
           if (!error) {
+            console.log("Sign out successful")
             signOutSuccess = true
           } else {
             console.error(`Sign out attempt ${attempts + 1} failed:`, error)
-            await new Promise(resolve => setTimeout(resolve, 1000 * (attempts + 1))) // Exponential backoff
+            // Exponential backoff with longer initial delay
+            const delay = Math.min(1000 * Math.pow(2, attempts), 10000)
+            console.log(`Waiting ${delay}ms before next attempt`)
+            await wait(delay)
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Sign out attempt ${attempts + 1} failed with error:`, error)
+          
+          // Special handling for 503 errors
+          if (error?.status === 503) {
+            console.log("Service unavailable (503), waiting longer before retry")
+            await wait(5000) // Wait 5 seconds for 503 errors
+          }
         }
         attempts++
       }
@@ -75,9 +91,11 @@ export function SidebarFooterButtons() {
       }
 
       // Get anonymous credits after successful sign out
+      console.log("Fetching IP for anonymous credits")
       const response = await fetch('https://api.ipify.org?format=json')
       const { ip } = await response.json()
       
+      console.log("Fetching anonymous credits for IP:", ip)
       const { data: anonCredits } = await supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -85,12 +103,16 @@ export function SidebarFooterButtons() {
         .eq('ip_address', ip)
         .maybeSingle()
 
-      // Navigate to home and show success message
+      // Navigate and show success message
       navigate('/')
       toast.success('Signed out successfully')
     } catch (error) {
-      console.error("Error during sign out:", error)
-      toast.error('Error signing out. Please try again.')
+      console.error("Error during sign out process:", error)
+      // Restore session state on error
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session)
+      })
+      toast.error('Error signing out. Please try again in a few moments.')
     } finally {
       setIsSigningOut(false)
     }
