@@ -1,4 +1,4 @@
-import { Moon, Sun, PanelLeft, PanelLeftClose, LogIn, LogOut, Settings } from "lucide-react"
+import { Moon, Sun, PanelLeft, PanelLeftClose, LogIn, LogOut, Settings, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ThemeProvider"
 import { useSidebar } from "@/components/ui/sidebar"
@@ -14,7 +14,7 @@ import { useAuthState } from "@/hooks/useAuthState"
 export function SidebarFooterButtons() {
   const { theme, setTheme } = useTheme()
   const { state, toggleSidebar } = useSidebar()
-  const { credits } = useCredits()
+  const { credits, isLoading } = useCredits()
   const isCollapsed = state === "collapsed"
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
@@ -28,14 +28,21 @@ export function SidebarFooterButtons() {
           <Badge 
             variant="outline" 
             className={cn(
-              "cursor-pointer transition-colors px-4 py-1",
+              "cursor-pointer transition-colors px-4 py-1 flex items-center gap-2",
               credits === 0 
                 ? "bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/50" 
                 : "bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border"
             )}
             onClick={() => setShowCreditsDialog(true)}
           >
-            {credits} credits left
+            {isLoading ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>Loading...</span>
+              </>
+            ) : (
+              `${credits} credits left`
+            )}
           </Badge>
         </div>
       )}
