@@ -27,13 +27,19 @@ export const useCreditsManagement = (session: Session | null) => {
       setInitialized(true);
     } catch (error) {
       console.error("Error in fetchCredits:", error);
-      // Keep previous state on error
+      // Keep previous state on error, but still mark as initialized
+      setInitialized(true);
     } finally {
       setIsLoading(false);
     }
   }, [session?.user?.id]);
 
   const useCredit = async (): Promise<boolean> => {
+    if (!initialized) {
+      console.log('Cannot use credit: credits not initialized');
+      return false;
+    }
+
     if (credits === null || credits <= 0) {
       console.log('Cannot use credit:', credits === null ? 'credits not initialized' : 'no credits remaining');
       return false;
@@ -57,7 +63,8 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   return {
-    credits: credits ?? 0,
+    // Only return 0 if initialized and credits is null
+    credits: initialized ? (credits ?? 0) : null,
     setCredits,
     useCredit,
     resetCredits,

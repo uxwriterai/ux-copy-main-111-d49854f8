@@ -49,7 +49,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   }, [setCredits]);
 
   const value = {
-    credits,
+    credits: credits ?? 0,
     setCredits,
     useCredit,
     resetCredits,
