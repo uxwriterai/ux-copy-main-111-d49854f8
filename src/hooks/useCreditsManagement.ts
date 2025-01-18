@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Session } from "@supabase/supabase-js";
 import { fetchUserCredits, updateCredits } from "@/services/creditsService";
-import { toast } from "sonner";
 
 export const useCreditsManagement = (session: Session | null) => {
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     try {
       setIsLoading(true);
       console.log('Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
+      
       const fetchedCredits = await fetchUserCredits(session?.user?.id);
       console.log('Fetched credits:', fetchedCredits);
       
@@ -26,14 +26,12 @@ export const useCreditsManagement = (session: Session | null) => {
       
       setInitialized(true);
     } catch (error) {
-      console.error("Error fetching credits:", error);
-      const defaultCredits = session?.user?.id ? 6 : 2;
-      setCredits(defaultCredits);
-      toast.error("Failed to fetch credits");
+      console.error("Error in fetchCredits:", error);
+      // Don't set credits to 0 on error, keep the previous state
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session?.user?.id]);
 
   const useCredit = async (): Promise<boolean> => {
     if (credits === null || credits <= 0) {
@@ -59,7 +57,7 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   return {
-    credits: credits ?? 0,
+    credits: credits ?? 0, // Only show 0 if credits is null
     setCredits,
     useCredit,
     resetCredits,

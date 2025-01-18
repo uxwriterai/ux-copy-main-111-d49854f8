@@ -8,7 +8,7 @@ export const getIpAddress = async (): Promise<string> => {
     console.log('Fetched IP address:', data.ip);
     return data.ip;
   } catch (error) {
-    console.error('Error fetching IP address:', error);
+    console.error("Error fetching IP address:", error);
     throw error;
   }
 };
@@ -17,79 +17,54 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
   try {
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
+    let query = supabase.from('user_credits').select('credits_remaining');
+    
     if (userId) {
-      const { data, error } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching user credits:', error);
-        throw error;
-      }
-      
-      console.log('User credits data:', data);
-      return data?.credits_remaining ?? null;
+      query = query.eq('user_id', userId);
     } else {
       const ipAddress = await getIpAddress();
-      console.log('Fetching credits for IP:', ipAddress);
-      
-      const { data: existingCredits, error: selectError } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .is('user_id', null)
-        .eq('ip_address', ipAddress)
-        .maybeSingle();
-
-      if (selectError) {
-        console.error('Error fetching IP-based credits:', selectError);
-        throw selectError;
-      }
-
-      console.log('IP-based credits data:', existingCredits);
-      return existingCredits?.credits_remaining ?? null;
+      query = query.eq('ip_address', ipAddress).is('user_id', null);
     }
+
+    const { data, error } = await query.maybeSingle();
+    
+    if (error) {
+      console.error("Error fetching credits:", error);
+      throw error;
+    }
+
+    console.log('Credits data from DB:', data);
+    return data ? data.credits_remaining : null;
   } catch (error) {
-    console.error('Error in fetchUserCredits:', error);
+    console.error("Error in fetchUserCredits:", error);
     throw error;
   }
 };
 
-export const updateCredits = async (
-  newCredits: number,
-  userId?: string | null
-): Promise<void> => {
+export const updateCredits = async (newCredits: number, userId?: string | null): Promise<void> => {
   try {
     console.log('Updating credits:', { newCredits, userId });
     
-    if (userId) {
-      const { error } = await supabase
-        .from('user_credits')
-        .upsert({ 
-          user_id: userId,
-          credits_remaining: newCredits 
-        });
+    const ipAddress = !userId ? await getIpAddress() : null;
+    const data = userId 
+      ? { user_id: userId, credits_remaining: newCredits }
+      : { ip_address: ipAddress, credits_remaining: newCredits, user_id: null };
 
-      if (error) throw error;
-    } else {
-      const ipAddress = await getIpAddress();
-      console.log('Updating credits for IP:', ipAddress);
-      
-      const { error } = await supabase
-        .from('user_credits')
-        .upsert({ 
-          ip_address: ipAddress,
-          credits_remaining: newCredits,
-          user_id: null 
-        });
+    const { error } = await supabase
+      .from('user_credits')
+      .upsert(data, { 
+        onConflict: userId ? 'user_id' : 'ip_address',
+        ignoreDuplicates: false 
+      });
 
-      if (error) throw error;
+    if (error) {
+      console.error("Error updating credits:", error);
+      throw error;
     }
-    
+
     console.log('Credits updated successfully');
   } catch (error) {
-    console.error('Error updating credits:', error);
+    console.error("Error in updateCredits:", error);
     throw error;
   }
 };
