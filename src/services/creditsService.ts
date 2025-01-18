@@ -59,18 +59,21 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     console.log('Updating credits:', { newCredits, userId });
     
     if (userId) {
-      // For logged-in users, upsert by user_id
+      // For logged-in users, use upsert with explicit unique_user_id_idx
       const { error } = await supabase
         .from('user_credits')
-        .upsert({
-          user_id: userId,
-          credits_remaining: newCredits
-        }, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        });
+        .upsert(
+          { user_id: userId, credits_remaining: newCredits },
+          { 
+            onConflict: 'user_id',
+            ignoreDuplicates: false 
+          }
+        );
 
-      if (error) throw error;
+      if (error) {
+        console.error("Upsert error:", error);
+        throw error;
+      }
     } else {
       // For anonymous users, first delete any existing record
       const ipAddress = await getIpAddress();
