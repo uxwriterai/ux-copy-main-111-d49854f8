@@ -14,6 +14,7 @@ import LandingPageGenerator from "@/pages/LandingPageGenerator"
 import Settings from "@/pages/Settings"
 import Generator from "@/pages/Generator"
 import MicrocopyGenerator from "@/pages/MicrocopyGenerator"
+import Index from "@/pages/Index"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 // Create a client
@@ -31,7 +32,7 @@ function App() {
                   <AppSidebar />
                   <main className="flex-1 overflow-y-auto">
                     <Routes>
-                      <Route path="/" element={<CopyImprover />} />
+                      <Route path="/" element={<Index />} />
                       <Route path="/copy-improver" element={<CopyImprover />} />
                       <Route path="/generator" element={<Generator />} />
                       <Route path="/microcopy" element={<MicrocopyGenerator />} />
