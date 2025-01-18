@@ -112,11 +112,16 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
-      const { error, data } = await query.select('credits_remaining').single();
+      const { error, data } = await query.select('credits_remaining').maybeSingle();
 
       if (error) {
         console.error("Error updating credits:", error);
         throw error;
+      }
+
+      if (!data) {
+        console.error("No credits record found to update");
+        return false;
       }
 
       setCredits(data.credits_remaining);
