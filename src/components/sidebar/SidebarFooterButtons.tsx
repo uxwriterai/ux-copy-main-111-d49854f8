@@ -21,6 +21,7 @@ export function SidebarFooterButtons() {
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showCreditsDialog, setShowCreditsDialog] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -30,16 +31,13 @@ export function SidebarFooterButtons() {
     })
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event, session)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       
       if (_event === 'SIGNED_OUT') {
-        console.log("User signed out, resetting state")
         setSession(null)
         resetCredits()
         navigate('/')
-        toast.success('Signed out successfully')
       }
     })
 
@@ -49,9 +47,13 @@ export function SidebarFooterButtons() {
   }, [navigate, resetCredits])
 
   const handleLogout = async () => {
+    if (isSigningOut) return // Prevent multiple sign-out attempts
+    
     try {
+      setIsSigningOut(true)
       console.log("Attempting to sign out...")
       const { error } = await supabase.auth.signOut()
+      
       if (error) {
         console.error("Error during sign out:", error)
         toast.error('Error signing out', {
@@ -61,6 +63,8 @@ export function SidebarFooterButtons() {
     } catch (error) {
       console.error("Caught error during sign out:", error)
       toast.error('Error signing out')
+    } finally {
+      setIsSigningOut(false)
     }
   }
 
@@ -108,9 +112,12 @@ export function SidebarFooterButtons() {
           variant="ghost" 
           className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
           onClick={handleLogout}
+          disabled={isSigningOut}
         >
           <LogOut className="h-5 w-5" />
-          <span className="group-data-[collapsible=icon]:hidden">Sign out</span>
+          <span className="group-data-[collapsible=icon]:hidden">
+            {isSigningOut ? 'Signing out...' : 'Sign out'}
+          </span>
         </Button>
       )}
       
