@@ -49,46 +49,15 @@ export function SidebarFooterButtons() {
     console.log("Starting sign out process...")
 
     try {
-      // Reset local state first to ensure UI feedback
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        throw error
+      }
+
+      // Only reset local state after successful sign out
       setSession(null)
       resetCredits()
-      
-      let attempts = 0
-      const maxAttempts = 5 // Increased max attempts
-      let signOutSuccess = false
-      
-      const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-      while (attempts < maxAttempts && !signOutSuccess) {
-        try {
-          console.log(`Attempt ${attempts + 1} to sign out`)
-          const { error } = await supabase.auth.signOut()
-          
-          if (!error) {
-            console.log("Sign out successful")
-            signOutSuccess = true
-          } else {
-            console.error(`Sign out attempt ${attempts + 1} failed:`, error)
-            // Exponential backoff with longer initial delay
-            const delay = Math.min(1000 * Math.pow(2, attempts), 10000)
-            console.log(`Waiting ${delay}ms before next attempt`)
-            await wait(delay)
-          }
-        } catch (error: any) {
-          console.error(`Sign out attempt ${attempts + 1} failed with error:`, error)
-          
-          // Special handling for 503 errors
-          if (error?.status === 503) {
-            console.log("Service unavailable (503), waiting longer before retry")
-            await wait(5000) // Wait 5 seconds for 503 errors
-          }
-        }
-        attempts++
-      }
-
-      if (!signOutSuccess) {
-        throw new Error("Failed to sign out after multiple attempts")
-      }
 
       // Get anonymous credits after successful sign out
       console.log("Fetching IP for anonymous credits")
@@ -117,8 +86,6 @@ export function SidebarFooterButtons() {
       setIsSigningOut(false)
     }
   }
-
-  // ... keep existing code (render methods for credits badge, settings button, theme toggle, and sidebar toggle)
 
   return (
     <>
