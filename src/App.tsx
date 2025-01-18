@@ -12,6 +12,7 @@ import EmptyStateGenerator from "@/pages/EmptyStateGenerator"
 import HeroCopyGenerator from "@/pages/HeroCopyGenerator"
 import LandingPageGenerator from "@/pages/LandingPageGenerator"
 import Settings from "@/pages/Settings"
+import { SidebarProvider } from "@/components/ui/sidebar"
 
 // Create a client
 const queryClient = new QueryClient()
@@ -23,19 +24,21 @@ function App() {
         <CreditsProvider>
           <ThemeProvider>
             <Router>
-              <div className="flex min-h-screen">
-                <AppSidebar />
-                <main className="flex-1 overflow-y-auto">
-                  <Routes>
-                    <Route path="/" element={<CopyImprover />} />
-                    <Route path="/empty-state" element={<EmptyStateGenerator />} />
-                    <Route path="/hero" element={<HeroCopyGenerator />} />
-                    <Route path="/landing-page" element={<LandingPageGenerator />} />
-                    <Route path="/settings" element={<Settings />} />
-                  </Routes>
-                </main>
-              </div>
-              <Toaster />
+              <SidebarProvider>
+                <div className="flex min-h-screen w-full">
+                  <AppSidebar />
+                  <main className="flex-1 overflow-y-auto">
+                    <Routes>
+                      <Route path="/" element={<CopyImprover />} />
+                      <Route path="/empty-state" element={<EmptyStateGenerator />} />
+                      <Route path="/hero" element={<HeroCopyGenerator />} />
+                      <Route path="/landing-page" element={<LandingPageGenerator />} />
+                      <Route path="/settings" element={<Settings />} />
+                    </Routes>
+                  </main>
+                </div>
+                <Toaster />
+              </SidebarProvider>
             </Router>
           </ThemeProvider>
         </CreditsProvider>
