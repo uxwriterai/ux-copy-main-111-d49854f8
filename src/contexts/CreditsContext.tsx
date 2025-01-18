@@ -1,9 +1,8 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCreditsManagement } from "@/hooks/useCreditsManagement";
 import { CreditsContextType } from "@/types/credits";
-import { useEffect } from "react";
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 
@@ -19,22 +18,32 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     fetchCredits
   } = useCreditsManagement(session);
 
+  // Single useEffect for initialization and session changes
   useEffect(() => {
+    console.log("Session or initialization state changed");
+    console.log("Session state:", session?.user?.id ? "logged in" : "not logged in");
+    console.log("Initialized:", initialized);
+    console.log("Session loading:", isSessionLoading);
+
     if (!isSessionLoading && !initialized) {
-      console.log("Session state changed or not initialized, fetching credits...");
+      console.log("Fetching credits...");
       fetchCredits();
     }
   }, [session?.user?.id, isSessionLoading, initialized, fetchCredits]);
 
+  // Separate useEffect for auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event) => {
-      console.log("Auth state changed:", _event);
-      if (_event === 'SIGNED_OUT') {
+    console.log("Setting up auth state change listener");
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      console.log("Auth state changed:", event);
+      if (event === 'SIGNED_OUT') {
         setCredits(0);
       }
     });
 
     return () => {
+      console.log("Cleaning up auth state listener");
       subscription.unsubscribe();
     };
   }, [setCredits]);
