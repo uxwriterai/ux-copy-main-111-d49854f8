@@ -18,7 +18,6 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
     if (userId) {
-      // For logged-in users, fetch by user_id
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -27,11 +26,14 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .limit(1)
         .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user credits:', error);
+        throw error;
+      }
+      
       console.log('User-based credits data:', data);
       return data?.credits_remaining ?? null;
     } else {
-      // For anonymous users, fetch by IP
       const ipAddress = await getIpAddress();
       console.log('Fetching credits for IP:', ipAddress);
       
@@ -44,7 +46,11 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .limit(1)
         .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching IP-based credits:', error);
+        throw error;
+      }
+      
       console.log('IP-based credits data:', data);
       return data?.credits_remaining ?? null;
     }
@@ -59,7 +65,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     console.log('Updating credits:', { newCredits, userId });
     
     if (userId) {
-      // For logged-in users, use upsert with user_id index
+      // For logged-in users, use upsert with user_id
       const { error } = await supabase
         .from('user_credits')
         .upsert(
@@ -73,11 +79,13 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
         );
 
       if (error) {
-        console.error("Upsert error:", error);
+        console.error("Error updating user credits:", error);
         throw error;
       }
+      
+      console.log('Successfully updated credits for user:', userId);
     } else {
-      // For anonymous users, first delete any existing record
+      // For anonymous users, handle IP-based credits
       const ipAddress = await getIpAddress();
       console.log('Updating credits for IP:', ipAddress);
       
@@ -88,7 +96,10 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
         .eq('ip_address', ipAddress)
         .is('user_id', null);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error("Error deleting existing IP credits:", deleteError);
+        throw deleteError;
+      }
 
       // Then insert the new record
       const { error: insertError } = await supabase
@@ -99,10 +110,13 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
           user_id: null
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Error inserting new IP credits:", insertError);
+        throw insertError;
+      }
+      
+      console.log('Successfully updated credits for IP:', ipAddress);
     }
-
-    console.log('Credits updated successfully');
   } catch (error) {
     console.error("Error in updateCredits:", error);
     throw error;
