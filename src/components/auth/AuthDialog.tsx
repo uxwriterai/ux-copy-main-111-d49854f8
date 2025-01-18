@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useTheme } from "@/components/ThemeProvider"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { WelcomeDialog } from "./WelcomeDialog"
 import { AuthConfetti } from "./AuthConfetti"
 import { getErrorMessage } from "@/utils/authErrors"
@@ -26,6 +26,22 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        onOpenChange(false)
+        setShowConfetti(true)
+        setTimeout(() => {
+          setShowWelcome(true)
+        }, 1000)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [onOpenChange])
 
   const getAuthContent = () => {
     switch (view) {
