@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
+import { useSessionContext } from "@supabase/auth-helpers-react"
 import { toast } from "sonner"
 
 interface CreditsContextType {
@@ -27,18 +28,31 @@ const getIpAddress = async (): Promise<string> => {
 export const CreditsProvider = ({ children }: { children: React.ReactNode }) => {
   const [credits, setCredits] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { session, isLoading: isSessionLoading } = useSessionContext();
 
   const fetchCredits = async () => {
     try {
-      console.log("Fetching credits...");
-      const ipAddress = await getIpAddress();
-      console.log("IP address:", ipAddress);
+      console.log("Fetching credits, session state:", !!session?.user);
       
-      const { data, error } = await supabase
+      if (isSessionLoading) {
+        console.log("Session is still loading, waiting...");
+        return;
+      }
+
+      let query = supabase
         .from('user_credits')
         .select('credits_remaining')
-        .eq('ip_address', ipAddress)
-        .maybeSingle();
+      
+      if (session?.user) {
+        console.log("Fetching credits for user:", session.user.id);
+        query = query.eq('user_id', session.user.id);
+      } else {
+        const ipAddress = await getIpAddress();
+        console.log("Fetching credits for IP:", ipAddress);
+        query = query.is('user_id', null).eq('ip_address', ipAddress);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) {
         console.error("Error fetching credits:", error);
@@ -46,10 +60,16 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       if (!data) {
-        console.log("Creating new credits entry with 2 credits");
+        const defaultCredits = session?.user ? 6 : 2;
+        console.log(`Creating new credits entry with ${defaultCredits} credits`);
+        
+        const insertData = session?.user 
+          ? { user_id: session.user.id, credits_remaining: defaultCredits }
+          : { ip_address: await getIpAddress(), credits_remaining: defaultCredits };
+        
         const { error: insertError, data: insertedData } = await supabase
           .from('user_credits')
-          .insert({ ip_address: ipAddress, credits_remaining: 2 })
+          .insert(insertData)
           .select('credits_remaining')
           .single();
 
@@ -78,13 +98,18 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         return false;
       }
 
-      const ipAddress = await getIpAddress();
-      const { error, data } = await supabase
+      let query = supabase
         .from('user_credits')
-        .update({ credits_remaining: credits - 1 })
-        .eq('ip_address', ipAddress)
-        .select('credits_remaining')
-        .single();
+        .update({ credits_remaining: credits - 1 });
+
+      if (session?.user) {
+        query = query.eq('user_id', session.user.id);
+      } else {
+        const ipAddress = await getIpAddress();
+        query = query.is('user_id', null).eq('ip_address', ipAddress);
+      }
+
+      const { error, data } = await query.select('credits_remaining').single();
 
       if (error) {
         console.error("Error updating credits:", error);
@@ -102,6 +127,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   const resetCredits = async () => {
     try {
+      const ipAddress = await getIpAddress();
       await fetchCredits();
     } catch (error) {
       console.error("Error in resetCredits:", error);
@@ -110,8 +136,11 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   };
 
   useEffect(() => {
-    fetchCredits();
-  }, []);
+    if (!isSessionLoading) {
+      console.log("Session state changed, fetching credits...");
+      fetchCredits();
+    }
+  }, [session?.user?.id, isSessionLoading]);
 
   const value = {
     credits,
