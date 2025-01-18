@@ -25,7 +25,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       console.log('User-based credits data:', data);
@@ -42,7 +42,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .is('user_id', null)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       console.log('IP-based credits data:', data);
@@ -59,29 +59,31 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     console.log('Updating credits:', { newCredits, userId });
     
     if (userId) {
-      // For logged-in users, update by user_id
+      // For logged-in users, upsert by user_id
       const { error } = await supabase
         .from('user_credits')
-        .insert({
+        .upsert({
           user_id: userId,
           credits_remaining: newCredits
-        })
-        .select();
+        }, {
+          onConflict: 'user_id'
+        });
 
       if (error) throw error;
     } else {
-      // For anonymous users, update by IP
+      // For anonymous users, upsert by IP
       const ipAddress = await getIpAddress();
       console.log('Updating credits for IP:', ipAddress);
       
       const { error } = await supabase
         .from('user_credits')
-        .insert({
+        .upsert({
           ip_address: ipAddress,
           credits_remaining: newCredits,
           user_id: null
-        })
-        .select();
+        }, {
+          onConflict: 'ip_address'
+        });
 
       if (error) throw error;
     }
