@@ -13,6 +13,7 @@ import HeroCopyGenerator from "@/pages/HeroCopyGenerator"
 import LandingPageGenerator from "@/pages/LandingPageGenerator"
 import Settings from "@/pages/Settings"
 import Generator from "@/pages/Generator"
+import MicrocopyGenerator from "@/pages/MicrocopyGenerator"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 // Create a client
@@ -33,6 +34,7 @@ function App() {
                       <Route path="/" element={<CopyImprover />} />
                       <Route path="/copy-improver" element={<CopyImprover />} />
                       <Route path="/generator" element={<Generator />} />
+                      <Route path="/microcopy" element={<MicrocopyGenerator />} />
                       <Route path="/empty-state" element={<EmptyStateGenerator />} />
                       <Route path="/hero" element={<HeroCopyGenerator />} />
                       <Route path="/hero-copy" element={<HeroCopyGenerator />} />

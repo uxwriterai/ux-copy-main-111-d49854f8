@@ -31,6 +31,11 @@ const items = [
     icon: SplitSquareVertical,
   },
   {
+    title: "Microcopy Generator",
+    url: "/microcopy",
+    icon: Type,
+  },
+  {
     title: "Empty State Generator",
     url: "/empty-state",
     icon: FileX,
