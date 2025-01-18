@@ -23,8 +23,8 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <CreditsProvider>
           <ThemeProvider>
-            <Router>
-              <SidebarProvider>
+            <SidebarProvider>
+              <Router>
                 <div className="flex min-h-screen w-full">
                   <AppSidebar />
                   <main className="flex-1 overflow-y-auto">
@@ -38,8 +38,8 @@ function App() {
                   </main>
                 </div>
                 <Toaster />
-              </SidebarProvider>
-            </Router>
+              </Router>
+            </SidebarProvider>
           </ThemeProvider>
         </CreditsProvider>
       </QueryClientProvider>
