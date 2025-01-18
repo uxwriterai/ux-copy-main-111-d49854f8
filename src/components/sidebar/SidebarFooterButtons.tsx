@@ -32,12 +32,15 @@ export function SidebarFooterButtons() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session)
       setSession(session)
       
       if (_event === 'SIGNED_OUT') {
         setSession(null)
         resetCredits()
         navigate('/')
+        setIsSigningOut(false)
+        toast.success('Signed out successfully')
       }
     })
 
@@ -59,11 +62,22 @@ export function SidebarFooterButtons() {
         toast.error('Error signing out', {
           description: error.message
         })
+        setIsSigningOut(false) // Reset signing out state on error
       }
+
+      // Add a timeout to reset the signing out state if the auth state change event doesn't fire
+      setTimeout(() => {
+        if (isSigningOut) {
+          setIsSigningOut(false)
+          setSession(null)
+          resetCredits()
+          navigate('/')
+          toast.success('Signed out successfully')
+        }
+      }, 3000)
     } catch (error) {
       console.error("Caught error during sign out:", error)
       toast.error('Error signing out')
-    } finally {
       setIsSigningOut(false)
     }
   }
