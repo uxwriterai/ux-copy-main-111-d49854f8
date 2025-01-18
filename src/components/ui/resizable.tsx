@@ -7,7 +7,7 @@ const ResizablePanelGroup = ({
   className,
   ...props
 }: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<ResizablePrimitive.ImperativePanelGroupHandle>(null)
 
   useEffect(() => {
     // Debounce resize observer notifications
@@ -19,17 +19,19 @@ const ResizablePanelGroup = ({
       
       // Set a new timeout
       timeoutId = setTimeout(() => {
-        entries.forEach(entry => {
-          if (entry.target === ref.current) {
-            // Handle resize
-            console.log("Panel group resized")
-          }
-        })
+        if (ref.current) {
+          // Handle resize using the panel group methods
+          console.log("Panel group resized", ref.current.getLayout())
+        }
       }, 100) // 100ms debounce
     })
 
-    if (ref.current) {
-      resizeObserver.observe(ref.current)
+    const element = ref.current?.getId() 
+      ? document.getElementById(ref.current.getId())
+      : null
+
+    if (element) {
+      resizeObserver.observe(element)
     }
 
     return () => {
