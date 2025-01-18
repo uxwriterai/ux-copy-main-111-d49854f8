@@ -23,7 +23,9 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .from('user_credits')
         .select('credits_remaining')
         .eq('user_id', userId)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
       
       if (error) throw error;
       console.log('User-based credits data:', data);
@@ -38,7 +40,9 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .select('credits_remaining')
         .eq('ip_address', ipAddress)
         .is('user_id', null)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
       
       if (error) throw error;
       console.log('IP-based credits data:', data);
