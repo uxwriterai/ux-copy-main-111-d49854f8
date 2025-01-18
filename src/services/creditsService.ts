@@ -17,24 +17,33 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
   try {
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
-    let query = supabase.from('user_credits').select('credits_remaining');
-    
     if (userId) {
-      query = query.eq('user_id', userId);
+      // For logged-in users, fetch by user_id
+      const { data, error } = await supabase
+        .from('user_credits')
+        .select('credits_remaining')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      console.log('User-based credits data:', data);
+      return data?.credits_remaining ?? null;
     } else {
+      // For anonymous users, fetch by IP
       const ipAddress = await getIpAddress();
-      query = query.eq('ip_address', ipAddress).is('user_id', null);
+      console.log('Fetching credits for IP:', ipAddress);
+      
+      const { data, error } = await supabase
+        .from('user_credits')
+        .select('credits_remaining')
+        .eq('ip_address', ipAddress)
+        .is('user_id', null)
+        .maybeSingle();
+      
+      if (error) throw error;
+      console.log('IP-based credits data:', data);
+      return data?.credits_remaining ?? null;
     }
-
-    const { data, error } = await query.maybeSingle();
-    
-    if (error) {
-      console.error("Error fetching credits:", error);
-      throw error;
-    }
-
-    console.log('Credits data from DB:', data);
-    return data ? data.credits_remaining : null;
   } catch (error) {
     console.error("Error in fetchUserCredits:", error);
     throw error;
@@ -45,10 +54,21 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
   try {
     console.log('Updating credits:', { newCredits, userId });
     
-    const ipAddress = !userId ? await getIpAddress() : null;
-    const data = userId 
-      ? { user_id: userId, credits_remaining: newCredits }
-      : { ip_address: ipAddress, credits_remaining: newCredits, user_id: null };
+    let data;
+    if (userId) {
+      data = { 
+        user_id: userId, 
+        credits_remaining: newCredits 
+      };
+    } else {
+      const ipAddress = await getIpAddress();
+      console.log('Updating credits for IP:', ipAddress);
+      data = { 
+        ip_address: ipAddress, 
+        credits_remaining: newCredits,
+        user_id: null 
+      };
+    }
 
     const { error } = await supabase
       .from('user_credits')

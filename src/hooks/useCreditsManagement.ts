@@ -27,7 +27,7 @@ export const useCreditsManagement = (session: Session | null) => {
       setInitialized(true);
     } catch (error) {
       console.error("Error in fetchCredits:", error);
-      // Don't set credits to 0 on error, keep the previous state
+      // Keep previous state on error
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +57,7 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   return {
-    credits: credits ?? 0, // Only show 0 if credits is null
+    credits: credits ?? 0,
     setCredits,
     useCredit,
     resetCredits,
