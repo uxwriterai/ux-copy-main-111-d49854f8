@@ -37,19 +37,19 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number> 
       const ipAddress = await getIpAddress();
       console.log('Fetching credits for IP:', ipAddress);
       
-      const { data, error } = await supabase
+      const { data: existingCredits, error: selectError } = await supabase
         .from('user_credits')
         .select('credits_remaining')
         .is('user_id', null)
         .eq('ip_address', ipAddress)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching IP-based credits:', error);
-        throw error;
+      if (selectError) {
+        console.error('Error fetching IP-based credits:', selectError);
+        throw selectError;
       }
 
-      if (!data) {
+      if (!existingCredits) {
         console.log('No existing credits found for IP, creating new entry');
         const { data: newData, error: insertError } = await supabase
           .from('user_credits')
@@ -66,16 +66,16 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number> 
           throw insertError;
         }
 
+        console.log('Created new credits entry:', newData);
         return newData.credits_remaining;
       }
 
-      console.log('IP-based credits data:', data);
-      return data.credits_remaining;
+      console.log('Found existing IP-based credits:', existingCredits);
+      return existingCredits.credits_remaining;
     }
   } catch (error) {
     console.error('Error in fetchUserCredits:', error);
-    toast.error('Failed to fetch credits');
-    return userId ? 6 : 2; // Default values for fallback
+    throw error;
   }
 };
 
@@ -113,7 +113,6 @@ export const updateCredits = async (
     console.log('Credits updated successfully');
   } catch (error) {
     console.error('Error updating credits:', error);
-    toast.error('Failed to update credits');
     throw error;
   }
 };
