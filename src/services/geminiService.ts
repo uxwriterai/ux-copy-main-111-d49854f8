@@ -1,11 +1,19 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getGeminiApiKey } from "./creditsService";
+import { supabase } from "@/integrations/supabase/client";
 
 let genAI: any = null;
 
 async function initializeGenAI() {
   if (!genAI) {
-    const apiKey = await getGeminiApiKey();
+    // Get the API key from Supabase Edge Function
+    const { data: { value: apiKey }, error: keyError } = await supabase
+      .functions.invoke('get-gemini-key');
+
+    if (keyError || !apiKey) {
+      console.error('Error fetching API key:', keyError);
+      throw new Error('Failed to get API key');
+    }
+
     genAI = new GoogleGenerativeAI(apiKey);
   }
   return genAI;
