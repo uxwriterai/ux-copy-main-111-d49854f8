@@ -79,6 +79,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           throw insertError;
         }
 
+        console.log("Successfully created initial credits:", insertedData);
         setCredits(insertedData.credits_remaining);
       } else {
         console.log("Credits found:", data.credits_remaining);
