@@ -64,9 +64,10 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         const defaultCredits = session?.user ? 6 : 2;
         console.log(`Creating new credits entry with ${defaultCredits} credits`);
         
+        const ipAddress = await getIpAddress();
         const insertData = session?.user 
           ? { user_id: session.user.id, credits_remaining: defaultCredits }
-          : { ip_address: await getIpAddress(), credits_remaining: defaultCredits };
+          : { ip_address: ipAddress, credits_remaining: defaultCredits };
         
         const { error: insertError, data: insertedData } = await supabase
           .from('user_credits')
@@ -101,6 +102,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         return false;
       }
 
+      const ipAddress = await getIpAddress();
       let query = supabase
         .from('user_credits')
         .update({ credits_remaining: credits - 1 });
@@ -108,7 +110,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if (session?.user) {
         query = query.eq('user_id', session.user.id);
       } else {
-        const ipAddress = await getIpAddress();
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
