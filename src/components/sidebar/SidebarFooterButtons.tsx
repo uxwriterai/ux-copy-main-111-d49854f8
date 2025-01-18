@@ -34,27 +34,20 @@ export function SidebarFooterButtons() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session)
       setSession(session)
-      
-      if (_event === 'SIGNED_OUT') {
-        setSession(null)
-        resetCredits()
-        navigate('/')
-        setIsSigningOut(false)
-        toast.success('Signed out successfully')
-      }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [navigate, resetCredits])
+  }, [])
 
   const handleLogout = async () => {
     if (isSigningOut) return // Prevent multiple sign-out attempts
     
+    setIsSigningOut(true)
+    console.log("Attempting to sign out...")
+
     try {
-      setIsSigningOut(true)
-      console.log("Attempting to sign out...")
       const { error } = await supabase.auth.signOut()
       
       if (error) {
@@ -62,19 +55,17 @@ export function SidebarFooterButtons() {
         toast.error('Error signing out', {
           description: error.message
         })
-        setIsSigningOut(false) // Reset signing out state on error
+        setIsSigningOut(false)
+        return
       }
 
-      // Add a timeout to reset the signing out state if the auth state change event doesn't fire
-      setTimeout(() => {
-        if (isSigningOut) {
-          setIsSigningOut(false)
-          setSession(null)
-          resetCredits()
-          navigate('/')
-          toast.success('Signed out successfully')
-        }
-      }, 3000)
+      // Handle successful sign out
+      setSession(null)
+      resetCredits()
+      setIsSigningOut(false)
+      navigate('/')
+      toast.success('Signed out successfully')
+
     } catch (error) {
       console.error("Caught error during sign out:", error)
       toast.error('Error signing out')
