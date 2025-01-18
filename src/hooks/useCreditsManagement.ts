@@ -4,7 +4,6 @@ import { fetchUserCredits, updateCredits } from "@/services/creditsService";
 import { toast } from "sonner";
 
 export const useCreditsManagement = (session: Session | null) => {
-  // Initialize with null to indicate not loaded yet, instead of 0
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
@@ -12,15 +11,21 @@ export const useCreditsManagement = (session: Session | null) => {
   const fetchCredits = async () => {
     try {
       setIsLoading(true);
-      const userId = session?.user?.id;
-      const fetchedCredits = await fetchUserCredits(userId);
+      console.log('Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
+      const fetchedCredits = await fetchUserCredits(session?.user?.id);
       console.log('Fetched credits:', fetchedCredits);
-      setCredits(fetchedCredits);
+      
+      if (fetchedCredits === null) {
+        console.error("No credits record found");
+        setCredits(session?.user?.id ? 6 : 2); // Default credits
+      } else {
+        setCredits(fetchedCredits);
+      }
+      
       setInitialized(true);
     } catch (error) {
       console.error("Error fetching credits:", error);
-      // Set default credits based on user status
-      setCredits(session?.user?.id ? 6 : 2);
+      setCredits(session?.user?.id ? 6 : 2); // Default credits on error
       toast.error("Failed to fetch credits");
     } finally {
       setIsLoading(false);
@@ -28,18 +33,13 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   const useCredit = async (): Promise<boolean> => {
-    // Ensure credits is not null before proceeding
-    if (credits === null) {
-      console.error("Credits not initialized");
-      return false;
-    }
-
-    if (credits <= 0) {
-      toast.error("No credits remaining");
+    if (credits === null || credits <= 0) {
+      console.log('Cannot use credit:', credits === null ? 'credits not initialized' : 'no credits remaining');
       return false;
     }
 
     try {
+      console.log('Using credit. Current credits:', credits);
       await updateCredits(credits - 1, session?.user?.id);
       setCredits(credits - 1);
       return true;
@@ -50,12 +50,12 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   const resetCredits = async () => {
+    console.log('Resetting credits');
     setInitialized(false);
     await fetchCredits();
   };
 
   return {
-    // Convert null to 0 for display purposes
     credits: credits ?? 0,
     setCredits,
     useCredit,

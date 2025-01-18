@@ -1,6 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { UserCredits } from "@/types/credits";
-import { toast } from "sonner";
 
 export const getIpAddress = async (): Promise<string> => {
   try {
@@ -15,7 +13,7 @@ export const getIpAddress = async (): Promise<string> => {
   }
 };
 
-export const fetchUserCredits = async (userId?: string | null): Promise<number> => {
+export const fetchUserCredits = async (userId?: string | null): Promise<number | null> => {
   try {
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
@@ -32,7 +30,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number> 
       }
       
       console.log('User credits data:', data);
-      return data?.credits_remaining ?? 6;
+      return data?.credits_remaining ?? null;
     } else {
       const ipAddress = await getIpAddress();
       console.log('Fetching credits for IP:', ipAddress);
