@@ -65,22 +65,42 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     console.log('Updating credits:', { newCredits, userId });
     
     if (userId) {
-      // For logged-in users, use upsert with user_id
-      const { error } = await supabase
+      // For logged-in users, first check if a record exists
+      const { data: existingRecord, error: checkError } = await supabase
         .from('user_credits')
-        .upsert(
-          { 
-            user_id: userId, 
-            credits_remaining: newCredits 
-          },
-          { 
-            onConflict: 'user_credits_user_id_key'
-          }
-        );
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error) {
-        console.error("Error updating user credits:", error);
-        throw error;
+      if (checkError) {
+        console.error("Error checking existing record:", checkError);
+        throw checkError;
+      }
+
+      if (existingRecord) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: newCredits })
+          .eq('user_id', userId);
+
+        if (updateError) {
+          console.error("Error updating user credits:", updateError);
+          throw updateError;
+        }
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            user_id: userId,
+            credits_remaining: newCredits
+          });
+
+        if (insertError) {
+          console.error("Error inserting user credits:", insertError);
+          throw insertError;
+        }
       }
       
       console.log('Successfully updated credits for user:', userId);
