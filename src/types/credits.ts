@@ -6,7 +6,7 @@ export interface UserCredits {
 
 export interface CreditsContextType {
   credits: number;
-  setCredits: (credits: number) => void;
+  setCredits: (credits: number | null) => void;
   useCredit: () => Promise<boolean>;
   resetCredits: () => Promise<void>;
   isLoading: boolean;

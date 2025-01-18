@@ -63,12 +63,12 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   return {
-    // Only return 0 if initialized and credits is null
     credits: initialized ? (credits ?? 0) : null,
     setCredits,
     useCredit,
     resetCredits,
     isLoading,
+    setIsLoading,
     initialized,
     fetchCredits
   };
