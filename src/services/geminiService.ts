@@ -5,16 +5,22 @@ let genAI: any = null;
 
 async function initializeGenAI() {
   if (!genAI) {
-    // Get the API key from Supabase Edge Function
-    const { data: { value: apiKey }, error: keyError } = await supabase
-      .functions.invoke('get-gemini-key');
+    try {
+      // Get the API key from Supabase Edge Function
+      const { data: { value: apiKey }, error: keyError } = await supabase
+        .functions.invoke('get-gemini-key');
 
-    if (keyError || !apiKey) {
-      console.error('Error fetching API key:', keyError);
-      throw new Error('Failed to get API key');
+      if (keyError || !apiKey) {
+        console.error('Error fetching Gemini API key:', keyError);
+        throw new Error('Failed to get Gemini API key');
+      }
+
+      console.log('Successfully initialized Gemini AI');
+      genAI = new GoogleGenerativeAI(apiKey);
+    } catch (error) {
+      console.error('Error initializing Gemini AI:', error);
+      throw error;
     }
-
-    genAI = new GoogleGenerativeAI(apiKey);
   }
   return genAI;
 }
@@ -27,9 +33,11 @@ export const generateMicrocopy = async (
   additionalNotes?: string,
   customElementType?: string
 ) => {
-  const model = (await initializeGenAI()).getGenerativeModel({ model: "gemini-pro" });
+  try {
+    console.log('Initializing Gemini model for microcopy generation');
+    const model = (await initializeGenAI()).getGenerativeModel({ model: "gemini-pro" });
 
-  const prompt = `Generate 3 different variants of microcopy for a ${elementType === 'custom' ? customElementType : elementType} with the following details:
+    const prompt = `Generate 3 different variants of microcopy for a ${elementType === 'custom' ? customElementType : elementType} with the following details:
 Context: ${context}
 Tone: ${tone}
 ${maxLength ? `Maximum Length: ${maxLength} characters` : ''}
@@ -47,22 +55,30 @@ Format your response as a numbered list with exactly 3 variants, one per line:
 2. [Second variant]
 3. [Third variant]`;
 
-  const result = await model.generateContent(prompt);
-  const response = result.response.text();
-  
-  // Parse the response into separate variants
-  const variants = response
-    .split('\n')
-    .filter(line => line.trim().match(/^\d\./))
-    .map(line => line.replace(/^\d\.\s*/, '').trim());
+    console.log('Sending prompt to Gemini');
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+    console.log('Successfully generated microcopy');
+    
+    // Parse the response into separate variants
+    const variants = response
+      .split('\n')
+      .filter(line => line.trim().match(/^\d\./))
+      .map(line => line.replace(/^\d\.\s*/, '').trim());
 
-  return variants;
+    return variants;
+  } catch (error) {
+    console.error('Error generating microcopy:', error);
+    throw error;
+  }
 };
 
 export const analyzeABTest = async (variationA: any, variationB: any) => {
-  const model = (await initializeGenAI()).getGenerativeModel({ model: "gemini-pro" });
+  try {
+    console.log('Initializing Gemini model for A/B test analysis');
+    const model = (await initializeGenAI()).getGenerativeModel({ model: "gemini-pro" });
 
-  const prompt = `Analyze these two content variations and provide a detailed, structured comparison:
+    const prompt = `Analyze these two content variations and provide a detailed, structured comparison:
 
 Variation A:
 ${variationA.text}
@@ -117,6 +133,14 @@ Overall Score: [Average of above scores]
 
 Please be specific and actionable in your analysis.`;
 
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+    console.log('Sending prompt to Gemini');
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+    console.log('Successfully generated A/B test analysis');
+    
+    return response;
+  } catch (error) {
+    console.error('Error analyzing A/B test:', error);
+    throw error;
+  }
 };
