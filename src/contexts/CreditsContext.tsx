@@ -41,59 +41,79 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         return;
       }
 
-      const ipAddress = await getIpAddress();
-      console.log("Current IP address:", ipAddress);
-
       if (session?.user) {
         console.log("Fetching credits for user:", session.user.id);
-        const { data, error } = await supabase
+        const { data: userCredits, error: userCreditsError } = await supabase
           .from('user_credits')
           .select('credits_remaining')
           .eq('user_id', session.user.id)
           .maybeSingle();
 
-        if (error) throw error;
+        if (userCreditsError) {
+          console.error("Error fetching user credits:", userCreditsError);
+          throw userCreditsError;
+        }
 
-        if (!data) {
+        if (userCredits) {
+          console.log("Found credits for user:", userCredits);
+          setCredits(userCredits.credits_remaining);
+        } else {
           console.log("No credits found for user, creating new entry with 6 credits");
-          const { data: newData, error: insertError } = await supabase
+          const { data: newUserCredits, error: createError } = await supabase
             .from('user_credits')
-            .insert({ user_id: session.user.id, credits_remaining: 6 })
+            .insert({ 
+              user_id: session.user.id, 
+              credits_remaining: 6 
+            })
             .select('credits_remaining')
             .single();
 
-          if (insertError) throw insertError;
-          console.log("Created credits for user:", newData);
-          setCredits(newData.credits_remaining);
-        } else {
-          console.log("Found credits for user:", data);
-          setCredits(data.credits_remaining);
+          if (createError) {
+            console.error("Error creating user credits:", createError);
+            throw createError;
+          }
+
+          console.log("Created credits for user:", newUserCredits);
+          setCredits(newUserCredits.credits_remaining);
         }
       } else {
+        const ipAddress = await getIpAddress();
         console.log("Fetching credits for IP:", ipAddress);
-        const { data, error } = await supabase
+        
+        const { data: ipCredits, error: ipCreditsError } = await supabase
           .from('user_credits')
           .select('credits_remaining')
           .is('user_id', null)
           .eq('ip_address', ipAddress)
           .maybeSingle();
 
-        if (error) throw error;
+        if (ipCreditsError) {
+          console.error("Error fetching IP credits:", ipCreditsError);
+          throw ipCreditsError;
+        }
 
-        if (!data) {
+        if (ipCredits) {
+          console.log("Found credits for IP:", ipCredits);
+          setCredits(ipCredits.credits_remaining);
+        } else {
           console.log("No credits found for IP, creating new entry with 2 credits");
-          const { data: newData, error: insertError } = await supabase
+          const { data: newIpCredits, error: createError } = await supabase
             .from('user_credits')
-            .insert({ ip_address: ipAddress, credits_remaining: 2 })
+            .insert({ 
+              ip_address: ipAddress, 
+              credits_remaining: 2,
+              user_id: null 
+            })
             .select('credits_remaining')
             .single();
 
-          if (insertError) throw insertError;
-          console.log("Created credits for IP:", newData);
-          setCredits(newData.credits_remaining);
-        } else {
-          console.log("Found credits for IP:", data);
-          setCredits(data.credits_remaining);
+          if (createError) {
+            console.error("Error creating IP credits:", createError);
+            throw createError;
+          }
+
+          console.log("Created credits for IP:", newIpCredits);
+          setCredits(newIpCredits.credits_remaining);
         }
       }
     } catch (error) {
@@ -106,39 +126,31 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   };
 
   const useCredit = async (): Promise<boolean> => {
+    if (credits <= 0) {
+      toast.error("No credits remaining");
+      return false;
+    }
+
     try {
-      if (credits <= 0) {
-        toast.error("No credits remaining");
-        return false;
-      }
-
-      const ipAddress = await getIpAddress();
-      console.log("Using credit for IP:", ipAddress);
-
-      let query = supabase
-        .from('user_credits')
-        .update({ credits_remaining: credits - 1 });
-
       if (session?.user) {
-        query = query.eq('user_id', session.user.id);
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: credits - 1 })
+          .eq('user_id', session.user.id);
+
+        if (updateError) throw updateError;
       } else {
-        query = query.is('user_id', null).eq('ip_address', ipAddress);
+        const ipAddress = await getIpAddress();
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: credits - 1 })
+          .is('user_id', null)
+          .eq('ip_address', ipAddress);
+
+        if (updateError) throw updateError;
       }
 
-      const { error, data } = await query.select('credits_remaining').maybeSingle();
-
-      if (error) {
-        console.error("Error updating credits:", error);
-        throw error;
-      }
-
-      if (!data) {
-        console.error("No credits record found to update");
-        return false;
-      }
-
-      console.log("Credits updated successfully:", data.credits_remaining);
-      setCredits(data.credits_remaining);
+      setCredits(credits - 1);
       return true;
     } catch (error) {
       console.error("Error using credit:", error);
