@@ -58,32 +58,32 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
   try {
     console.log('Updating credits:', { newCredits, userId });
     
-    let data;
     if (userId) {
-      data = { 
-        user_id: userId, 
-        credits_remaining: newCredits 
-      };
+      // For logged-in users, update by user_id
+      const { error } = await supabase
+        .from('user_credits')
+        .insert({
+          user_id: userId,
+          credits_remaining: newCredits
+        })
+        .select();
+
+      if (error) throw error;
     } else {
+      // For anonymous users, update by IP
       const ipAddress = await getIpAddress();
       console.log('Updating credits for IP:', ipAddress);
-      data = { 
-        ip_address: ipAddress, 
-        credits_remaining: newCredits,
-        user_id: null 
-      };
-    }
+      
+      const { error } = await supabase
+        .from('user_credits')
+        .insert({
+          ip_address: ipAddress,
+          credits_remaining: newCredits,
+          user_id: null
+        })
+        .select();
 
-    const { error } = await supabase
-      .from('user_credits')
-      .upsert(data, { 
-        onConflict: userId ? 'user_id' : 'ip_address',
-        ignoreDuplicates: false 
-      });
-
-    if (error) {
-      console.error("Error updating credits:", error);
-      throw error;
+      if (error) throw error;
     }
 
     console.log('Credits updated successfully');
