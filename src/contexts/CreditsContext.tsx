@@ -29,6 +29,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   const [credits, setCredits] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const { session, isLoading: isSessionLoading } = useSessionContext();
+  const [initialized, setInitialized] = useState(false);
 
   const fetchCredits = async () => {
     try {
@@ -88,6 +89,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       toast.error("Error fetching credits. Please try again.");
     } finally {
       setIsLoading(false);
+      setInitialized(true);
     }
   };
 
@@ -126,21 +128,30 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   };
 
   const resetCredits = async () => {
-    try {
-      const ipAddress = await getIpAddress();
-      await fetchCredits();
-    } catch (error) {
-      console.error("Error in resetCredits:", error);
-      toast.error("Error resetting credits. Please try again.");
-    }
+    setInitialized(false);
+    await fetchCredits();
   };
 
   useEffect(() => {
-    if (!isSessionLoading) {
-      console.log("Session state changed, fetching credits...");
+    if (!isSessionLoading && !initialized) {
+      console.log("Session state changed or not initialized, fetching credits...");
       fetchCredits();
     }
-  }, [session?.user?.id, isSessionLoading]);
+  }, [session?.user?.id, isSessionLoading, initialized]);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session);
+      if (_event === 'SIGNED_OUT') {
+        setInitialized(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const value = {
     credits,
