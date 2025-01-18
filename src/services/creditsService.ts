@@ -47,29 +47,8 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         throw selectError;
       }
 
-      if (!existingCredits) {
-        console.log('No existing credits found for IP, creating new entry');
-        const { data: newData, error: insertError } = await supabase
-          .from('user_credits')
-          .insert({ 
-            ip_address: ipAddress,
-            credits_remaining: 2,
-            user_id: null 
-          })
-          .select('credits_remaining')
-          .single();
-
-        if (insertError) {
-          console.error('Error creating IP-based credits:', insertError);
-          throw insertError;
-        }
-
-        console.log('Created new credits entry:', newData);
-        return newData.credits_remaining;
-      }
-
-      console.log('Found existing IP-based credits:', existingCredits);
-      return existingCredits.credits_remaining;
+      console.log('IP-based credits data:', existingCredits);
+      return existingCredits?.credits_remaining ?? null;
     }
   } catch (error) {
     console.error('Error in fetchUserCredits:', error);

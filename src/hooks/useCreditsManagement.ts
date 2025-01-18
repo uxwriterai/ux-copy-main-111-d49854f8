@@ -4,7 +4,7 @@ import { fetchUserCredits, updateCredits } from "@/services/creditsService";
 import { toast } from "sonner";
 
 export const useCreditsManagement = (session: Session | null) => {
-  const [credits, setCredits] = useState<number | null>(null);
+  const [credits, setCredits] = useState<number>(2); // Initialize with default credits
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
@@ -16,8 +16,11 @@ export const useCreditsManagement = (session: Session | null) => {
       console.log('Fetched credits:', fetchedCredits);
       
       if (fetchedCredits === null) {
-        console.error("No credits record found");
-        setCredits(session?.user?.id ? 6 : 2); // Default credits
+        console.log("No credits record found, using defaults");
+        const defaultCredits = session?.user?.id ? 6 : 2;
+        setCredits(defaultCredits);
+        // Create initial credits record
+        await updateCredits(defaultCredits, session?.user?.id);
       } else {
         setCredits(fetchedCredits);
       }
@@ -25,7 +28,8 @@ export const useCreditsManagement = (session: Session | null) => {
       setInitialized(true);
     } catch (error) {
       console.error("Error fetching credits:", error);
-      setCredits(session?.user?.id ? 6 : 2); // Default credits on error
+      const defaultCredits = session?.user?.id ? 6 : 2;
+      setCredits(defaultCredits);
       toast.error("Failed to fetch credits");
     } finally {
       setIsLoading(false);
@@ -33,8 +37,8 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   const useCredit = async (): Promise<boolean> => {
-    if (credits === null || credits <= 0) {
-      console.log('Cannot use credit:', credits === null ? 'credits not initialized' : 'no credits remaining');
+    if (credits <= 0) {
+      console.log('Cannot use credit: no credits remaining');
       return false;
     }
 
@@ -56,7 +60,7 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   return {
-    credits: credits ?? 0,
+    credits,
     setCredits,
     useCredit,
     resetCredits,
