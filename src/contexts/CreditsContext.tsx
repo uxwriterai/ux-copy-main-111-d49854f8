@@ -35,10 +35,11 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   useEffect(() => {
     console.log("Setting up auth state change listener");
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       console.log("Auth state changed:", event);
       if (event === 'SIGNED_OUT') {
-        setCredits(0);
+        console.log("User signed out, fetching IP-based credits");
+        await fetchCredits(); // This will now fetch IP-based credits since session is null
       }
     });
 
@@ -46,7 +47,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       console.log("Cleaning up auth state listener");
       subscription.unsubscribe();
     };
-  }, [setCredits]);
+  }, [fetchCredits]);
 
   const value = {
     credits: credits ?? 0,
