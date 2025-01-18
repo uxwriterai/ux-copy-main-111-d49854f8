@@ -1,20 +1,54 @@
 import { GripVertical } from "lucide-react"
 import * as ResizablePrimitive from "react-resizable-panels"
-
 import { cn } from "@/lib/utils"
+import { useEffect, useRef } from "react"
 
 const ResizablePanelGroup = ({
   className,
   ...props
-}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => (
-  <ResizablePrimitive.PanelGroup
-    className={cn(
-      "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
-      className
-    )}
-    {...props}
-  />
-)
+}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Debounce resize observer notifications
+    let timeoutId: NodeJS.Timeout
+    
+    const resizeObserver = new ResizeObserver((entries) => {
+      // Clear the previous timeout
+      clearTimeout(timeoutId)
+      
+      // Set a new timeout
+      timeoutId = setTimeout(() => {
+        entries.forEach(entry => {
+          if (entry.target === ref.current) {
+            // Handle resize
+            console.log("Panel group resized")
+          }
+        })
+      }, 100) // 100ms debounce
+    })
+
+    if (ref.current) {
+      resizeObserver.observe(ref.current)
+    }
+
+    return () => {
+      clearTimeout(timeoutId)
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  return (
+    <ResizablePrimitive.PanelGroup
+      ref={ref}
+      className={cn(
+        "flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
+        className
+      )}
+      {...props}
+    />
+  )
+}
 
 const ResizablePanel = ResizablePrimitive.Panel
 
