@@ -59,13 +59,13 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     console.log('Updating credits:', { newCredits, userId });
     
     if (userId) {
-      // For logged-in users, use upsert with columns
+      // For logged-in users, use upsert with user_id column
       const { error } = await supabase
         .from('user_credits')
         .upsert(
           { user_id: userId, credits_remaining: newCredits },
           { 
-            onConflict: 'unique_user_id_idx',
+            onConflict: 'user_id',
             ignoreDuplicates: false 
           }
         );
