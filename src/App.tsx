@@ -12,6 +12,7 @@ import EmptyStateGenerator from "@/pages/EmptyStateGenerator"
 import HeroCopyGenerator from "@/pages/HeroCopyGenerator"
 import LandingPageGenerator from "@/pages/LandingPageGenerator"
 import Settings from "@/pages/Settings"
+import Generator from "@/pages/Generator"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 // Create a client
@@ -30,8 +31,11 @@ function App() {
                   <main className="flex-1 overflow-y-auto">
                     <Routes>
                       <Route path="/" element={<CopyImprover />} />
+                      <Route path="/copy-improver" element={<CopyImprover />} />
+                      <Route path="/generator" element={<Generator />} />
                       <Route path="/empty-state" element={<EmptyStateGenerator />} />
                       <Route path="/hero" element={<HeroCopyGenerator />} />
+                      <Route path="/hero-copy" element={<HeroCopyGenerator />} />
                       <Route path="/landing-page" element={<LandingPageGenerator />} />
                       <Route path="/settings" element={<Settings />} />
                     </Routes>
