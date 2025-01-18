@@ -24,43 +24,58 @@ export function SidebarFooterButtons() {
   const [isSigningOut, setIsSigningOut] = useState(false)
   const navigate = useNavigate()
 
+  // Handle initial session and auth state changes
   useEffect(() => {
+    let mounted = true
+
     // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session)
-      setSession(session)
-    })
+    const checkSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      console.log("Initial session check:", currentSession)
+      if (mounted) {
+        setSession(currentSession)
+        setIsSigningOut(false) // Reset signing out state on mount
+      }
+    }
+
+    checkSession()
 
     // Auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_OUT') {
-        console.log("User signed out, resetting state")
-        setSession(null)
-        setIsSigningOut(false)
-        resetCredits()
+        console.log("User signed out, resetting states")
+        if (mounted) {
+          setSession(null)
+          setIsSigningOut(false)
+          resetCredits()
+          navigate('/')
+        }
       } else if (event === 'SIGNED_IN' && session) {
         console.log("User signed in, updating session")
-        setSession(session)
-        setIsSigningOut(false)
+        if (mounted) {
+          setSession(session)
+          setIsSigningOut(false)
+        }
       }
     })
 
     return () => {
+      mounted = false
       console.log("Cleaning up auth subscription")
       subscription.unsubscribe()
     }
-  }, [resetCredits])
+  }, [resetCredits, navigate])
 
   const handleLogout = async () => {
     if (isSigningOut) {
       console.log("Already signing out, ignoring request")
       return
     }
-    
-    setIsSigningOut(true)
+
     console.log("Starting sign out process...")
+    setIsSigningOut(true)
 
     try {
       const { error } = await supabase.auth.signOut()
@@ -70,16 +85,17 @@ export function SidebarFooterButtons() {
         throw error
       }
 
-      console.log("Sign out successful, navigating to home")
-      navigate('/')
+      // The onAuthStateChange listener will handle the rest
+      console.log("Sign out API call successful")
       toast.success('Signed out successfully')
     } catch (error) {
       console.error("Error during sign out:", error)
       setIsSigningOut(false)
-      setSession(session) // Restore session state on error
       toast.error('Error signing out. Please try again.')
     }
   }
+
+  // ... keep existing code (UI rendering for credits badge, settings button, theme toggle, etc)
 
   return (
     <>
