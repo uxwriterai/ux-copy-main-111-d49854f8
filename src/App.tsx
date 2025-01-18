@@ -7,11 +7,11 @@ import { SessionContextProvider } from "@supabase/auth-helpers-react"
 import { supabase } from "./integrations/supabase/client"
 import { CreditsProvider } from "./contexts/CreditsContext"
 import { Routes, Route } from "react-router-dom"
-import { CopyImprover } from "@/pages/CopyImprover"
-import { EmptyStateGenerator } from "@/pages/EmptyStateGenerator"
-import { HeroCopyGenerator } from "@/pages/HeroCopyGenerator"
-import { LandingPageGenerator } from "@/pages/LandingPageGenerator"
-import { Settings } from "@/pages/Settings"
+import CopyImprover from "@/pages/CopyImprover"
+import EmptyStateGenerator from "@/pages/EmptyStateGenerator"
+import HeroCopyGenerator from "@/pages/HeroCopyGenerator"
+import LandingPageGenerator from "@/pages/LandingPageGenerator"
+import Settings from "@/pages/Settings"
 
 // Create a client
 const queryClient = new QueryClient()
