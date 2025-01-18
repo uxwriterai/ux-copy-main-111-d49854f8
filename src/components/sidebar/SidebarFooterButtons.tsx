@@ -25,12 +25,10 @@ export function SidebarFooterButtons() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
     })
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session)
       setSession(session)
@@ -42,32 +40,44 @@ export function SidebarFooterButtons() {
   }, [])
 
   const handleLogout = async () => {
-    if (isSigningOut) return // Prevent multiple sign-out attempts
+    if (isSigningOut) return
     
     setIsSigningOut(true)
     console.log("Attempting to sign out...")
 
     try {
-      // First, get the current IP for anonymous credits
+      // First reset local state
+      setSession(null)
+      resetCredits()
+      
+      // Attempt to sign out from Supabase with retry logic
+      let attempts = 0
+      const maxAttempts = 3
+      let signOutSuccess = false
+
+      while (attempts < maxAttempts && !signOutSuccess) {
+        try {
+          const { error } = await supabase.auth.signOut()
+          if (!error) {
+            signOutSuccess = true
+          } else {
+            console.error(`Sign out attempt ${attempts + 1} failed:`, error)
+            await new Promise(resolve => setTimeout(resolve, 1000 * (attempts + 1))) // Exponential backoff
+          }
+        } catch (error) {
+          console.error(`Sign out attempt ${attempts + 1} failed with error:`, error)
+        }
+        attempts++
+      }
+
+      if (!signOutSuccess) {
+        throw new Error("Failed to sign out after multiple attempts")
+      }
+
+      // Get anonymous credits after successful sign out
       const response = await fetch('https://api.ipify.org?format=json')
       const { ip } = await response.json()
       
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        console.error("Error during sign out:", error)
-        toast.error('Error signing out', {
-          description: error.message
-        })
-        setIsSigningOut(false)
-        return
-      }
-
-      // Reset session state
-      setSession(null)
-      
-      // Get anonymous credits for the IP
       const { data: anonCredits } = await supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -75,21 +85,18 @@ export function SidebarFooterButtons() {
         .eq('ip_address', ip)
         .maybeSingle()
 
-      // Reset credits to anonymous state
-      resetCredits()
-      
-      // Navigate to home
+      // Navigate to home and show success message
       navigate('/')
-      
-      setIsSigningOut(false)
       toast.success('Signed out successfully')
-
     } catch (error) {
-      console.error("Caught error during sign out:", error)
-      toast.error('Error signing out')
+      console.error("Error during sign out:", error)
+      toast.error('Error signing out. Please try again.')
+    } finally {
       setIsSigningOut(false)
     }
   }
+
+  // ... keep existing code (render methods for credits badge, settings button, theme toggle, and sidebar toggle)
 
   return (
     <>
@@ -143,7 +150,7 @@ export function SidebarFooterButtons() {
           </span>
         </Button>
       )}
-      
+
       <Button 
         variant="ghost" 
         className="w-full flex items-center justify-between px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center"
