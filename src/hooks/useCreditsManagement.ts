@@ -4,7 +4,8 @@ import { fetchUserCredits, updateCredits } from "@/services/creditsService";
 import { toast } from "sonner";
 
 export const useCreditsManagement = (session: Session | null) => {
-  const [credits, setCredits] = useState<number>(0);
+  // Initialize with null to indicate not loaded yet, instead of 0
+  const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
@@ -13,10 +14,13 @@ export const useCreditsManagement = (session: Session | null) => {
       setIsLoading(true);
       const userId = session?.user?.id;
       const fetchedCredits = await fetchUserCredits(userId);
+      console.log('Fetched credits:', fetchedCredits);
       setCredits(fetchedCredits);
       setInitialized(true);
     } catch (error) {
       console.error("Error fetching credits:", error);
+      // Set default credits based on user status
+      setCredits(session?.user?.id ? 6 : 2);
       toast.error("Failed to fetch credits");
     } finally {
       setIsLoading(false);
@@ -24,6 +28,12 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   const useCredit = async (): Promise<boolean> => {
+    // Ensure credits is not null before proceeding
+    if (credits === null) {
+      console.error("Credits not initialized");
+      return false;
+    }
+
     if (credits <= 0) {
       toast.error("No credits remaining");
       return false;
@@ -45,7 +55,8 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   return {
-    credits,
+    // Convert null to 0 for display purposes
+    credits: credits ?? 0,
     setCredits,
     useCredit,
     resetCredits,
