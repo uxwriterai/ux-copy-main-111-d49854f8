@@ -10,7 +10,6 @@ import { analyzeABTest } from "@/services/geminiService";
 import { ArrowLeft } from "lucide-react";
 import { useCredits } from "@/contexts/CreditsContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AuthDialog } from "@/components/auth/AuthDialog";
 
 interface ABTestVariation {
   image?: File;
@@ -24,7 +23,6 @@ export const ABTestingForm = () => {
   const [variationB, setVariationB] = useState<ABTestVariation>({ text: "" });
   const [showResults, setShowResults] = useState(false);
   const [showCreditsDialog, setShowCreditsDialog] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { useCredit, credits } = useCredits();
 
   const handleImageUpload = (variation: "A" | "B") => (file: File) => {
@@ -142,33 +140,18 @@ export const ABTestingForm = () => {
       <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Unlock 5x More Credits</DialogTitle>
+            <DialogTitle>Get More Credits</DialogTitle>
             <DialogDescription className="pt-2">
-              You've used all your free credits! Sign up now to get:
-              <ul className="list-disc pl-6 mt-2 space-y-1">
-                <li>5x more credits to generate content</li>
-                <li>Priority support</li>
-              </ul>
+              You've used all your free credits! Please try again later.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-3 justify-end">
-            <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
-              Maybe later
-            </Button>
-            <Button onClick={() => {
-              setShowCreditsDialog(false);
-              setShowAuthDialog(true);
-            }}>
-              Sign up
+          <div className="flex justify-end">
+            <Button onClick={() => setShowCreditsDialog(false)}>
+              Close
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-
-      <AuthDialog 
-        open={showAuthDialog} 
-        onOpenChange={setShowAuthDialog} 
-      />
     </>
   );
 };
