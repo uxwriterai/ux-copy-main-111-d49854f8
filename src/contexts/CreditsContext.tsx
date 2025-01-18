@@ -18,6 +18,7 @@ const getIpAddress = async (): Promise<string> => {
     const response = await fetch('https://api.ipify.org?format=json');
     if (!response.ok) throw new Error('Failed to fetch IP address');
     const data = await response.json();
+    console.log('Fetched IP address:', data.ip);
     return data.ip;
   } catch (error) {
     console.error('Error fetching IP address:', error);
@@ -40,6 +41,9 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         return;
       }
 
+      const ipAddress = await getIpAddress();
+      console.log("Current IP address:", ipAddress);
+
       let query = supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -48,12 +52,12 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         console.log("Fetching credits for user:", session.user.id);
         query = query.eq('user_id', session.user.id);
       } else {
-        const ipAddress = await getIpAddress();
         console.log("Fetching credits for IP:", ipAddress);
         query = query.is('user_id', null).eq('ip_address', ipAddress);
       }
 
       const { data, error } = await query.maybeSingle();
+      console.log("Query result:", { data, error });
 
       if (error) {
         console.error("Error fetching credits:", error);
@@ -62,9 +66,8 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
       if (!data) {
         const defaultCredits = session?.user ? 6 : 2;
-        console.log(`Creating new credits entry with ${defaultCredits} credits`);
+        console.log(`No existing credits found. Creating new entry with ${defaultCredits} credits`);
         
-        const ipAddress = await getIpAddress();
         const insertData = session?.user 
           ? { user_id: session.user.id, credits_remaining: defaultCredits }
           : { ip_address: ipAddress, credits_remaining: defaultCredits };
@@ -103,6 +106,8 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       }
 
       const ipAddress = await getIpAddress();
+      console.log("Using credit for IP:", ipAddress);
+
       let query = supabase
         .from('user_credits')
         .update({ credits_remaining: credits - 1 });
@@ -125,6 +130,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         return false;
       }
 
+      console.log("Credits updated successfully:", data.credits_remaining);
       setCredits(data.credits_remaining);
       return true;
     } catch (error) {
@@ -146,7 +152,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     }
   }, [session?.user?.id, isSessionLoading, initialized]);
 
-  // Listen for auth state changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session);
