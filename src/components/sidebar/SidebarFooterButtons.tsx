@@ -25,19 +25,33 @@ export function SidebarFooterButtons() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session)
       setSession(session)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session)
-      setSession(session)
+    // Auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session)
+      
+      if (event === 'SIGNED_OUT') {
+        console.log("User signed out, resetting state")
+        setSession(null)
+        setIsSigningOut(false)
+        resetCredits()
+      } else if (event === 'SIGNED_IN' && session) {
+        console.log("User signed in, updating session")
+        setSession(session)
+        setIsSigningOut(false)
+      }
     })
 
     return () => {
+      console.log("Cleaning up auth subscription")
       subscription.unsubscribe()
     }
-  }, [])
+  }, [resetCredits])
 
   const handleLogout = async () => {
     if (isSigningOut) {
@@ -52,38 +66,18 @@ export function SidebarFooterButtons() {
       const { error } = await supabase.auth.signOut()
       
       if (error) {
+        console.error("Sign out error:", error)
         throw error
       }
 
-      // Only reset local state after successful sign out
-      setSession(null)
-      resetCredits()
-
-      // Get anonymous credits after successful sign out
-      console.log("Fetching IP for anonymous credits")
-      const response = await fetch('https://api.ipify.org?format=json')
-      const { ip } = await response.json()
-      
-      console.log("Fetching anonymous credits for IP:", ip)
-      const { data: anonCredits } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .is('user_id', null)
-        .eq('ip_address', ip)
-        .maybeSingle()
-
-      // Navigate and show success message
+      console.log("Sign out successful, navigating to home")
       navigate('/')
       toast.success('Signed out successfully')
     } catch (error) {
-      console.error("Error during sign out process:", error)
-      // Restore session state on error
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setSession(session)
-      })
-      toast.error('Error signing out. Please try again in a few moments.')
-    } finally {
+      console.error("Error during sign out:", error)
       setIsSigningOut(false)
+      setSession(session) // Restore session state on error
+      toast.error('Error signing out. Please try again.')
     }
   }
 
