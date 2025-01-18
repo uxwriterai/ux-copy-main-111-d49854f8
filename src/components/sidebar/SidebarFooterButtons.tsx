@@ -28,44 +28,47 @@ export function SidebarFooterButtons() {
   useEffect(() => {
     let mounted = true
 
-    // Initial session check
-    const checkSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
-      console.log("Initial session check:", currentSession)
-      if (mounted) {
-        setSession(currentSession)
-        setIsSigningOut(false) // Reset signing out state on mount
-      }
-    }
+    async function initializeAuth() {
+      try {
+        // Get initial session
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        if (mounted) {
+          console.log("Initial session state:", currentSession ? "logged in" : "not logged in")
+          setSession(currentSession)
+          setIsSigningOut(false)
+        }
 
-    checkSession()
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+          if (!mounted) return
 
-    // Auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session)
-      
-      if (event === 'SIGNED_OUT') {
-        console.log("User signed out, resetting states")
+          console.log("Auth state changed:", event, newSession ? "session present" : "no session")
+          
+          if (event === 'SIGNED_OUT') {
+            setSession(null)
+            setIsSigningOut(false)
+            resetCredits()
+            navigate('/')
+          } else if (event === 'SIGNED_IN' && newSession) {
+            setSession(newSession)
+            setIsSigningOut(false)
+          }
+        })
+
+        return () => {
+          mounted = false
+          subscription.unsubscribe()
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error)
         if (mounted) {
           setSession(null)
           setIsSigningOut(false)
-          resetCredits()
-          navigate('/')
-        }
-      } else if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in, updating session")
-        if (mounted) {
-          setSession(session)
-          setIsSigningOut(false)
         }
       }
-    })
-
-    return () => {
-      mounted = false
-      console.log("Cleaning up auth subscription")
-      subscription.unsubscribe()
     }
+
+    initializeAuth()
   }, [resetCredits, navigate])
 
   const handleLogout = async () => {
@@ -85,9 +88,7 @@ export function SidebarFooterButtons() {
         throw error
       }
 
-      // The onAuthStateChange listener will handle the rest
       console.log("Sign out API call successful")
-      toast.success('Signed out successfully')
     } catch (error) {
       console.error("Error during sign out:", error)
       setIsSigningOut(false)
