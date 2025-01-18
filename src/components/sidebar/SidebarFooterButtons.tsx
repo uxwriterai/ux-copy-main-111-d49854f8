@@ -48,6 +48,11 @@ export function SidebarFooterButtons() {
     console.log("Attempting to sign out...")
 
     try {
+      // First, get the current IP for anonymous credits
+      const response = await fetch('https://api.ipify.org?format=json')
+      const { ip } = await response.json()
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut()
       
       if (error) {
@@ -59,11 +64,24 @@ export function SidebarFooterButtons() {
         return
       }
 
-      // Handle successful sign out
+      // Reset session state
       setSession(null)
+      
+      // Get anonymous credits for the IP
+      const { data: anonCredits } = await supabase
+        .from('user_credits')
+        .select('credits_remaining')
+        .is('user_id', null)
+        .eq('ip_address', ip)
+        .maybeSingle()
+
+      // Reset credits to anonymous state
       resetCredits()
-      setIsSigningOut(false)
+      
+      // Navigate to home
       navigate('/')
+      
+      setIsSigningOut(false)
       toast.success('Signed out successfully')
 
     } catch (error) {
