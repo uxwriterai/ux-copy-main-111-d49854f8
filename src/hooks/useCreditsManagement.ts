@@ -4,7 +4,7 @@ import { fetchUserCredits, updateCredits } from "@/services/creditsService";
 import { toast } from "sonner";
 
 export const useCreditsManagement = (session: Session | null) => {
-  const [credits, setCredits] = useState<number>(2); // Initialize with default credits
+  const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
@@ -16,11 +16,10 @@ export const useCreditsManagement = (session: Session | null) => {
       console.log('Fetched credits:', fetchedCredits);
       
       if (fetchedCredits === null) {
-        console.log("No credits record found, using defaults");
+        console.log("No credits record found, creating default");
         const defaultCredits = session?.user?.id ? 6 : 2;
-        setCredits(defaultCredits);
-        // Create initial credits record
         await updateCredits(defaultCredits, session?.user?.id);
+        setCredits(defaultCredits);
       } else {
         setCredits(fetchedCredits);
       }
@@ -37,8 +36,8 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   const useCredit = async (): Promise<boolean> => {
-    if (credits <= 0) {
-      console.log('Cannot use credit: no credits remaining');
+    if (credits === null || credits <= 0) {
+      console.log('Cannot use credit:', credits === null ? 'credits not initialized' : 'no credits remaining');
       return false;
     }
 
@@ -60,7 +59,7 @@ export const useCreditsManagement = (session: Session | null) => {
   };
 
   return {
-    credits,
+    credits: credits ?? 0,
     setCredits,
     useCredit,
     resetCredits,
