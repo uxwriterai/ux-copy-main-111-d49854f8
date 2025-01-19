@@ -18,9 +18,13 @@ export const useCreditsManagement = (session: Session | null) => {
       fetchInProgress.current = true;
       setIsLoading(true);
       
-      // If forceUserCredits is true, always use user credits
-      const userId = forceUserCredits ? session?.user?.id : undefined;
-      console.log('[useCreditsManagement] Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
+      // Always use session user ID if it exists, regardless of forceUserCredits
+      const userId = session?.user?.id;
+      if (userId) {
+        console.log('[useCreditsManagement] User session exists, fetching user credits for:', userId);
+      } else {
+        console.log('[useCreditsManagement] No user session, fetching IP-based credits');
+      }
       
       const fetchedCredits = await fetchUserCredits(userId);
       console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);

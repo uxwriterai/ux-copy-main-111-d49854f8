@@ -26,16 +26,9 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
       console.log("[CreditsContext] Initial credits fetch");
-      // Always check session first before fetching
-      if (session?.user) {
-        console.log("[CreditsContext] Initial session with user, fetching user credits");
-        fetchCredits(true); // Pass true to force user-based credits
-      } else {
-        console.log("[CreditsContext] No initial user session, fetching IP-based credits");
-        fetchCredits(false); // Pass false to force IP-based credits
-      }
+      fetchCredits();
     }
-  }, [isSessionLoading, initialized, fetchCredits, session]);
+  }, [isSessionLoading, initialized, fetchCredits]);
 
   // Separate useEffect for auth state changes
   useEffect(() => {
@@ -55,7 +48,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setTimeout(async () => {
           try {
             console.log("[CreditsContext] Fetching user credits after sign in");
-            await fetchCredits(true); // Force user-based credits
+            await fetchCredits();
           } catch (error) {
             console.error("[CreditsContext] Error fetching user credits:", error);
           } finally {
@@ -73,7 +66,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setTimeout(async () => {
           try {
             console.log("[CreditsContext] Fetching IP-based credits after sign out");
-            await fetchCredits(false); // Force IP-based credits
+            await fetchCredits();
           } catch (error) {
             console.error("[CreditsContext] Error fetching IP-based credits:", error);
           } finally {
