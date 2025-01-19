@@ -45,10 +45,10 @@ const HeroCopyGenerator = () => {
       <div className="min-h-screen bg-background py-8">
         <div className="container max-w-6xl">
           <div className="space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">Write Hero Copy That Stands Out</h1>
+            <div className="text-center">
+              <h1 className="text-3xl font-bold tracking-tight">Hero Copy Generator</h1>
               <p className="text-muted-foreground">
-                Generate headlines, taglines, and CTAs that grab attention
+                Generate captivating hero section copy with AI
               </p>
             </div>
 

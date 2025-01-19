@@ -132,11 +132,11 @@ const LandingPageGenerator = () => {
 
       <div className="container max-w-6xl py-8">
         <div className="space-y-6">
-          <div className="text-left mb-8">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight">
-              Build a Landing Page That Converts
+              Landing Page Generator
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-lg text-muted-foreground">
               Create engaging copy for your landing page in just a few clicks
             </p>
           </div>
