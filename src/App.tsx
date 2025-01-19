@@ -22,8 +22,8 @@ const queryClient = new QueryClient()
 
 function App() {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase}>
         <CreditsProvider>
           <ThemeProvider>
             <SidebarProvider>
@@ -49,8 +49,8 @@ function App() {
             </SidebarProvider>
           </ThemeProvider>
         </CreditsProvider>
-      </QueryClientProvider>
-    </SessionContextProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
   )
 }
 
