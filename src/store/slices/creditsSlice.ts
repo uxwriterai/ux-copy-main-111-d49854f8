@@ -36,7 +36,7 @@ export const initializeCredits = createAsyncThunk(
       const userId = session?.user?.id;
 
       if (userId) {
-        console.log('[creditsSlice] Fetching user-based credits for:', userId);
+        console.log('[creditsSlice] User is authenticated, fetching user-based credits');
         const { data, error } = await supabase
           .from('user_credits')
           .select('credits_remaining')
@@ -47,7 +47,7 @@ export const initializeCredits = createAsyncThunk(
         console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
         return data?.credits_remaining ?? 6;
       } else {
-        console.log('[creditsSlice] Fetching IP-based credits');
+        console.log('[creditsSlice] Anonymous user, fetching IP-based credits');
         const ipAddress = await getIpAddress();
         const { data, error } = await supabase
           .from('user_credits')
@@ -72,23 +72,22 @@ export const initializeCredits = createAsyncThunk(
 export const fetchUserCredits = createAsyncThunk(
   'credits/fetchUserCredits',
   async (userId: string | undefined, { getState, rejectWithValue }) => {
+    if (!userId) {
+      console.log('[creditsSlice] No userId provided, skipping fetch');
+      return 2; // Default credits for non-authenticated users
+    }
+
     try {
       console.log('[creditsSlice] Fetching credits for user:', userId);
-      
-      if (userId) {
-        const { data, error } = await supabase
-          .from('user_credits')
-          .select('credits_remaining')
-          .eq('user_id', userId)
-          .single();
+      const { data, error } = await supabase
+        .from('user_credits')
+        .select('credits_remaining')
+        .eq('user_id', userId)
+        .single();
 
-        if (error) throw error;
-        
-        console.log('[creditsSlice] Fetched user credits:', data);
-        return data?.credits_remaining ?? 6;
-      }
-      
-      return 2; // Default credits for non-authenticated users
+      if (error) throw error;
+      console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
+      return data?.credits_remaining ?? 6;
     } catch (error) {
       console.error('[creditsSlice] Error fetching credits:', error);
       return rejectWithValue('Failed to fetch credits');
@@ -99,17 +98,18 @@ export const fetchUserCredits = createAsyncThunk(
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
   async ({ userId, credits }: { userId: string | undefined; credits: number }, { getState, rejectWithValue }) => {
+    if (!userId) {
+      console.log('[creditsSlice] No userId provided, skipping update');
+      return credits;
+    }
+
     try {
       console.log('[creditsSlice] Updating credits:', { userId, credits });
-      
-      if (userId) {
-        const { error } = await supabase
-          .from('user_credits')
-          .upsert({ user_id: userId, credits_remaining: credits });
+      const { error } = await supabase
+        .from('user_credits')
+        .upsert({ user_id: userId, credits_remaining: credits });
 
-        if (error) throw error;
-      }
-      
+      if (error) throw error;
       return credits;
     } catch (error) {
       console.error('[creditsSlice] Error updating credits:', error);
