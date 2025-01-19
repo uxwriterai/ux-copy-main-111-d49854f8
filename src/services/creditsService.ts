@@ -5,6 +5,7 @@ export const getIpAddress = async (): Promise<string> => {
     const response = await fetch('https://api.ipify.org?format=json');
     if (!response.ok) throw new Error('Failed to fetch IP address');
     const data = await response.json();
+    console.log('Fetched IP address:', data.ip);
     return data.ip;
   } catch (error) {
     console.error("Error fetching IP address:", error);
