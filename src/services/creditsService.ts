@@ -1,91 +1,61 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const getIpAddress = async (): Promise<string> => {
+export const fetchUserCredits = async (userId: string | null): Promise<number | null> => {
   try {
-    const response = await fetch('https://api.ipify.org?format=json');
-    if (!response.ok) throw new Error('Failed to fetch IP address');
-    const data = await response.json();
-    console.log('Fetched IP address:', data.ip);
-    return data.ip;
-  } catch (error) {
-    console.error("Error fetching IP address:", error);
-    throw error;
-  }
-};
-
-export const fetchUserCredits = async (userId?: string | null): Promise<number | null> => {
-  try {
-    console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
+    let query = supabase.from('user_credits');
     
     if (userId) {
-      // User is authenticated - fetch user-based credits
-      const { data, error } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .eq('user_id', userId)
-        .is('ip_address', null)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data?.credits_remaining ?? null;
+      query = query.select('credits_remaining').eq('user_id', userId).single();
+    } else {
+      const { data: { ip } } = await fetch('/api/get-ip').then(res => res.json());
+      console.log('Fetched IP address:', ip);
+      query = query.select('credits_remaining').eq('ip_address', ip).single();
     }
 
-    // Anonymous user - fetch IP-based credits
-    const ipAddress = await getIpAddress();
-    const { data, error } = await supabase
-      .from('user_credits')
-      .select('credits_remaining')
-      .eq('ip_address', ipAddress)
-      .is('user_id', null)
-      .maybeSingle();
+    const { data, error } = await query;
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching credits:', error);
+      return null;
+    }
+
     return data?.credits_remaining ?? null;
   } catch (error) {
-    console.error("Error in fetchUserCredits:", error);
-    throw error;
+    console.error('Error in fetchUserCredits:', error);
+    return null;
   }
 };
 
-export const updateCredits = async (newCredits: number, userId?: string | null): Promise<void> => {
+export const updateCredits = async (newCredits: number, userId: string | null): Promise<boolean> => {
   try {
+    let query = supabase.from('user_credits');
+    
     if (userId) {
       // For authenticated users
-      const { error } = await supabase
-        .from('user_credits')
-        .upsert({
-          user_id: userId,
-          ip_address: null,
-          credits_remaining: newCredits
-        }, {
-          onConflict: 'user_id'
-        });
-
+      const { error } = await query
+        .update({ credits_remaining: newCredits })
+        .eq('user_id', userId);
+        
       if (error) {
-        console.error("Error in updateCredits:", error);
-        throw error;
+        console.error('Error in updateCredits:', error);
+        return false;
       }
     } else {
       // For anonymous users
-      const ipAddress = await getIpAddress();
-      
-      const { error } = await supabase
-        .from('user_credits')
-        .upsert({
-          ip_address: ipAddress,
-          user_id: null,
-          credits_remaining: newCredits
-        }, {
-          onConflict: 'ip_address'
-        });
-
+      const { data: { ip } } = await fetch('/api/get-ip').then(res => res.json());
+      const { error } = await query
+        .update({ credits_remaining: newCredits })
+        .eq('ip_address', ip);
+        
       if (error) {
-        console.error("Error in updateCredits:", error);
-        throw error;
+        console.error('Error in updateCredits:', error);
+        return false;
       }
     }
+    
+    return true;
   } catch (error) {
-    console.error("Error in updateCredits:", error);
-    throw error;
+    console.error('Error in updateCredits:', error);
+    return false;
   }
 };
