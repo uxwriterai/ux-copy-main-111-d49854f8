@@ -49,6 +49,8 @@ export const initializeCredits = createAsyncThunk(
       // Only fetch IP-based credits for anonymous users
       console.log('[creditsSlice] Anonymous user, fetching IP-based credits');
       const ipAddress = await getIpAddress();
+      console.log('[creditsSlice] Fetching IP-based credits for:', ipAddress);
+      
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -81,20 +83,36 @@ export const initializeCredits = createAsyncThunk(
 
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
-    if (!userId) {
-      console.log('[creditsSlice] No userId provided, skipping update');
-      return credits;
+  async ({ userId, credits }: { userId: string | undefined; credits: number }, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+    
+    // Check if we should proceed with the update
+    if (!userId && state.credits.credits > 0) {
+      console.log('[creditsSlice] Skipping credit update - preserving existing user credits');
+      return state.credits.credits;
     }
 
     try {
       console.log('[creditsSlice] Updating credits:', { userId, credits });
-      const { error } = await supabase
-        .from('user_credits')
-        .upsert({ user_id: userId, credits_remaining: credits });
+      
+      if (userId) {
+        const { error } = await supabase
+          .from('user_credits')
+          .upsert({ user_id: userId, credits_remaining: credits });
 
-      if (error) throw error;
-      return credits;
+        if (error) throw error;
+        return credits;
+      } else {
+        // Only update IP-based credits if no userId exists
+        console.log('[creditsSlice] Updating IP-based credits');
+        const ipAddress = await getIpAddress();
+        const { error } = await supabase
+          .from('user_credits')
+          .upsert({ ip_address: ipAddress, credits_remaining: credits, user_id: null });
+
+        if (error) throw error;
+        return credits;
+      }
     } catch (error) {
       console.error('[creditsSlice] Error updating credits:', error);
       return rejectWithValue('Failed to update credits');
