@@ -119,6 +119,8 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
           ip_address: ipAddress,
           credits_remaining: newCredits,
           user_id: null
+        }, {
+          onConflict: 'ip_address'
         });
 
       if (upsertError) {
