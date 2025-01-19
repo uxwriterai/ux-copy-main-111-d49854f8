@@ -10,5 +10,4 @@ export interface CreditsContextType {
   useCredit: () => Promise<boolean>;
   resetCredits: () => Promise<void>;
   isLoading: boolean;
-  setIsLoading: (isLoading: boolean) => void;
 }
