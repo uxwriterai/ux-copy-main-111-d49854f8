@@ -9,6 +9,7 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 export const CreditsProvider = ({ children }: { children: React.ReactNode }) => {
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const authListenerSet = useRef(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
   const {
     credits,
     setCredits,
@@ -31,9 +32,9 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   // Separate useEffect for auth state changes
   useEffect(() => {
-    if (authListenerSet.current) return;
+    if (authListenerSet.current || cleanupRef.current) return;
     
-    console.log("[CreditsContext] Setting up auth state listener (once)");
+    console.log("[CreditsContext] Setting up auth state listener");
     authListenerSet.current = true;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
@@ -54,12 +55,19 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       }
     });
 
-    return () => {
+    cleanupRef.current = () => {
       console.log("[CreditsContext] Cleaning up auth state listener");
       subscription.unsubscribe();
       authListenerSet.current = false;
+      cleanupRef.current = null;
     };
-  }, []); // Empty dependency array since we use ref to prevent multiple setups
+
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+    };
+  }, []); // Empty dependency array since we use refs to prevent multiple setups
 
   const value = {
     credits: credits ?? 0,

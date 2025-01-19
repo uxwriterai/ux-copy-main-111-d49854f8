@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { useNavigate } from 'react-router-dom'
@@ -8,12 +8,16 @@ import { toast } from 'sonner'
 export function useAuthState() {
   const [session, setSession] = useState<Session | null>(null)
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const authListenerSet = useRef(false)
   const navigate = useNavigate()
   const { resetCredits, setCredits } = useCredits()
 
   useEffect(() => {
+    if (authListenerSet.current) return;
+    
     let mounted = true
     console.log("Initializing auth state listener")
+    authListenerSet.current = true;
 
     async function initializeAuth() {
       try {
@@ -61,6 +65,7 @@ export function useAuthState() {
           console.log("Cleaning up auth state listener")
           mounted = false
           subscription.unsubscribe()
+          authListenerSet.current = false
         }
       } catch (error) {
         console.error("Error in auth state management:", error)
