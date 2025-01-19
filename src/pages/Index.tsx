@@ -67,7 +67,7 @@ const Index = () => {
 
       <div className="w-full py-12 flex flex-col items-center">
         <div className="text-center mb-12 max-w-2xl px-4">
-          <h1 className="text-4xl font-bold mb-4">UX Writing Tools</h1>
+          <h1 className="text-4xl font-bold mb-4">The Ultimate Free Tools for UX Writing</h1>
           <p className="text-lg text-muted-foreground">
             A collection of AI-powered tools to help you write better UX copy
           </p>
