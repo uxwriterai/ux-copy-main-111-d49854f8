@@ -13,25 +13,25 @@ import {
 
 const tools = [
   {
-    title: "UX Copy Enhancer",
+    title: "UX Copy Improver",
     description: "Transform your UI text with AI-powered suggestions",
     icon: Wand2,
     route: "/copy-improver"
   },
   {
-    title: "Microcopy Creator",
+    title: "Microcopy Generator",
     description: "Generate clear and effective microcopy for UI elements",
     icon: Type,
     route: "/microcopy"
   },
   {
-    title: "A/B Copy Test Generator",
+    title: "A/B Testing Generator",
     description: "Generate A/B test variations for your UX copy",
     icon: SplitSquareVertical,
     route: "/generator"
   },
   {
-    title: "Empty State Builder",
+    title: "Empty State Generator",
     description: "Create engaging empty state messages that guide users",
     icon: FileX,
     route: "/empty-state"
@@ -67,9 +67,9 @@ const Index = () => {
 
       <div className="w-full py-12 flex flex-col items-center">
         <div className="text-center mb-12 max-w-2xl px-4">
-          <h1 className="text-4xl font-bold mb-4">The Ultimate Free Tools for UX Writing</h1>
+          <h1 className="text-4xl font-bold mb-4">UX Writing Tools</h1>
           <p className="text-lg text-muted-foreground">
-            AI-powered tools to help you write better UX copy effortlessly.
+            A collection of AI-powered tools to help you write better UX copy
           </p>
         </div>
 
