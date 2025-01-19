@@ -125,7 +125,17 @@ const Index = () => {
         <link rel="canonical" href="/" />
       </Helmet>
 
-      <div className="w-full py-12 flex flex-col items-center">
+      <div className="w-full flex flex-col">
+        <a 
+          href="https://www.designfolio.me/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-[length:200%_100%] animate-[shimmer_3s_linear_infinite] text-white text-center py-2 text-sm font-manrope hover:opacity-90 transition-opacity cursor-pointer"
+        >
+          From the makers of Designfolio - Build your Portfolio Website Now
+        </a>
+
+        <div className="py-12 flex flex-col items-center">
         <div className="text-center mb-12 max-w-2xl px-4">
           <h1 className="text-4xl font-bold mb-4">The Ultimate Free Tools for UX Writing</h1>
           <p className="text-lg text-muted-foreground">
