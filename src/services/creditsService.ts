@@ -51,27 +51,39 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
   try {
     if (userId) {
       // For authenticated users
-      const { error: upsertError } = await supabase
+      const { error } = await supabase
         .from('user_credits')
         .upsert({
           user_id: userId,
           ip_address: null,
           credits_remaining: newCredits
+        }, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
         });
 
-      if (upsertError) throw upsertError;
+      if (error) {
+        console.error("Error updating authenticated user credits:", error);
+        throw error;
+      }
     } else {
       // For anonymous users
       const ipAddress = await getIpAddress();
-      const { error: upsertError } = await supabase
+      const { error } = await supabase
         .from('user_credits')
         .upsert({
           ip_address: ipAddress,
           user_id: null,
           credits_remaining: newCredits
+        }, {
+          onConflict: 'ip_address',
+          ignoreDuplicates: false
         });
 
-      if (upsertError) throw upsertError;
+      if (error) {
+        console.error("Error updating anonymous user credits:", error);
+        throw error;
+      }
     }
   } catch (error) {
     console.error("Error in updateCredits:", error);
