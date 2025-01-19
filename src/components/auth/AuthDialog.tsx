@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Auth } from '@supabase/auth-ui-react'
 import { supabase } from "@/integrations/supabase/client"
 import { ThemeSupa } from '@supabase/auth-ui-shared'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface AuthDialogProps {
   isOpen: boolean
@@ -13,6 +13,17 @@ interface AuthDialogProps {
 export function AuthDialog({ isOpen, onClose, view: initialView = 'sign_in' }: AuthDialogProps) {
   const [currentView, setCurrentView] = useState(initialView)
   console.log("Current view:", currentView) // Debug log to track the current view
+
+  // Listen to auth state changes to update the view
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        onClose()
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [onClose])
 
   const titles = {
     sign_in: "Welcome back!",
@@ -50,10 +61,7 @@ export function AuthDialog({ isOpen, onClose, view: initialView = 'sign_in' }: A
             }
           }}
           providers={[]}
-          onViewChange={({ view }) => {
-            console.log("View changed to:", view)
-            setCurrentView(view)
-          }}
+          // Instead of onViewChange, we'll use the viewChange event from auth state
         />
       </DialogContent>
     </Dialog>
