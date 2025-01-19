@@ -8,9 +8,35 @@
     <meta name="author" content="Lovable" />
     <meta property="og:image" content="/og-image.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap">
+    <style>
+      .announcement-banner {
+        background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
+        background-size: 200% 100%;
+        animation: shimmer 3s infinite linear;
+        color: white;
+        text-align: center;
+        padding: 0.5rem;
+        font-family: 'Manrope', sans-serif;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      
+      .announcement-banner:hover {
+        opacity: 0.9;
+      }
+      
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+    </style>
   </head>
 
   <body>
+    <a href="https://www.designfolio.me/" target="_blank" rel="noopener noreferrer" class="announcement-banner block">
+      From the makers of Designfolio - Build your Portfolio Website Now
+    </a>
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
