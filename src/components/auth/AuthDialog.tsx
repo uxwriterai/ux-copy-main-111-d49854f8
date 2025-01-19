@@ -14,6 +14,7 @@ import { useState, useEffect } from "react"
 import { WelcomeDialog } from "./WelcomeDialog"
 import { AuthConfetti } from "./AuthConfetti"
 import { getErrorMessage } from "@/utils/authErrors"
+import { AuthChangeEvent } from "@supabase/supabase-js"
 
 interface AuthDialogProps {
   open: boolean
@@ -30,7 +31,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   useEffect(() => {
     console.log("Setting up auth state change listener")
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       console.log("Auth event:", event)
       
       if (event === 'SIGNED_IN') {
@@ -49,7 +50,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       }
 
       // Handle auth errors
-      if (event === 'USER_DELETED' || event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY') {
         setError("")
       }
     })
@@ -150,7 +151,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
-            onError={(error) => {
+            onAuthError={(error) => {
               console.error("Auth error:", error)
               setError(getErrorMessage(error))
             }}
