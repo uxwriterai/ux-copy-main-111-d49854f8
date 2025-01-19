@@ -27,7 +27,15 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     const initializeCredits = async () => {
       if (!isSessionLoading && !initialized && isMounted) {
         console.log("Fetching credits...");
-        await fetchCredits();
+        try {
+          await fetchCredits();
+        } catch (error) {
+          console.error("Error fetching credits:", error);
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
       }
     };
 
@@ -36,7 +44,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     return () => {
       isMounted = false;
     };
-  }, [session?.user?.id, isSessionLoading, initialized, fetchCredits]);
+  }, [session?.user?.id, isSessionLoading, initialized, fetchCredits, setIsLoading]);
 
   useEffect(() => {
     console.log("Setting up auth state change listener");

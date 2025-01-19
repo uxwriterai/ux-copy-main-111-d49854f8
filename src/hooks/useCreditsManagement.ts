@@ -26,10 +26,10 @@ export const useCreditsManagement = (session: Session | null) => {
         }
         
         setInitialized(true);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error in fetchCredits:", error);
         setInitialized(true);
-      } finally {
         setIsLoading(false);
       }
     }
