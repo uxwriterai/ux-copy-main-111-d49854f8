@@ -16,41 +16,45 @@ import Generator from "@/pages/Generator"
 import MicrocopyGenerator from "@/pages/MicrocopyGenerator"
 import Index from "@/pages/Index"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { Provider } from 'react-redux'
+import { store } from './store/store'
 
 // Create a client
 const queryClient = new QueryClient()
 
 function App() {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <QueryClientProvider client={queryClient}>
-        <CreditsProvider>
-          <ThemeProvider>
-            <SidebarProvider>
-              <Router>
-                <div className="flex min-h-screen w-full">
-                  <AppSidebar />
-                  <main className="flex-1 overflow-y-auto">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/copy-improver" element={<CopyImprover />} />
-                      <Route path="/generator" element={<Generator />} />
-                      <Route path="/microcopy" element={<MicrocopyGenerator />} />
-                      <Route path="/empty-state" element={<EmptyStateGenerator />} />
-                      <Route path="/hero" element={<HeroCopyGenerator />} />
-                      <Route path="/hero-copy" element={<HeroCopyGenerator />} />
-                      <Route path="/landing-page" element={<LandingPageGenerator />} />
-                      <Route path="/settings" element={<Settings />} />
-                    </Routes>
-                  </main>
-                </div>
-                <Toaster />
-              </Router>
-            </SidebarProvider>
-          </ThemeProvider>
-        </CreditsProvider>
-      </QueryClientProvider>
-    </SessionContextProvider>
+    <Provider store={store}>
+      <SessionContextProvider supabaseClient={supabase}>
+        <QueryClientProvider client={queryClient}>
+          <CreditsProvider>
+            <ThemeProvider>
+              <SidebarProvider>
+                <Router>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar />
+                    <main className="flex-1 overflow-y-auto">
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/copy-improver" element={<CopyImprover />} />
+                        <Route path="/generator" element={<Generator />} />
+                        <Route path="/microcopy" element={<MicrocopyGenerator />} />
+                        <Route path="/empty-state" element={<EmptyStateGenerator />} />
+                        <Route path="/hero" element={<HeroCopyGenerator />} />
+                        <Route path="/hero-copy" element={<HeroCopyGenerator />} />
+                        <Route path="/landing-page" element={<LandingPageGenerator />} />
+                        <Route path="/settings" element={<Settings />} />
+                      </Routes>
+                    </main>
+                  </div>
+                  <Toaster />
+                </Router>
+              </SidebarProvider>
+            </ThemeProvider>
+          </CreditsProvider>
+        </QueryClientProvider>
+      </SessionContextProvider>
+    </Provider>
   )
 }
 
