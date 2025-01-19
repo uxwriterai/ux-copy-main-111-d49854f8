@@ -1,81 +1,12 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Session } from "@supabase/supabase-js";
 import { fetchUserCredits, updateCredits } from "@/services/creditsService";
-
-const CREDITS_STORAGE_KEY = 'user_credits_state';
-
-interface StoredCreditsState {
-  credits: number;
-  userId: string | null;
-  timestamp: number;
-}
 
 export const useCreditsManagement = (session: Session | null) => {
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const fetchInProgress = useRef(false);
-  const userId = session?.user?.id;
-
-  // Load credits from storage on mount
-  useEffect(() => {
-    const loadStoredCredits = () => {
-      const storedData = localStorage.getItem(CREDITS_STORAGE_KEY);
-      if (storedData) {
-        const stored: StoredCreditsState = JSON.parse(storedData);
-        
-        // Only use stored credits if they match the current user and are less than 5 minutes old
-        const isValid = 
-          stored.userId === userId && 
-          Date.now() - stored.timestamp < 5 * 60 * 1000;
-        
-        if (isValid) {
-          console.log('[useCreditsManagement] Using stored credits:', stored.credits);
-          setCredits(stored.credits);
-          setInitialized(true);
-          setIsLoading(false);
-          return true;
-        }
-      }
-      return false;
-    };
-
-    if (!initialized && !loadStoredCredits()) {
-      // If no valid stored credits, fetch new ones
-      fetchCredits();
-    }
-  }, [userId, initialized]);
-
-  // Handle tab visibility changes
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('[useCreditsManagement] Tab became visible, checking credits');
-        const storedData = localStorage.getItem(CREDITS_STORAGE_KEY);
-        if (!storedData) {
-          fetchCredits();
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
-  // Persist credits to storage whenever they change
-  useEffect(() => {
-    if (credits !== null) {
-      const dataToStore: StoredCreditsState = {
-        credits,
-        userId: userId || null,
-        timestamp: Date.now()
-      };
-      localStorage.setItem(CREDITS_STORAGE_KEY, JSON.stringify(dataToStore));
-      console.log('[useCreditsManagement] Stored credits:', credits);
-    }
-  }, [credits, userId]);
 
   const fetchCredits = useCallback(async () => {
     if (fetchInProgress.current) {
@@ -86,15 +17,13 @@ export const useCreditsManagement = (session: Session | null) => {
     try {
       fetchInProgress.current = true;
       setIsLoading(true);
-      console.log('[useCreditsManagement] Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
       
-      const fetchedCredits = await fetchUserCredits(userId);
+      const fetchedCredits = await fetchUserCredits(session?.user?.id);
       console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);
       
       if (fetchedCredits === null) {
-        console.log("[useCreditsManagement] No credits record found, creating default");
-        const defaultCredits = userId ? 6 : 2;
-        await updateCredits(defaultCredits, userId);
+        const defaultCredits = session?.user?.id ? 6 : 2;
+        await updateCredits(defaultCredits, session?.user?.id);
         setCredits(defaultCredits);
       } else {
         setCredits(fetchedCredits);
@@ -108,7 +37,7 @@ export const useCreditsManagement = (session: Session | null) => {
       setIsLoading(false);
       fetchInProgress.current = false;
     }
-  }, [userId]);
+  }, [session?.user?.id]);
 
   const useCredit = async (): Promise<boolean> => {
     if (!initialized) {
@@ -123,7 +52,7 @@ export const useCreditsManagement = (session: Session | null) => {
 
     try {
       console.log('[useCreditsManagement] Using credit. Current credits:', credits);
-      await updateCredits(credits - 1, userId);
+      await updateCredits(credits - 1, session?.user?.id);
       setCredits(credits - 1);
       return true;
     } catch (error) {
@@ -134,9 +63,7 @@ export const useCreditsManagement = (session: Session | null) => {
 
   const resetCredits = async () => {
     console.log('[useCreditsManagement] Resetting credits');
-    localStorage.removeItem(CREDITS_STORAGE_KEY);
     setInitialized(false);
-    setCredits(null);
     await fetchCredits();
   };
 

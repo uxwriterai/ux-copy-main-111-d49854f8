@@ -2,18 +2,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const getIpAddress = async (): Promise<string> => {
   try {
-    const { data, error } = await supabase.functions.invoke('get-ip');
-    
-    if (error) {
-      console.error("Error fetching IP address from Edge Function:", error);
-      throw error;
-    }
-    
-    if (!data?.ip) {
-      throw new Error('No IP address returned from Edge Function');
-    }
-    
-    console.log('Fetched IP address:', data.ip);
+    const response = await fetch('https://api.ipify.org?format=json');
+    if (!response.ok) throw new Error('Failed to fetch IP address');
+    const data = await response.json();
     return data.ip;
   } catch (error) {
     console.error("Error fetching IP address:", error);
