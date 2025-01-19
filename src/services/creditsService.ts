@@ -58,7 +58,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
           ip_address: null,
           credits_remaining: newCredits
         }, {
-          onConflict: 'user_id'
+          onConflict: 'user_id_key'
         });
 
       if (error) {
@@ -76,7 +76,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
           user_id: null,
           credits_remaining: newCredits
         }, {
-          onConflict: 'ip_address'
+          onConflict: 'ip_address_key'
         });
 
       if (error) {
