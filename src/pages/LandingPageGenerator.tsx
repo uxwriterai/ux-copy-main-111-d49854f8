@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateLandingPageCopy } from "@/services/landingPageService";
 import { LandingPageResult } from "@/components/landing-page/LandingPageResult";
 import { Helmet } from 'react-helmet-async';
+import { LandingPageContent } from "@/components/landing-page/LandingPageContent";
 
 const INDUSTRIES = [
   "Technology",
@@ -263,6 +264,7 @@ const LandingPageGenerator = () => {
           </Card>
         </div>
       </div>
+      <LandingPageContent />
     </>
   );
 };
