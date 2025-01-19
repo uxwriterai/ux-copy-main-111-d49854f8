@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useTheme } from "@/components/ThemeProvider"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { WelcomeDialog } from "./WelcomeDialog"
 import { AuthConfetti } from "./AuthConfetti"
 import { getErrorMessage } from "@/utils/authErrors"
@@ -28,38 +28,39 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [showConfetti, setShowConfetti] = useState(false)
   const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
 
-  useEffect(() => {
-    console.log("Setting up auth state change listener")
+  const handleAuthStateChange = useCallback((event: AuthChangeEvent) => {
+    console.log("Auth event:", event)
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
-      console.log("Auth event:", event)
-      
-      if (event === 'SIGNED_IN') {
-        onOpenChange(false)
-        setError("")
-      }
-      
-      // Handle new user sign up
-      if (event === 'USER_UPDATED') {
-        onOpenChange(false)
-        setShowConfetti(true)
-        setError("")
-        setTimeout(() => {
-          setShowWelcome(true)
-        }, 1000)
-      }
+    if (event === 'SIGNED_IN') {
+      onOpenChange(false)
+      setError("")
+    }
+    
+    if (event === 'USER_UPDATED') {
+      onOpenChange(false)
+      setShowConfetti(true)
+      setError("")
+      setTimeout(() => {
+        setShowWelcome(true)
+      }, 1000)
+    }
 
-      // Handle auth errors
-      if (event === 'PASSWORD_RECOVERY') {
-        setError("")
-      }
-    })
+    if (event === 'PASSWORD_RECOVERY') {
+      setError("")
+    }
+  }, [onOpenChange])
+
+  useEffect(() => {
+    if (!open) return
+
+    console.log("Setting up auth state change listener")
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
 
     return () => {
       console.log("Cleaning up auth state listener")
       subscription.unsubscribe()
     }
-  }, [onOpenChange])
+  }, [open, handleAuthStateChange])
 
   const getAuthContent = () => {
     switch (view) {
