@@ -13,7 +13,7 @@ import { useTheme } from "@/components/ThemeProvider"
 import { useState, useEffect } from "react"
 import { WelcomeDialog } from "./WelcomeDialog"
 import { AuthConfetti } from "./AuthConfetti"
-import { getErrorMessage } from "@/utils/authErrors"
+import { useCredits } from "@/contexts/CreditsContext"
 
 interface AuthDialogProps {
   open: boolean
@@ -26,15 +26,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
+  const { resetCredits } = useCredits()
 
   useEffect(() => {
     console.log("Setting up auth state change listener")
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       console.log("Auth event:", event)
       
       if (event === 'SIGNED_IN') {
         onOpenChange(false)
+        // Reset credits to fetch the new user-based credits
+        await resetCredits()
       }
       
       // Handle new user sign up
@@ -51,7 +54,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       console.log("Cleaning up auth state listener")
       subscription.unsubscribe()
     }
-  }, [onOpenChange]) // Add onOpenChange as dependency
+  }, [onOpenChange, resetCredits]) // Add resetCredits as dependency
 
   const getAuthContent = () => {
     switch (view) {
