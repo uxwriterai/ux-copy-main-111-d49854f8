@@ -30,20 +30,27 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   useEffect(() => {
     console.log("Setting up auth state change listener")
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth event:", event)
       
       if (event === 'SIGNED_IN') {
         onOpenChange(false)
+        setError("")
       }
       
       // Handle new user sign up
       if (event === 'USER_UPDATED') {
         onOpenChange(false)
         setShowConfetti(true)
+        setError("")
         setTimeout(() => {
           setShowWelcome(true)
         }, 1000)
+      }
+
+      // Handle auth errors
+      if (event === 'USER_DELETED' || event === 'PASSWORD_RECOVERY') {
+        setError("")
       }
     })
 
@@ -51,7 +58,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       console.log("Cleaning up auth state listener")
       subscription.unsubscribe()
     }
-  }, [onOpenChange]) // Add onOpenChange as dependency
+  }, [onOpenChange])
 
   const getAuthContent = () => {
     switch (view) {
@@ -143,6 +150,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
+            onError={(error) => {
+              console.error("Auth error:", error)
+              setError(getErrorMessage(error))
+            }}
           />
         </DialogContent>
       </Dialog>
