@@ -25,16 +25,14 @@ export const initializeCredits = createAsyncThunk(
     const userId = state.auth.userId;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+    // Use cached credits if available and not expired
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
-      console.log('[creditsSlice] Using cached credits, last fetched:', new Date(lastFetched).toISOString());
+      console.log('[creditsSlice] Using cached credits from:', new Date(lastFetched).toISOString());
       return state.credits.credits;
     }
 
     try {
-      console.log('[creditsSlice] Initializing credits');
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
+      // If user is authenticated, fetch user-based credits
       if (userId) {
         console.log('[creditsSlice] User is authenticated, fetching user-based credits');
         const { data, error } = await supabase
@@ -46,22 +44,21 @@ export const initializeCredits = createAsyncThunk(
         if (error) throw error;
         console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
         return data?.credits_remaining ?? 6;
-      } else {
-        console.log('[creditsSlice] Anonymous user, fetching IP-based credits');
-        const ipAddress = await getIpAddress();
-        const { data, error } = await supabase
-          .from('user_credits')
-          .select('credits_remaining')
-          .eq('ip_address', ipAddress)
-          .is('user_id', null)
-          .single();
-
-        if (error && error.code !== 'PGRST116') {
-          throw error;
-        }
-        console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
-        return data?.credits_remaining ?? 2;
       }
+
+      // Only fetch IP-based credits for anonymous users
+      console.log('[creditsSlice] Anonymous user, fetching IP-based credits');
+      const ipAddress = await getIpAddress();
+      const { data, error } = await supabase
+        .from('user_credits')
+        .select('credits_remaining')
+        .eq('ip_address', ipAddress)
+        .is('user_id', null)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
+      return data?.credits_remaining ?? 2;
     } catch (error) {
       console.error('[creditsSlice] Error initializing credits:', error);
       return rejectWithValue('Failed to initialize credits');
@@ -69,35 +66,9 @@ export const initializeCredits = createAsyncThunk(
   }
 );
 
-export const fetchUserCredits = createAsyncThunk(
-  'credits/fetchUserCredits',
-  async (userId: string | undefined, { getState, rejectWithValue }) => {
-    if (!userId) {
-      console.log('[creditsSlice] No userId provided, skipping fetch');
-      return 2; // Default credits for non-authenticated users
-    }
-
-    try {
-      console.log('[creditsSlice] Fetching credits for user:', userId);
-      const { data, error } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .eq('user_id', userId)
-        .single();
-
-      if (error) throw error;
-      console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
-      return data?.credits_remaining ?? 6;
-    } catch (error) {
-      console.error('[creditsSlice] Error fetching credits:', error);
-      return rejectWithValue('Failed to fetch credits');
-    }
-  }
-);
-
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | undefined; credits: number }, { getState, rejectWithValue }) => {
+  async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
     if (!userId) {
       console.log('[creditsSlice] No userId provided, skipping update');
       return credits;
@@ -142,19 +113,6 @@ const creditsSlice = createSlice({
         state.lastFetched = Date.now();
       })
       .addCase(initializeCredits.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(fetchUserCredits.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(fetchUserCredits.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.credits = action.payload;
-        state.lastFetched = Date.now();
-      })
-      .addCase(fetchUserCredits.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
