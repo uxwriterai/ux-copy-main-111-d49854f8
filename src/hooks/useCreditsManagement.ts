@@ -24,13 +24,15 @@ export const useCreditsManagement = (session: Session | null) => {
         const fetchedCredits = await fetchUserCredits(userId);
         
         if (fetchedCredits === null) {
-          console.log("[useCreditsManagement] No user credits record found, creating default");
+          console.log("[useCreditsManagement] No user credits record found, creating with default value");
           await updateCredits(6, userId);
           setCredits(6);
         } else {
+          console.log("[useCreditsManagement] Found existing user credits:", fetchedCredits);
           setCredits(fetchedCredits);
         }
       } else {
+        // Only fetch anonymous credits if there's no authenticated user
         console.log('[useCreditsManagement] Fetching credits for anonymous user');
         const fetchedCredits = await fetchUserCredits(null);
         

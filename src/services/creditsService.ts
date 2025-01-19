@@ -18,28 +18,42 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
     if (userId) {
-      // User is authenticated - only look for user-based credits
+      // User is authenticated - fetch user-based credits
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits_remaining')
         .eq('user_id', userId)
         .is('ip_address', null)
-        .maybeSingle();
+        .single();
       
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          console.log('No existing credits found for user:', userId);
+          return null;
+        }
+        throw error;
+      }
+      
       return data?.credits_remaining ?? null;
     }
 
-    // Anonymous user - use IP-based credits
+    // Anonymous user - fetch IP-based credits
     const ipAddress = await getIpAddress();
     const { data, error } = await supabase
       .from('user_credits')
       .select('credits_remaining')
       .eq('ip_address', ipAddress)
       .is('user_id', null)
-      .maybeSingle();
+      .single();
     
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.log('No existing credits found for IP:', ipAddress);
+        return null;
+      }
+      throw error;
+    }
+    
     return data?.credits_remaining ?? null;
   } catch (error) {
     console.error("Error in fetchUserCredits:", error);
@@ -51,52 +65,48 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
   try {
     if (userId) {
       // For authenticated users
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('user_credits')
         .update({ credits_remaining: newCredits })
         .eq('user_id', userId)
         .is('ip_address', null);
 
-      if (error) {
-        // If update fails (no record exists), insert a new record
-        if (error.code === 'PGRST116') {
-          const { error: insertError } = await supabase
-            .from('user_credits')
-            .insert({
-              user_id: userId,
-              ip_address: null,
-              credits_remaining: newCredits
-            });
-          
-          if (insertError) throw insertError;
-        } else {
-          throw error;
-        }
+      if (updateError && updateError.code === 'PGRST116') {
+        // Record doesn't exist, create it
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            user_id: userId,
+            ip_address: null,
+            credits_remaining: newCredits
+          });
+        
+        if (insertError) throw insertError;
+      } else if (updateError) {
+        throw updateError;
       }
     } else {
       // For anonymous users
       const ipAddress = await getIpAddress();
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('user_credits')
         .update({ credits_remaining: newCredits })
         .eq('ip_address', ipAddress)
         .is('user_id', null);
 
-      if (error) {
-        // If update fails (no record exists), insert a new record
-        if (error.code === 'PGRST116') {
-          const { error: insertError } = await supabase
-            .from('user_credits')
-            .insert({
-              ip_address: ipAddress,
-              user_id: null,
-              credits_remaining: newCredits
-            });
-          
-          if (insertError) throw insertError;
-        } else {
-          throw error;
-        }
+      if (updateError && updateError.code === 'PGRST116') {
+        // Record doesn't exist, create it
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            ip_address: ipAddress,
+            user_id: null,
+            credits_remaining: newCredits
+          });
+        
+        if (insertError) throw insertError;
+      } else if (updateError) {
+        throw updateError;
       }
     }
   } catch (error) {
