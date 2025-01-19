@@ -46,12 +46,17 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setInitialized(false);
         setCredits(null);
         
-        try {
-          console.log("[CreditsContext] Fetching IP-based credits");
-          await fetchCredits();
-        } catch (error) {
-          console.error("[CreditsContext] Error fetching IP-based credits:", error);
-        }
+        // Ensure we fetch IP-based credits after sign out
+        setTimeout(async () => {
+          try {
+            console.log("[CreditsContext] Fetching IP-based credits after sign out");
+            await fetchCredits();
+          } catch (error) {
+            console.error("[CreditsContext] Error fetching IP-based credits:", error);
+          } finally {
+            setIsLoading(false);
+          }
+        }, 0);
       }
     });
 
