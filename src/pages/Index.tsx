@@ -23,38 +23,38 @@ import {
 
 const tools = [
   {
-    title: "UX Copy Improver",
-    description: "Transform your UI text with AI-powered suggestions",
+    title: "UX Copy Enhancer",
+    description: "Let AI help you refine your words for better user experiences",
     icon: Wand2,
     route: "/copy-improver"
   },
   {
-    title: "Microcopy Generator",
-    description: "Generate clear and effective microcopy for UI elements",
+    title: "Microcopy Creator",
+    description: "Write concise, effective text for buttons, forms, and menus with ease",
     icon: Type,
     route: "/microcopy"
   },
   {
-    title: "A/B Testing Generator",
-    description: "Generate A/B test variations for your UX copy",
+    title: "A/B Copy Test Generator",
+    description: "Easily generate A/B test variations to optimize your content",
     icon: SplitSquareVertical,
     route: "/generator"
   },
   {
-    title: "Empty State Generator",
-    description: "Create engaging empty state messages that guide users",
+    title: "Empty State Builder",
+    description: "Guide your users with clear, thoughtful AI-generated text",
     icon: FileX,
     route: "/empty-state"
   },
   {
     title: "Hero Copy Generator",
-    description: "Create compelling hero sections with headlines, taglines, and CTAs",
+    description: "Generate headlines, taglines, and CTAs that grab attention",
     icon: Layout,
     route: "/hero-copy"
   },
   {
     title: "Landing Page Generator",
-    description: "Generate comprehensive copy for your entire landing page",
+    description: "Create engaging copy for your landing page in just a few clicks",
     icon: LayoutTemplate,
     route: "/landing-page"
   }
