@@ -31,7 +31,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const handleAuthStateChange = useCallback((event: AuthChangeEvent) => {
     console.log("Auth event:", event)
     
-    if (event === 'SIGNED_IN') {
+    if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
       onOpenChange(false)
       setError("")
     }
