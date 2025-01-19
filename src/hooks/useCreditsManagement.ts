@@ -2,17 +2,28 @@ import { useState, useCallback, useRef } from "react";
 import { Session } from "@supabase/supabase-js";
 import { fetchUserCredits, updateCredits } from "@/services/creditsService";
 import { useAppDispatch, useAppSelector } from "@/hooks/useAppSelector";
-import { setCredits, setUserId, setLoading, setError } from "@/store/slices/creditsSlice";
+import { 
+  setCredits, 
+  setUserId, 
+  setLoading, 
+  setError,
+  selectShouldFetchCredits,
+  selectCredits,
+  selectIsLoading
+} from "@/store/slices/creditsSlice";
 
 export const useCreditsManagement = (session: Session | null) => {
   const [initialized, setInitialized] = useState(false);
   const fetchInProgress = useRef(false);
   const dispatch = useAppDispatch();
-  const { credits, isLoading } = useAppSelector(state => state.credits);
+  
+  const credits = useAppSelector(selectCredits);
+  const isLoading = useAppSelector(selectIsLoading);
+  const shouldFetch = useAppSelector(selectShouldFetchCredits);
 
   const fetchCredits = useCallback(async () => {
-    if (fetchInProgress.current) {
-      console.log("[useCreditsManagement] Fetch already in progress, skipping");
+    if (fetchInProgress.current || (!shouldFetch && credits !== null)) {
+      console.log("[useCreditsManagement] Skip fetch: already in progress or cached");
       return;
     }
 
@@ -46,16 +57,15 @@ export const useCreditsManagement = (session: Session | null) => {
       dispatch(setLoading(false));
       fetchInProgress.current = false;
     }
-  }, [session?.user?.id, dispatch]);
+  }, [session?.user?.id, dispatch, shouldFetch, credits]);
 
   const useCredit = async (): Promise<boolean> => {
-    if (!initialized) {
-      console.log('[useCreditsManagement] Cannot use credit: credits not initialized');
-      return false;
-    }
-
-    if (credits === null || credits <= 0) {
-      console.log('[useCreditsManagement] Cannot use credit:', credits === null ? 'credits not initialized' : 'no credits remaining');
+    if (!initialized || credits === null || credits <= 0) {
+      console.log('[useCreditsManagement] Cannot use credit:', 
+        !initialized ? 'not initialized' : 
+        credits === null ? 'credits not initialized' : 
+        'no credits remaining'
+      );
       return false;
     }
 
