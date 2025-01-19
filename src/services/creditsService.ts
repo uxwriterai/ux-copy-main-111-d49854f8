@@ -50,36 +50,55 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
 export const updateCredits = async (newCredits: number, userId?: string | null): Promise<void> => {
   try {
     if (userId) {
-      // User is authenticated - update user-based credits
-      const { error: updateError } = await supabase
+      // For authenticated users
+      const { error } = await supabase
         .from('user_credits')
-        .upsert({
-          user_id: userId,
-          ip_address: null,
-          credits_remaining: newCredits
-        }, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        });
+        .update({ credits_remaining: newCredits })
+        .eq('user_id', userId)
+        .is('ip_address', null);
 
-      if (updateError) throw updateError;
-      return;
+      if (error) {
+        // If update fails (no record exists), insert a new record
+        if (error.code === 'PGRST116') {
+          const { error: insertError } = await supabase
+            .from('user_credits')
+            .insert({
+              user_id: userId,
+              ip_address: null,
+              credits_remaining: newCredits
+            });
+          
+          if (insertError) throw insertError;
+        } else {
+          throw error;
+        }
+      }
+    } else {
+      // For anonymous users
+      const ipAddress = await getIpAddress();
+      const { error } = await supabase
+        .from('user_credits')
+        .update({ credits_remaining: newCredits })
+        .eq('ip_address', ipAddress)
+        .is('user_id', null);
+
+      if (error) {
+        // If update fails (no record exists), insert a new record
+        if (error.code === 'PGRST116') {
+          const { error: insertError } = await supabase
+            .from('user_credits')
+            .insert({
+              ip_address: ipAddress,
+              user_id: null,
+              credits_remaining: newCredits
+            });
+          
+          if (insertError) throw insertError;
+        } else {
+          throw error;
+        }
+      }
     }
-
-    // Anonymous user - update IP-based credits
-    const ipAddress = await getIpAddress();
-    const { error: updateError } = await supabase
-      .from('user_credits')
-      .upsert({
-        ip_address: ipAddress,
-        user_id: null,
-        credits_remaining: newCredits
-      }, {
-        onConflict: 'ip_address',
-        ignoreDuplicates: false
-      });
-
-    if (updateError) throw updateError;
   } catch (error) {
     console.error("Error in updateCredits:", error);
     throw error;
