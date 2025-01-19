@@ -43,7 +43,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           .from('user_credits')
           .select('created_at')
           .eq('user_id', user?.id)
-          .single()
+          .maybeSingle()
         
         // If userCredits was just created (within last 5 seconds), this is a new signup
         if (userCredits && 
