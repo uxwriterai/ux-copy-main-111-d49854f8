@@ -39,8 +39,6 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .from('user_credits')
         .select('credits_remaining')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
         .maybeSingle();
       
       if (error) {
@@ -63,8 +61,6 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .select('credits_remaining')
         .eq('ip_address', ipAddress)
         .is('user_id', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
         .maybeSingle();
       
       if (error) {
@@ -93,38 +89,18 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     if (userId) {
       console.log('Updating ONLY user-based credits for user:', userId);
       
-      // First check if a record exists
-      const { data: existingRecord } = await supabase
+      const { error: upsertError } = await supabase
         .from('user_credits')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
+        .upsert({
+          user_id: userId,
+          credits_remaining: newCredits
+        }, {
+          onConflict: 'user_id'
+        });
 
-      let updateError;
-      
-      if (existingRecord) {
-        // Update existing record
-        console.log('Updating existing record for user:', userId);
-        const { error } = await supabase
-          .from('user_credits')
-          .update({ credits_remaining: newCredits })
-          .eq('user_id', userId);
-        updateError = error;
-      } else {
-        // Insert new record
-        console.log('Creating new record for user:', userId);
-        const { error } = await supabase
-          .from('user_credits')
-          .insert([{
-            user_id: userId,
-            credits_remaining: newCredits
-          }]);
-        updateError = error;
-      }
-
-      if (updateError) {
-        console.error("Error updating user credits:", updateError);
-        throw updateError;
+      if (upsertError) {
+        console.error("Error updating user credits:", upsertError);
+        throw upsertError;
       }
       
       console.log('Successfully updated credits for user:', userId);
@@ -137,17 +113,19 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
       const ipAddress = await getIpAddress();
       console.log('Updating IP-based credits for:', ipAddress);
       
-      const { error: updateError } = await supabase
+      const { error: upsertError } = await supabase
         .from('user_credits')
-        .upsert([{
+        .upsert({
           ip_address: ipAddress,
           credits_remaining: newCredits,
           user_id: null
-        }]);
+        }, {
+          onConflict: 'ip_address'
+        });
 
-      if (updateError) {
-        console.error("Error updating IP credits:", updateError);
-        throw updateError;
+      if (upsertError) {
+        console.error("Error updating IP credits:", upsertError);
+        throw upsertError;
       }
       
       console.log('Successfully updated credits for IP:', ipAddress);
