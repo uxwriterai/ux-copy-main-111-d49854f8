@@ -28,6 +28,7 @@ export const useCreditsManagement = (session: Session | null) => {
           await updateCredits(6, userId);
           setCredits(6);
         } else {
+          console.log("[useCreditsManagement] Setting user credits:", fetchedCredits);
           setCredits(fetchedCredits);
         }
       } else {
@@ -39,6 +40,7 @@ export const useCreditsManagement = (session: Session | null) => {
           await updateCredits(2, null);
           setCredits(2);
         } else {
+          console.log("[useCreditsManagement] Setting anonymous credits:", fetchedCredits);
           setCredits(fetchedCredits);
         }
       }
