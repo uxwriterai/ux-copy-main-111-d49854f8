@@ -25,12 +25,10 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   // Single useEffect for initialization
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
-      // If we have a session, we should only fetch user credits
       if (session?.user) {
         console.log("[CreditsContext] Initial credits fetch for logged-in user");
         fetchCredits();
       } else {
-        // Only fetch IP-based credits if there's no session
         console.log("[CreditsContext] Initial credits fetch for anonymous user");
         fetchCredits();
       }
@@ -52,15 +50,13 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setIsLoading(true);
         setInitialized(false);
         
-        setTimeout(async () => {
-          try {
-            await fetchCredits();
-          } catch (error) {
-            console.error("[CreditsContext] Error fetching user credits:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        }, 0);
+        try {
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error fetching user credits:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
       
       if (event === 'SIGNED_OUT') {
@@ -69,16 +65,13 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setInitialized(false);
         setCredits(null);
         
-        // Ensure we fetch IP-based credits after sign out
-        setTimeout(async () => {
-          try {
-            await fetchCredits();
-          } catch (error) {
-            console.error("[CreditsContext] Error fetching IP-based credits:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        }, 0);
+        try {
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error fetching IP-based credits:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     });
 
@@ -94,7 +87,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, []); 
+  }, [fetchCredits, setCredits, setInitialized, setIsLoading]); 
 
   const value = {
     credits: credits ?? 0,
