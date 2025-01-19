@@ -24,8 +24,8 @@ function App() {
   return (
     <SessionContextProvider supabaseClient={supabase}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <CreditsProvider>
+        <CreditsProvider>
+          <ThemeProvider>
             <SidebarProvider>
               <Router>
                 <div className="flex min-h-screen w-full">
@@ -47,8 +47,8 @@ function App() {
                 <Toaster />
               </Router>
             </SidebarProvider>
-          </CreditsProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </CreditsProvider>
       </QueryClientProvider>
     </SessionContextProvider>
   )
