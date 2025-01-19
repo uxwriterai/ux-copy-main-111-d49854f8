@@ -8,6 +8,7 @@ interface CreditsState {
   isLoading: boolean;
   error: string | null;
   lastFetched: number | null;
+  rehydrationComplete: boolean;
 }
 
 const initialState: CreditsState = {
@@ -15,6 +16,7 @@ const initialState: CreditsState = {
   isLoading: false,
   error: null,
   lastFetched: null,
+  rehydrationComplete: false,
 };
 
 export const initializeCredits = createAsyncThunk(
@@ -24,6 +26,12 @@ export const initializeCredits = createAsyncThunk(
     const lastFetched = state.credits.lastFetched;
     const userId = state.auth.userId;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    // Skip if rehydration is not complete
+    if (!state.credits.rehydrationComplete) {
+      console.log('[creditsSlice] Skipping fetch - rehydration not complete');
+      return rejectWithValue('Rehydration not complete');
+    }
 
     // Use cached credits if available and not expired
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
@@ -71,51 +79,18 @@ export const initializeCredits = createAsyncThunk(
       const state = getState() as RootState;
       const userId = state.auth.userId;
       
+      // Skip if rehydration is not complete
+      if (!state.credits.rehydrationComplete) {
+        console.log('[creditsSlice] Skipping fetch - rehydration not complete');
+        return false;
+      }
+      
       // If we have user-based credits, don't allow IP-based credits to overwrite them
       if (state.credits.credits > 0 && !userId) {
         console.log('[creditsSlice] Preventing IP credits from overwriting existing user credits');
         return false;
       }
       return true;
-    }
-  }
-);
-
-export const updateUserCredits = createAsyncThunk(
-  'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | undefined; credits: number }, { getState, rejectWithValue }) => {
-    const state = getState() as RootState;
-    
-    // Check if we should proceed with the update
-    if (!userId && state.credits.credits > 0) {
-      console.log('[creditsSlice] Skipping credit update - preserving existing user credits');
-      return state.credits.credits;
-    }
-
-    try {
-      console.log('[creditsSlice] Updating credits:', { userId, credits });
-      
-      if (userId) {
-        const { error } = await supabase
-          .from('user_credits')
-          .upsert({ user_id: userId, credits_remaining: credits });
-
-        if (error) throw error;
-        return credits;
-      } else {
-        // Only update IP-based credits if no userId exists
-        console.log('[creditsSlice] Updating IP-based credits');
-        const ipAddress = await getIpAddress();
-        const { error } = await supabase
-          .from('user_credits')
-          .upsert({ ip_address: ipAddress, credits_remaining: credits, user_id: null });
-
-        if (error) throw error;
-        return credits;
-      }
-    } catch (error) {
-      console.error('[creditsSlice] Error updating credits:', error);
-      return rejectWithValue('Failed to update credits');
     }
   }
 );
@@ -131,6 +106,10 @@ const creditsSlice = createSlice({
       state.error = null;
       state.isLoading = false;
     },
+    setRehydrationComplete: (state) => {
+      console.log('[creditsSlice] Setting rehydration complete');
+      state.rehydrationComplete = true;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -139,29 +118,23 @@ const creditsSlice = createSlice({
         state.error = null;
       })
       .addCase(initializeCredits.fulfilled, (state, action) => {
-        // Only update credits if we don't already have user-based credits
-        if (state.credits === 0 || action.payload > state.credits) {
-          state.credits = action.payload;
-        }
+        state.credits = action.payload;
         state.isLoading = false;
         state.lastFetched = Date.now();
       })
       .addCase(initializeCredits.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-      })
-      .addCase(updateUserCredits.fulfilled, (state, action) => {
-        state.credits = action.payload;
-        state.lastFetched = Date.now();
       });
   },
 });
 
-export const { resetCredits } = creditsSlice.actions;
+export const { resetCredits, setRehydrationComplete } = creditsSlice.actions;
 
 export const selectCredits = (state: RootState) => state.credits.credits;
 export const selectCreditsLoading = (state: RootState) => state.credits.isLoading;
 export const selectCreditsError = (state: RootState) => state.credits.error;
 export const selectLastFetched = (state: RootState) => state.credits.lastFetched;
+export const selectRehydrationComplete = (state: RootState) => state.credits.rehydrationComplete;
 
 export default creditsSlice.reducer;

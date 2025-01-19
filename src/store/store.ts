@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
-import creditsReducer, { initializeCredits } from './slices/creditsSlice';
+import creditsReducer, { initializeCredits, setRehydrationComplete } from './slices/creditsSlice';
 import authReducer from './slices/authSlice';
 
 const persistConfig = {
@@ -32,6 +32,9 @@ export const store = configureStore({
 export const persistor = persistStore(store, {}, () => {
   const state = store.getState();
   const userId = state.auth.userId;
+
+  console.log("[store] Rehydration complete");
+  store.dispatch(setRehydrationComplete());
 
   if (userId) {
     console.log("[store] User ID found after rehydration:", userId);

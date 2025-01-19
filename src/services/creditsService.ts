@@ -9,6 +9,12 @@ export const setSkipIpOperations = (userId: string | null | undefined) => {
 };
 
 export const getIpAddress = async (): Promise<string> => {
+  // Block IP-based operations if user is authenticated
+  if (shouldSkipIpOperations) {
+    console.log('[creditsService] Blocking IP fetch - user is authenticated');
+    throw new Error('IP operations blocked - user is authenticated');
+  }
+
   try {
     const response = await fetch('https://api.ipify.org?format=json');
     if (!response.ok) throw new Error('Failed to fetch IP address');
