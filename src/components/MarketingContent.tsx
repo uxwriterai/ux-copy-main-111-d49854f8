@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ArrowUp, Upload, Settings2, Target, BarChart, Clock, Users, Lightbulb, CheckCircle, Upload as UploadIcon, Sliders, Goal, Zap, Users as UsersIcon, Code, MessageSquare } from "lucide-react";
@@ -8,7 +9,20 @@ export const MarketingContent = () => {
   };
 
   return (
-    <div className="space-y-12 py-12">
+    <>
+      <Helmet>
+        <title>AI UX Copy Enhancer — Optimize Your Interface Text</title>
+        <meta name="description" content="Transform your UX writing with AI-powered suggestions. Get instant improvements for buttons, forms, and interface text. Perfect for designers, developers, and marketers." />
+        <meta name="keywords" content="UX writing, AI copywriting, interface text, UX copy optimization, microcopy generator" />
+        <meta property="og:title" content="AI UX Copy Enhancer — Optimize Your Interface Text" />
+        <meta property="og:description" content="Transform your UX writing with AI-powered suggestions. Get instant improvements for buttons, forms, and interface text." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="AI UX Copy Enhancer — Optimize Your Interface Text" />
+        <meta name="twitter:description" content="Transform your UX writing with AI-powered suggestions. Perfect for designers, developers, and marketers." />
+      </Helmet>
+
+      <div className="space-y-12 py-12">
       {/* Introduction */}
       <section className="text-center max-w-3xl mx-auto">
         <p className="text-lg text-muted-foreground">
@@ -189,6 +203,7 @@ export const MarketingContent = () => {
           <ArrowUp className="ml-2 h-4 w-4" />
         </Button>
       </section>
-    </div>
+      </div>
+    </>
   );
 };
