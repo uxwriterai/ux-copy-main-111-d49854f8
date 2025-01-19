@@ -25,12 +25,14 @@ export const ABTestingContent = () => {
 
       <div className="space-y-12 py-12">
         {/* Main Title and Subtitle */}
-        <h1 className="text-4xl font-bold tracking-tight mb-4 text-center">
-          A/B Testing Copy Generator
-        </h1>
-        <p className="text-xl text-muted-foreground text-center">
-          Test and refine your UI text variations with confidence
-        </p>
+        <div className="text-center max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold tracking-tight mb-4">
+            A/B Testing Copy Generator
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Test and refine your UI text variations with confidence
+          </p>
+        </div>
 
         {/* Introduction */}
         <section className="text-center max-w-3xl mx-auto">
