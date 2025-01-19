@@ -16,10 +16,12 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action: PayloadAction<string | null>) => {
+      console.log('[authSlice] Setting user:', action.payload);
       state.userId = action.payload;
       state.isAuthenticated = !!action.payload;
     },
     clearUser: (state) => {
+      console.log('[authSlice] Clearing user');
       state.userId = null;
       state.isAuthenticated = false;
     },
@@ -28,7 +30,6 @@ const authSlice = createSlice({
 
 export const { setUser, clearUser } = authSlice.actions;
 
-// Selectors
 export const selectUserId = (state: RootState) => state.auth.userId;
 export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
 

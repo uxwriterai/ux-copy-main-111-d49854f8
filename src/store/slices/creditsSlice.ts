@@ -17,7 +17,6 @@ const initialState: CreditsState = {
   lastFetched: null,
 };
 
-// Async thunk for fetching credits based on authentication status
 export const initializeCredits = createAsyncThunk(
   'credits/initializeCredits',
   async (_, { getState, rejectWithValue }) => {
@@ -25,7 +24,6 @@ export const initializeCredits = createAsyncThunk(
     const lastFetched = state.credits.lastFetched;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-    // If credits were fetched recently, use cached value
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
       console.log('[creditsSlice] Using cached credits, last fetched:', new Date(lastFetched).toISOString());
       return state.credits.credits;
@@ -70,12 +68,11 @@ export const initializeCredits = createAsyncThunk(
   }
 );
 
-// Async thunk for fetching credits
 export const fetchUserCredits = createAsyncThunk(
   'credits/fetchUserCredits',
   async (userId: string | undefined, { rejectWithValue }) => {
     try {
-      console.log('Fetching credits for user:', userId);
+      console.log('[creditsSlice] Fetching credits for user:', userId);
       
       if (userId) {
         const { data, error } = await supabase
@@ -86,24 +83,23 @@ export const fetchUserCredits = createAsyncThunk(
 
         if (error) throw error;
         
-        console.log('Fetched user credits:', data);
-        return data?.credits_remaining ?? 6; // Default credits for new users
+        console.log('[creditsSlice] Fetched user credits:', data);
+        return data?.credits_remaining ?? 6;
       }
       
-      return 2; // Default credits for anonymous users
+      return 2;
     } catch (error) {
-      console.error('Error fetching credits:', error);
+      console.error('[creditsSlice] Error fetching credits:', error);
       return rejectWithValue('Failed to fetch credits');
     }
   }
 );
 
-// Async thunk for updating credits
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
   async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
     try {
-      console.log('Updating credits:', { userId, credits });
+      console.log('[creditsSlice] Updating credits:', { userId, credits });
       
       if (userId) {
         const { error } = await supabase
@@ -115,7 +111,7 @@ export const updateUserCredits = createAsyncThunk(
       
       return credits;
     } catch (error) {
-      console.error('Error updating credits:', error);
+      console.error('[creditsSlice] Error updating credits:', error);
       return rejectWithValue('Failed to update credits');
     }
   }
@@ -167,7 +163,6 @@ const creditsSlice = createSlice({
 
 export const { resetCredits } = creditsSlice.actions;
 
-// Selectors
 export const selectCredits = (state: RootState) => state.credits.credits;
 export const selectCreditsLoading = (state: RootState) => state.credits.isLoading;
 export const selectCreditsError = (state: RootState) => state.credits.error;
