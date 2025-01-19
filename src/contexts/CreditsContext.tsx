@@ -26,9 +26,13 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
       console.log("[CreditsContext] Initial credits fetch");
-      fetchCredits();
+      const initializeCredits = async () => {
+        await fetchCredits();
+        setInitialized(true);
+      };
+      initializeCredits();
     }
-  }, [isSessionLoading, initialized, fetchCredits]);
+  }, [isSessionLoading, initialized, fetchCredits, setInitialized]);
 
   // Handle auth state changes
   useEffect(() => {
@@ -43,6 +47,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && newSession?.user) {
         console.log("[CreditsContext] User signed in or initial session, fetching credits");
         setIsLoading(true);
+        setInitialized(false);
         
         try {
           console.log("[CreditsContext] Fetching user credits");
@@ -51,6 +56,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           console.error("[CreditsContext] Error fetching user credits:", error);
         } finally {
           setIsLoading(false);
+          setInitialized(true);
         }
       }
       
@@ -67,6 +73,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           console.error("[CreditsContext] Error fetching IP-based credits:", error);
         } finally {
           setIsLoading(false);
+          setInitialized(true);
         }
       }
     });
@@ -83,7 +90,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, [fetchCredits, setCredits, setInitialized, setIsLoading]); 
+  }, [fetchCredits, setCredits, setInitialized, setIsLoading]);
 
   const value = {
     credits: credits ?? 0,
