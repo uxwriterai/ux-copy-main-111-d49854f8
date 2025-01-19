@@ -24,6 +24,7 @@ export const useCreditsManagement = (session: Session | null) => {
       
       if (fetchedCredits === null) {
         console.log("[useCreditsManagement] No credits record found, creating default");
+        // Only create default credits if we have a user ID or if it's an anonymous user
         const defaultCredits = session?.user?.id ? 6 : 2;
         await updateCredits(defaultCredits, session?.user?.id);
         setCredits(defaultCredits);

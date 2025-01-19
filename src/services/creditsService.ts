@@ -17,6 +17,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
   try {
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
+    // If there's a userId, we ONLY fetch user credits, never IP-based credits
     if (userId) {
       const { data, error } = await supabase
         .from('user_credits')
@@ -33,7 +34,9 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
       
       console.log('User-based credits data:', data);
       return data?.credits_remaining ?? null;
-    } else {
+    } 
+    // Only fetch IP-based credits for anonymous users
+    else {
       const ipAddress = await getIpAddress();
       console.log('Fetching credits for IP:', ipAddress);
       
