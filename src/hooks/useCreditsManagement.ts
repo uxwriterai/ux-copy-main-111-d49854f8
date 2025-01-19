@@ -8,7 +8,7 @@ export const useCreditsManagement = (session: Session | null) => {
   const [initialized, setInitialized] = useState(false);
   const fetchInProgress = useRef(false);
 
-  const fetchCredits = useCallback(async () => {
+  const fetchCredits = useCallback(async (forceUserCredits?: boolean) => {
     if (fetchInProgress.current) {
       console.log("[useCreditsManagement] Fetch already in progress, skipping");
       return;
@@ -17,15 +17,18 @@ export const useCreditsManagement = (session: Session | null) => {
     try {
       fetchInProgress.current = true;
       setIsLoading(true);
-      console.log('[useCreditsManagement] Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
       
-      const fetchedCredits = await fetchUserCredits(session?.user?.id);
+      // If forceUserCredits is true, always use user credits
+      const userId = forceUserCredits ? session?.user?.id : undefined;
+      console.log('[useCreditsManagement] Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
+      
+      const fetchedCredits = await fetchUserCredits(userId);
       console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);
       
       if (fetchedCredits === null) {
         console.log("[useCreditsManagement] No credits record found, creating default");
-        const defaultCredits = session?.user?.id ? 6 : 2;
-        await updateCredits(defaultCredits, session?.user?.id);
+        const defaultCredits = userId ? 6 : 2;
+        await updateCredits(defaultCredits, userId);
         setCredits(defaultCredits);
       } else {
         setCredits(fetchedCredits);
