@@ -9,9 +9,18 @@ import {
 import { SidebarMenuList } from "./sidebar/SidebarMenuList"
 import { SidebarFooterButtons } from "./sidebar/SidebarFooterButtons"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useEffect } from "react"
+import { useAppDispatch } from "@/store/hooks"
+import { initializeCredits } from "@/store/slices/creditsSlice"
 
 export function AppSidebar() {
   const isMobile = useIsMobile()
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    console.log('[AppSidebar] Initializing credits on mount')
+    dispatch(initializeCredits())
+  }, [dispatch])
 
   return (
     <>
