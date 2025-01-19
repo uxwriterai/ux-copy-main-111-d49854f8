@@ -63,6 +63,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setInitialized(false);
         setCredits(null);
         
+        // Ensure we fetch IP-based credits after sign out
         setTimeout(async () => {
           try {
             console.log("[CreditsContext] Fetching IP-based credits after sign out");
@@ -88,7 +89,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, []); 
+  }, []); // Empty dependency array since we use refs to prevent multiple setups
 
   const value = {
     credits: credits ?? 0,
