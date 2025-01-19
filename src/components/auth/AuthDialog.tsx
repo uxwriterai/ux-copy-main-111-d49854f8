@@ -29,12 +29,16 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_UP') {
         onOpenChange(false)
-        setShowConfetti(true)
-        setTimeout(() => {
-          setShowWelcome(true)
-        }, 1000)
+        
+        // Only show confetti and welcome dialog for new sign ups
+        if (event === 'SIGNED_UP') {
+          setShowConfetti(true)
+          setTimeout(() => {
+            setShowWelcome(true)
+          }, 1000)
+        }
       }
     })
 
