@@ -25,10 +25,17 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   // Single useEffect for initialization
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
-      console.log("[CreditsContext] Initial credits fetch");
-      fetchCredits();
+      // If we have a session, we should only fetch user credits
+      if (session?.user) {
+        console.log("[CreditsContext] Initial credits fetch for logged-in user");
+        fetchCredits();
+      } else {
+        // Only fetch IP-based credits if there's no session
+        console.log("[CreditsContext] Initial credits fetch for anonymous user");
+        fetchCredits();
+      }
     }
-  }, [isSessionLoading, initialized, fetchCredits]);
+  }, [isSessionLoading, initialized, fetchCredits, session?.user]);
 
   // Separate useEffect for auth state changes
   useEffect(() => {
@@ -41,13 +48,12 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       console.log("[CreditsContext] Auth state changed:", event);
       
       if (event === 'SIGNED_IN' && newSession?.user) {
-        console.log("[CreditsContext] User signed in, fetching credits");
+        console.log("[CreditsContext] User signed in, fetching user credits");
         setIsLoading(true);
         setInitialized(false);
         
         setTimeout(async () => {
           try {
-            console.log("[CreditsContext] Fetching user credits after sign in");
             await fetchCredits();
           } catch (error) {
             console.error("[CreditsContext] Error fetching user credits:", error);
@@ -66,7 +72,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         // Ensure we fetch IP-based credits after sign out
         setTimeout(async () => {
           try {
-            console.log("[CreditsContext] Fetching IP-based credits after sign out");
             await fetchCredits();
           } catch (error) {
             console.error("[CreditsContext] Error fetching IP-based credits:", error);
@@ -89,7 +94,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, []); // Empty dependency array since we use refs to prevent multiple setups
+  }, []); 
 
   const value = {
     credits: credits ?? 0,
