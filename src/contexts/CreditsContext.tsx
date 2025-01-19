@@ -20,7 +20,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     fetchCredits
   } = useCreditsManagement(session);
 
-  // Single useEffect for initialization and session changes
   useEffect(() => {
     console.log("Session or initialization state changed");
     console.log("Session state:", session?.user?.id ? "logged in" : "not logged in");
@@ -33,7 +32,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     }
   }, [session?.user?.id, isSessionLoading, initialized, fetchCredits]);
 
-  // Separate useEffect for auth state changes
   useEffect(() => {
     console.log("Setting up auth state change listener");
     
@@ -42,7 +40,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits state");
         setIsLoading(true);
-        setInitialized(false); // Reset initialized state
+        setInitialized(false);
         setCredits(null);
         
         try {
@@ -65,7 +63,8 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     setCredits,
     useCredit,
     resetCredits,
-    isLoading
+    isLoading,
+    setIsLoading
   };
 
   return (
