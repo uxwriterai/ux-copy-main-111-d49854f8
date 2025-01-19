@@ -39,10 +39,11 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       console.log("Auth state changed:", event);
+      
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits state");
         setIsLoading(true);
-        setInitialized(false); // Reset initialized state
+        setInitialized(false);
         setCredits(null);
         
         try {
@@ -51,6 +52,14 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         } catch (error) {
           console.error("Error fetching IP-based credits:", error);
         }
+      }
+      
+      // Force refresh credits on sign up
+      if (event === 'SIGNED_IN') {
+        console.log("User signed in, forcing credits refresh");
+        setIsLoading(true);
+        setInitialized(false);
+        await fetchCredits();
       }
     });
 
