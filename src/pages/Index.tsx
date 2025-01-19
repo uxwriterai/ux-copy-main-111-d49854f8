@@ -172,7 +172,7 @@ const Index = () => {
               {audiences.map((audience, index) => (
                 <Card 
                   key={index}
-                  className="group hover:shadow-lg transition-all duration-300 hover:bg-primary/5 cursor-default"
+                  className="group hover:bg-primary/5 cursor-default border-0 shadow-none"
                 >
                   <CardHeader>
                     <div className="flex flex-col items-center text-center gap-4">
