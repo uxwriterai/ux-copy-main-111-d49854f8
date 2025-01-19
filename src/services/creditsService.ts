@@ -52,6 +52,12 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
       return data?.credits_remaining ?? null;
     }
 
+    // Skip IP-based operations if a user is logged in (page refresh scenario)
+    if (shouldSkipIpOperations) {
+      console.log('[creditsService] Skipping IP-based credits fetch - user is logged in');
+      return null;
+    }
+
     // Only execute this block for anonymous users
     console.log('Anonymous user, proceeding with IP-based credits');
     const ipAddress = await getIpAddress();
@@ -123,6 +129,12 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
       }
       
       console.log('Successfully updated credits for user:', userId);
+      return;
+    }
+
+    // Skip IP-based operations if a user is logged in (page refresh scenario)
+    if (shouldSkipIpOperations) {
+      console.log('[creditsService] Skipping IP-based credits update - user is logged in');
       return;
     }
     
