@@ -24,11 +24,22 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   // Single useEffect for initialization and session changes
   useEffect(() => {
-    if (!isSessionLoading && !initialized && session?.user?.id) {
-      console.log("[CreditsContext] Initial credits fetch for authenticated user");
-      fetchCredits();
-    }
-  }, [isSessionLoading, initialized, session?.user?.id, fetchCredits]);
+    const initializeCredits = async () => {
+      if (!isSessionLoading && !initialized && session?.user?.id) {
+        console.log("[CreditsContext] Initial credits fetch for authenticated user");
+        try {
+          setIsLoading(true);
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error in initial credits fetch:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initializeCredits();
+  }, [isSessionLoading, initialized, session?.user?.id, fetchCredits, setIsLoading]);
 
   // Separate useEffect for auth state changes
   useEffect(() => {
@@ -42,10 +53,15 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       
       if (event === 'SIGNED_IN' && newSession?.user) {
         console.log("[CreditsContext] User signed in, fetching credits");
-        setIsLoading(true);
-        setInitialized(false);
-        await fetchCredits();
-        setIsLoading(false);
+        try {
+          setIsLoading(true);
+          setInitialized(false);
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error fetching credits on sign in:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
       
       if (event === 'SIGNED_OUT') {
@@ -69,7 +85,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, []); // Empty dependency array since we use refs to prevent multiple setups
+  }, [fetchCredits, setCredits, setInitialized, setIsLoading]); 
 
   const value = {
     credits: credits ?? 0,
