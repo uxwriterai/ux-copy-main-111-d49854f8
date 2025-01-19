@@ -287,9 +287,9 @@ const Index = () => {
       <div className="min-h-screen bg-background transition-colors duration-300">
         <div className="container max-w-6xl py-8">
           <div className="text-left mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Improve Your UX Copy Instantly</h1>
+            <h1 className="text-3xl font-bold tracking-tight">UX Copy Improver</h1>
             <p className="text-lg text-muted-foreground mt-2">
-              Let AI help you refine your words for better user experiences
+              Transform your UI text with AI-powered suggestions
             </p>
             <p className="text-sm text-muted-foreground mt-2">
               {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
