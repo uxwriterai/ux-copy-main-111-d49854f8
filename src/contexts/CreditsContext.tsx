@@ -23,7 +23,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     fetchCredits
   } = useCreditsManagement(session);
 
-  // Single useEffect for initialization
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
       console.log("[CreditsContext] Initial credits fetch");
@@ -31,7 +30,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     }
   }, [isSessionLoading, initialized, fetchCredits]);
 
-  // Separate useEffect for auth state changes
   useEffect(() => {
     if (authListenerSet.current || cleanupRef.current) return;
     
@@ -64,7 +62,6 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setInitialized(false);
         dispatch(setCredits(null));
         
-        // Ensure we fetch IP-based credits after sign out
         setTimeout(async () => {
           try {
             console.log("[CreditsContext] Fetching IP-based credits after sign out");
@@ -90,7 +87,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, [dispatch]); // Added dispatch to dependencies
+  }, [dispatch, fetchCredits]);
 
   const value = {
     credits: credits ?? 0,

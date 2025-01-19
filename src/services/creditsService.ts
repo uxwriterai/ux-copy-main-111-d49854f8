@@ -2,11 +2,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const getIpAddress = async (): Promise<string> => {
   try {
-    const response = await fetch('https://api.ipify.org?format=json');
+    // Using a CORS-friendly endpoint
+    const response = await fetch('https://api.ipify.org', {
+      headers: {
+        'Accept': 'text/plain'
+      }
+    });
     if (!response.ok) throw new Error('Failed to fetch IP address');
-    const data = await response.json();
-    console.log('Fetched IP address:', data.ip);
-    return data.ip;
+    const ip = await response.text();
+    console.log('Fetched IP address:', ip);
+    return ip;
   } catch (error) {
     console.error("Error fetching IP address:", error);
     throw error;
