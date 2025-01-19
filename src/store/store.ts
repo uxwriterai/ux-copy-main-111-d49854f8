@@ -31,11 +31,15 @@ export const store = configureStore({
 
 export const persistor = persistStore(store, {}, () => {
   const state = store.getState();
-  if (state.auth.userId) {
-    console.log("[store] User ID found after rehydration. Fetching user-based credits...");
+  const userId = state.auth.userId;
+
+  if (userId) {
+    console.log("[store] User ID found after rehydration:", userId);
+    console.log("[store] Fetching user-based credits...");
     store.dispatch(initializeCredits());
   } else {
-    console.log("[store] No user ID found after rehydration. Fetching IP-based credits...");
+    console.log("[store] No user ID found after rehydration");
+    console.log("[store] Fetching IP-based credits...");
     store.dispatch(initializeCredits());
   }
 });
