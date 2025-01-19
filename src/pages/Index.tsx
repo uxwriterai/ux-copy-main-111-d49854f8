@@ -131,7 +131,7 @@ const Index = () => {
             href="https://in.linkedin.com/in/shaiii" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="inline-flex mb-8 px-4 py-1 rounded-full text-sm bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-[length:200%_100%] animate-[shimmer_3s_linear_infinite] text-white hover:opacity-90 transition-opacity"
+            className="inline-flex mb-8 px-4 py-1 rounded-full text-sm relative border border-transparent bg-gradient-to-r from-blue-600/80 via-blue-500/80 to-blue-400/80 bg-[length:200%_100%] animate-shimmer text-white hover:opacity-90 transition-all animate-borderFlow backdrop-blur-sm"
           >
             Made by Shai
           </a>
