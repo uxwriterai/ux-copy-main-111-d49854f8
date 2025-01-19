@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef } from "react";
 import { Session } from "@supabase/supabase-js";
-import { fetchUserCredits, updateCredits, clearCreditsFromStorage, getCreditsFromStorage } from "@/services/creditsService";
+import { fetchUserCredits, updateCredits } from "@/services/creditsService";
 
 export const useCreditsManagement = (session: Session | null) => {
-  const [credits, setCredits] = useState<number | null>(() => getCreditsFromStorage());
+  const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const fetchInProgress = useRef(false);
@@ -11,12 +11,6 @@ export const useCreditsManagement = (session: Session | null) => {
   const fetchCredits = useCallback(async () => {
     if (fetchInProgress.current) {
       console.log("[useCreditsManagement] Fetch already in progress, skipping");
-      return;
-    }
-
-    // Check if credits are already in state
-    if (credits !== null && initialized) {
-      console.log("[useCreditsManagement] Credits already loaded:", credits);
       return;
     }
 
@@ -45,7 +39,7 @@ export const useCreditsManagement = (session: Session | null) => {
       setIsLoading(false);
       fetchInProgress.current = false;
     }
-  }, [session?.user?.id, credits, initialized]);
+  }, [session?.user?.id]);
 
   const useCredit = async (): Promise<boolean> => {
     if (!initialized) {
@@ -71,9 +65,7 @@ export const useCreditsManagement = (session: Session | null) => {
 
   const resetCredits = async () => {
     console.log('[useCreditsManagement] Resetting credits');
-    clearCreditsFromStorage();
     setInitialized(false);
-    setCredits(null);
     await fetchCredits();
   };
 
