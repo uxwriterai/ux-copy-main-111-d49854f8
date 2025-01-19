@@ -9,7 +9,6 @@ const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 export const CreditsProvider = ({ children }: { children: React.ReactNode }) => {
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const authListenerSet = useRef(false);
-  const cleanupRef = useRef<(() => void) | null>(null);
   const {
     credits,
     setCredits,
@@ -22,17 +21,21 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     fetchCredits
   } = useCreditsManagement(session);
 
-  // Single useEffect for initialization
+  // Initial credits fetch
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
-      console.log("[CreditsContext] Initial credits fetch");
-      fetchCredits();
+      console.log("[CreditsContext] Initial credits fetch starting");
+      setIsLoading(true);
+      fetchCredits().finally(() => {
+        setIsLoading(false);
+        setInitialized(true);
+      });
     }
-  }, [isSessionLoading, initialized, fetchCredits]);
+  }, [isSessionLoading, initialized, fetchCredits, setIsLoading, setInitialized]);
 
-  // Separate useEffect for auth state changes
+  // Auth state changes
   useEffect(() => {
-    if (authListenerSet.current || cleanupRef.current) return;
+    if (authListenerSet.current) return;
     
     console.log("[CreditsContext] Setting up auth state listener");
     authListenerSet.current = true;
@@ -45,16 +48,14 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setIsLoading(true);
         setInitialized(false);
         
-        setTimeout(async () => {
-          try {
-            console.log("[CreditsContext] Fetching user credits after sign in");
-            await fetchCredits();
-          } catch (error) {
-            console.error("[CreditsContext] Error fetching user credits:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        }, 0);
+        try {
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error fetching user credits:", error);
+        } finally {
+          setIsLoading(false);
+          setInitialized(true);
+        }
       }
       
       if (event === 'SIGNED_OUT') {
@@ -63,40 +64,30 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setInitialized(false);
         setCredits(null);
         
-        // Ensure we fetch IP-based credits after sign out
-        setTimeout(async () => {
-          try {
-            console.log("[CreditsContext] Fetching IP-based credits after sign out");
-            await fetchCredits();
-          } catch (error) {
-            console.error("[CreditsContext] Error fetching IP-based credits:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        }, 0);
+        try {
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error fetching IP-based credits:", error);
+        } finally {
+          setIsLoading(false);
+          setInitialized(true);
+        }
       }
     });
 
-    cleanupRef.current = () => {
+    return () => {
       console.log("[CreditsContext] Cleaning up auth state listener");
       subscription.unsubscribe();
       authListenerSet.current = false;
-      cleanupRef.current = null;
     };
-
-    return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-      }
-    };
-  }, []); // Empty dependency array since we use refs to prevent multiple setups
+  }, [fetchCredits, setCredits, setInitialized, setIsLoading]); 
 
   const value = {
     credits: credits ?? 0,
     setCredits,
     useCredit,
     resetCredits,
-    isLoading
+    isLoading: isLoading || isSessionLoading
   };
 
   return (
