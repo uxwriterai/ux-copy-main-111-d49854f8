@@ -114,7 +114,7 @@ const Index = () => {
   const navigate = useNavigate()
 
   return (
-    <>
+    <div className="w-full">
       <Helmet>
         <title>UX Writing AI Tools — Free Copy Generators for UX Writers</title>
         <meta name="description" content="Discover the ultimate suite of UX writing AI tools to improve copy, create microcopy, optimize A/B tests, and design landing pages. 100% free, no email required." />
@@ -125,87 +125,98 @@ const Index = () => {
         <link rel="canonical" href="/" />
       </Helmet>
 
-      <div className="w-full py-12 flex flex-col items-center">
-        <div className="text-center mb-12 max-w-2xl px-4">
-          <h1 className="text-4xl font-bold mb-4">The Ultimate Free Tools for UX Writing</h1>
-          <p className="text-lg text-muted-foreground">
-            A collection of AI-powered tools to help you write better UX copy
-          </p>
-        </div>
+      <div className="w-full flex flex-col">
+        <a 
+          href="https://www.designfolio.me/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 bg-[length:200%_100%] animate-[shimmer_3s_linear_infinite] text-white text-center py-2 text-sm font-manrope hover:opacity-90 transition-opacity cursor-pointer"
+        >
+          From the makers of Designfolio - Build your Portfolio Website Now
+        </a>
 
-        <div className="w-full px-4 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-            {tools.map((tool) => (
-              <Card 
-                key={tool.route} 
-                className="group hover:shadow-lg transition-all duration-300 w-full max-w-sm hover:scale-105 cursor-pointer animate-tilt"
-                onClick={() => navigate(tool.route)}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      <tool.icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">{tool.title}</CardTitle>
-                      <CardDescription className="mt-2">
-                        {tool.description}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant="outline"
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors"
-                  >
-                    Open Tool
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+        <div className="py-12 flex flex-col items-center">
+          <div className="text-center mb-12 max-w-2xl px-4">
+            <h1 className="text-4xl font-bold mb-4">The Ultimate Free Tools for UX Writing</h1>
+            <p className="text-lg text-muted-foreground">
+              A collection of AI-powered tools to help you write better UX copy
+            </p>
           </div>
 
-          <div className="mt-24 mb-24">
-            <h2 className="text-3xl font-bold text-center mb-12">Who Are These Tools For?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {audiences.map((audience, index) => (
+          <div className="w-full px-4 max-w-7xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+              {tools.map((tool) => (
                 <Card 
-                  key={index}
-                  className="group hover:bg-primary/5 cursor-default border-0 shadow-none"
+                  key={tool.route} 
+                  className="group hover:shadow-lg transition-all duration-300 w-full max-w-sm hover:scale-105 cursor-pointer animate-tilt"
+                  onClick={() => navigate(tool.route)}
                 >
                   <CardHeader>
-                    <div className="flex flex-col items-center text-center gap-4">
-                      <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <audience.icon className="w-6 h-6" />
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <tool.icon className="w-6 h-6" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl mb-2">{audience.title}</CardTitle>
-                        <CardDescription>
-                          {audience.description}
+                        <CardTitle className="text-xl">{tool.title}</CardTitle>
+                        <CardDescription className="mt-2">
+                          {tool.description}
                         </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
+                  <CardContent>
+                    <Button 
+                      variant="outline"
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors"
+                    >
+                      Open Tool
+                    </Button>
+                  </CardContent>
                 </Card>
               ))}
             </div>
-          </div>
 
-          <div className="mt-24 max-w-3xl mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-8">FAQs About Our UX Writing Tools</h2>
-            <Accordion type="single" collapsible className="w-full">
-              {faqs.map((faq, index) => (
-                <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
-                  <AccordionContent>{faq.answer}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+            <div className="mt-24 mb-24">
+              <h2 className="text-3xl font-bold text-center mb-12">Who Are These Tools For?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {audiences.map((audience, index) => (
+                  <Card 
+                    key={index}
+                    className="group hover:bg-primary/5 cursor-default border-0 shadow-none"
+                  >
+                    <CardHeader>
+                      <div className="flex flex-col items-center text-center gap-4">
+                        <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                          <audience.icon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl mb-2">{audience.title}</CardTitle>
+                          <CardDescription>
+                            {audience.description}
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-24 max-w-3xl mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-8">FAQs About Our UX Writing Tools</h2>
+              <Accordion type="single" collapsible className="w-full">
+                {faqs.map((faq, index) => (
+                  <AccordionItem key={index} value={`item-${index}`}>
+                    <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
+                    <AccordionContent>{faq.answer}</AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
