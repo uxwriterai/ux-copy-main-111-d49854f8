@@ -28,8 +28,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
 
   useEffect(() => {
+    console.log("Setting up auth state change listener")
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      console.log("Auth event:", event) // Add logging to help debug
+      console.log("Auth event:", event)
       
       if (event === 'SIGNED_IN') {
         onOpenChange(false)
@@ -46,9 +48,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     })
 
     return () => {
+      console.log("Cleaning up auth state listener")
       subscription.unsubscribe()
     }
-  }, [onOpenChange])
+  }, [onOpenChange]) // Add onOpenChange as dependency
 
   const getAuthContent = () => {
     switch (view) {
