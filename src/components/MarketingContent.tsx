@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ArrowUp, Upload, Settings2, Target, BarChart, Clock, Users, Lightbulb, CheckCircle, Upload as UploadIcon, Sliders, Goal, Zap, Users as UsersIcon, Code, MessageSquare } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 
 export const MarketingContent = () => {
   const scrollToTop = () => {
@@ -23,14 +24,23 @@ export const MarketingContent = () => {
       </Helmet>
 
       <div className="space-y-12 py-12">
-      {/* Introduction */}
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="text-lg text-muted-foreground">
-          In today's fast-paced digital world, crafting user experiences that captivate and guide users seamlessly is more important than ever. Introducing the AI UX Copywriting Tool – your ultimate solution for refining user interface text with precision, speed, and creativity. This AI-driven platform empowers designers, developers, and marketers to create user-friendly, impactful, and goal-oriented UX content effortlessly.
-        </p>
-      </section>
+        {/* Main Title and Subtitle */}
+        <div className="text-center max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold tracking-tight mb-4">
+            AI UX Copy Enhancer
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Transform your interface text with AI-powered suggestions
+          </p>
+        </div>
 
-      {/* Why Choose Us */}
+        {/* Introduction */}
+        <section className="text-center max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground">
+            In today's fast-paced digital world, crafting user experiences that captivate and guide users seamlessly is more important than ever. Introducing the AI UX Copywriting Tool – your ultimate solution for refining user interface text with precision, speed, and creativity. This AI-driven platform empowers designers, developers, and marketers to create user-friendly, impactful, and goal-oriented UX content effortlessly.
+          </p>
+        </section>
+
       <section className="space-y-6">
         <h2 className="text-3xl font-bold text-center">Why Choose Our AI UX Copywriting Tool?</h2>
         <div className="grid md:grid-cols-3 gap-6">
@@ -150,59 +160,62 @@ export const MarketingContent = () => {
         </div>
       </section>
 
-      {/* FAQs */}
-      <section className="space-y-6">
-        <h2 className="text-3xl font-bold text-center">Frequently Asked Questions</h2>
-        <div className="grid gap-4">
-          {[
-            { 
-              question: "What is the AI UX Copywriting Tool?",
-              answer: "It is an AI-powered platform designed to refine and optimize the text used in user interfaces, such as buttons, tooltips, and onboarding screens."
-            },
-            {
-              question: "How does the tool improve UX writing with AI?",
-              answer: "By analyzing your UI screenshot and providing tailored suggestions based on your goals, audience, and desired tone."
-            },
-            {
-              question: "Can I use this tool for different industries?",
-              answer: "Absolutely! Whether you're in e-commerce, SaaS, healthcare, or any other sector, the tool adapts to your unique requirements."
-            },
-            {
-              question: "Is this tool suitable for non-designers?",
-              answer: "Yes, the tool is intuitive and easy to use, making it accessible for marketers, developers, and other professionals."
-            },
-            {
-              question: "Does it support accessibility standards?",
-              answer: "Yes, the tool ensures that your copy is inclusive and accessible to all users."
-            }
-          ].map((faq, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle className="text-lg">{faq.question}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{faq.answer}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+        {/* FAQs */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-center">Frequently Asked Questions</h2>
+          <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
+            <AccordionItem value="item-1">
+              <AccordionTrigger>What is the AI UX Copywriting Tool?</AccordionTrigger>
+              <AccordionContent>
+                It is an AI-powered platform designed to refine and optimize the text used in user interfaces, such as buttons, tooltips, and onboarding screens.
+              </AccordionContent>
+            </AccordionItem>
 
-      {/* Final CTA */}
-      <section className="text-center space-y-6">
-        <h2 className="text-3xl font-bold">Start Optimizing Your UX Text Today</h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Ready to elevate your user experience? Transform how you approach UX writing with the AI UX Copywriting Tool. Start refining your interface text today and watch your conversions soar!
-        </p>
-        <Button 
-          size="lg" 
-          variant="secondary"
-          onClick={scrollToTop}
-        >
-          Analyze Your UI Copy Now
-          <ArrowUp className="ml-2 h-4 w-4" />
-        </Button>
-      </section>
+            <AccordionItem value="item-2">
+              <AccordionTrigger>How does the tool improve UX writing with AI?</AccordionTrigger>
+              <AccordionContent>
+                By analyzing your UI screenshot and providing tailored suggestions based on your goals, audience, and desired tone.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3">
+              <AccordionTrigger>Can I use this tool for different industries?</AccordionTrigger>
+              <AccordionContent>
+                Absolutely! Whether you're in e-commerce, SaaS, healthcare, or any other sector, the tool adapts to your unique requirements.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4">
+              <AccordionTrigger>Is this tool suitable for non-designers?</AccordionTrigger>
+              <AccordionContent>
+                Yes, the tool is intuitive and easy to use, making it accessible for marketers, developers, and other professionals.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5">
+              <AccordionTrigger>Does it support accessibility standards?</AccordionTrigger>
+              <AccordionContent>
+                Yes, the tool ensures that your copy is inclusive and accessible to all users.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </section>
+
+        {/* Final CTA */}
+        <section className="text-center space-y-6">
+          <h2 className="text-3xl font-bold">Start Optimizing Your UX Text Today</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Ready to elevate your user experience? Transform how you approach UX writing with the AI UX Copywriting Tool. Start refining your interface text today and watch your conversions soar!
+          </p>
+          <Button 
+            size="lg" 
+            variant="secondary"
+            onClick={scrollToTop}
+          >
+            Analyze Your UI Copy Now
+            <ArrowUp className="ml-2 h-4 w-4" />
+          </Button>
+        </section>
       </div>
     </>
   );
