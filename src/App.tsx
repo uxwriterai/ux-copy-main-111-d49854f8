@@ -9,7 +9,7 @@ import HeroCopyGenerator from "@/pages/HeroCopyGenerator"
 import LandingPageGenerator from "@/pages/LandingPageGenerator"
 import EmptyStateGenerator from "@/pages/EmptyStateGenerator"
 import CopyImprover from "@/pages/CopyImprover"
-import ABTestingForm from "@/components/ab-testing/ABTestingForm"
+import { ABTestingForm } from "@/components/ab-testing/ABTestingForm"
 
 const queryClient = new QueryClient()
 
