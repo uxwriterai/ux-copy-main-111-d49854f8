@@ -5,6 +5,7 @@ import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { generateHeroCopy } from "@/services/heroService";
 import { toast } from "sonner";
 import { Helmet } from 'react-helmet-async';
+import { HeroCopyContent } from "@/components/HeroCopyContent";
 
 interface HeroCopyVariant {
   headline: string;
@@ -86,6 +87,8 @@ const HeroCopyGenerator = () => {
           </div>
         </div>
       </div>
+      
+      <HeroCopyContent />
     </>
   );
 };
