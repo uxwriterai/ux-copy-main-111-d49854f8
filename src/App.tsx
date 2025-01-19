@@ -10,6 +10,9 @@ import { Routes, Route } from "react-router-dom"
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { store, persistor } from './store/store'
+import { useEffect } from 'react'
+import { useAppDispatch } from './store/hooks'
+import { initializeCredits } from './store/slices/creditsSlice'
 import CopyImprover from "@/pages/CopyImprover"
 import EmptyStateGenerator from "@/pages/EmptyStateGenerator"
 import HeroCopyGenerator from "@/pages/HeroCopyGenerator"
@@ -23,42 +26,55 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 // Create a client
 const queryClient = new QueryClient()
 
+function AppContent() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    console.log('[App] Initializing credits on mount');
+    dispatch(initializeCredits());
+  }, [dispatch]);
+
+  return (
+    <SessionContextProvider supabaseClient={supabase}>
+      <QueryClientProvider client={queryClient}>
+        <CreditsProvider>
+          <ThemeProvider>
+            <SidebarProvider>
+              <Router>
+                <div className="flex min-h-screen w-full">
+                  <AppSidebar />
+                  <main className="flex-1 overflow-y-auto">
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/copy-improver" element={<CopyImprover />} />
+                      <Route path="/generator" element={<Generator />} />
+                      <Route path="/microcopy" element={<MicrocopyGenerator />} />
+                      <Route path="/empty-state" element={<EmptyStateGenerator />} />
+                      <Route path="/hero" element={<HeroCopyGenerator />} />
+                      <Route path="/hero-copy" element={<HeroCopyGenerator />} />
+                      <Route path="/landing-page" element={<LandingPageGenerator />} />
+                      <Route path="/settings" element={<Settings />} />
+                    </Routes>
+                  </main>
+                </div>
+                <Toaster />
+              </Router>
+            </SidebarProvider>
+          </ThemeProvider>
+        </CreditsProvider>
+      </QueryClientProvider>
+    </SessionContextProvider>
+  );
+}
+
 function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <SessionContextProvider supabaseClient={supabase}>
-          <QueryClientProvider client={queryClient}>
-            <CreditsProvider>
-              <ThemeProvider>
-                <SidebarProvider>
-                  <Router>
-                    <div className="flex min-h-screen w-full">
-                      <AppSidebar />
-                      <main className="flex-1 overflow-y-auto">
-                        <Routes>
-                          <Route path="/" element={<Index />} />
-                          <Route path="/copy-improver" element={<CopyImprover />} />
-                          <Route path="/generator" element={<Generator />} />
-                          <Route path="/microcopy" element={<MicrocopyGenerator />} />
-                          <Route path="/empty-state" element={<EmptyStateGenerator />} />
-                          <Route path="/hero" element={<HeroCopyGenerator />} />
-                          <Route path="/hero-copy" element={<HeroCopyGenerator />} />
-                          <Route path="/landing-page" element={<LandingPageGenerator />} />
-                          <Route path="/settings" element={<Settings />} />
-                        </Routes>
-                      </main>
-                    </div>
-                    <Toaster />
-                  </Router>
-                </SidebarProvider>
-              </ThemeProvider>
-            </CreditsProvider>
-          </QueryClientProvider>
-        </SessionContextProvider>
+        <AppContent />
       </PersistGate>
     </Provider>
-  )
+  );
 }
 
 export default App

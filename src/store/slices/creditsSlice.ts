@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '@/integrations/supabase/client';
+import { getIpAddress } from '@/services/creditsService';
 import type { RootState } from '../store';
 
 interface CreditsState {
@@ -15,6 +16,49 @@ const initialState: CreditsState = {
   error: null,
   lastFetched: null,
 };
+
+// Async thunk for fetching credits based on authentication status
+export const initializeCredits = createAsyncThunk(
+  'credits/initializeCredits',
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log('[creditsSlice] Initializing credits');
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (userId) {
+        console.log('[creditsSlice] Fetching user-based credits for:', userId);
+        const { data, error } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .eq('user_id', userId)
+          .single();
+
+        if (error) throw error;
+        console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
+        return data?.credits_remaining ?? 6;
+      } else {
+        console.log('[creditsSlice] Fetching IP-based credits');
+        const ipAddress = await getIpAddress();
+        const { data, error } = await supabase
+          .from('user_credits')
+          .select('credits_remaining')
+          .eq('ip_address', ipAddress)
+          .is('user_id', null)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+        console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
+        return data?.credits_remaining ?? 2;
+      }
+    } catch (error) {
+      console.error('[creditsSlice] Error initializing credits:', error);
+      return rejectWithValue('Failed to initialize credits');
+    }
+  }
+);
 
 // Async thunk for fetching credits
 export const fetchUserCredits = createAsyncThunk(
@@ -78,6 +122,19 @@ const creditsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(initializeCredits.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(initializeCredits.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.credits = action.payload;
+        state.lastFetched = Date.now();
+      })
+      .addCase(initializeCredits.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
       .addCase(fetchUserCredits.pending, (state) => {
         state.isLoading = true;
         state.error = null;
