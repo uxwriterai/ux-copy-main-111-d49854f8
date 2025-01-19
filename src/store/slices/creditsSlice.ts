@@ -48,11 +48,23 @@ export const initializeCredits = createAsyncThunk(
           .from('user_credits')
           .select('credits_remaining')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
-        console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
-        return data?.credits_remaining ?? 6;
+        
+        // If no user credits found, initialize with default
+        if (!data) {
+          console.log('[creditsSlice] No user credits found, initializing with default');
+          const { error: updateError } = await supabase
+            .from('user_credits')
+            .insert([{ user_id: userId, credits_remaining: 6 }]);
+            
+          if (updateError) throw updateError;
+          return 6;
+        }
+        
+        console.log('[creditsSlice] User credits fetched:', data.credits_remaining);
+        return data.credits_remaining;
       }
 
       // Only fetch IP-based credits for anonymous users
@@ -63,11 +75,23 @@ export const initializeCredits = createAsyncThunk(
         .select('credits_remaining')
         .eq('ip_address', ipAddress)
         .is('user_id', null)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
-      console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
-      return data?.credits_remaining ?? 2;
+      
+      // If no IP credits found, initialize with default
+      if (!data) {
+        console.log('[creditsSlice] No IP credits found, initializing with default');
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .insert([{ ip_address: ipAddress, credits_remaining: 2, user_id: null }]);
+          
+        if (updateError) throw updateError;
+        return 2;
+      }
+
+      console.log('[creditsSlice] IP-based credits fetched:', data.credits_remaining);
+      return data.credits_remaining;
     } catch (error) {
       console.error('[creditsSlice] Error initializing credits:', error);
       return rejectWithValue('Failed to initialize credits');
