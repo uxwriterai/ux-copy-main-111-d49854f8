@@ -19,6 +19,35 @@ const initialState: CreditsState = {
   rehydrationComplete: false,
 };
 
+export const updateUserCredits = createAsyncThunk(
+  'credits/updateUserCredits',
+  async ({ userId, credits }: { userId: string | null; credits: number }, { rejectWithValue }) => {
+    try {
+      if (userId) {
+        const { error } = await supabase
+          .from('user_credits')
+          .upsert({ user_id: userId, credits_remaining: credits })
+          .eq('user_id', userId);
+
+        if (error) throw error;
+      } else {
+        const ipAddress = await getIpAddress();
+        const { error } = await supabase
+          .from('user_credits')
+          .upsert({ ip_address: ipAddress, credits_remaining: credits })
+          .is('user_id', null)
+          .eq('ip_address', ipAddress);
+
+        if (error) throw error;
+      }
+      return credits;
+    } catch (error) {
+      console.error('[creditsSlice] Error updating credits:', error);
+      return rejectWithValue('Failed to update credits');
+    }
+  }
+);
+
 export const initializeCredits = createAsyncThunk(
   'credits/initializeCredits',
   async (_, { getState, rejectWithValue }) => {
@@ -79,13 +108,11 @@ export const initializeCredits = createAsyncThunk(
       const state = getState() as RootState;
       const userId = state.auth.userId;
       
-      // Skip if rehydration is not complete
       if (!state.credits.rehydrationComplete) {
         console.log('[creditsSlice] Skipping fetch - rehydration not complete');
         return false;
       }
       
-      // If we have user-based credits, don't allow IP-based credits to overwrite them
       if (state.credits.credits > 0 && !userId) {
         console.log('[creditsSlice] Preventing IP credits from overwriting existing user credits');
         return false;
@@ -123,6 +150,19 @@ const creditsSlice = createSlice({
         state.lastFetched = Date.now();
       })
       .addCase(initializeCredits.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateUserCredits.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUserCredits.fulfilled, (state, action) => {
+        state.credits = action.payload;
+        state.isLoading = false;
+        state.lastFetched = Date.now();
+      })
+      .addCase(updateUserCredits.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });
