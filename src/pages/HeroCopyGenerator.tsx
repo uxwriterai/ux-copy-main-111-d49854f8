@@ -46,9 +46,9 @@ const HeroCopyGenerator = () => {
         <div className="container max-w-6xl">
           <div className="space-y-6">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">Hero Copy Generator</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Write Hero Copy That Stands Out</h1>
               <p className="text-muted-foreground">
-                Generate impactful headlines, taglines, and CTAs for your hero sections
+                Generate headlines, taglines, and CTAs that grab attention
               </p>
             </div>
 
