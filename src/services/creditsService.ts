@@ -71,16 +71,42 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     if (userId) {
       console.log('Updating ONLY user-based credits for user:', userId);
       
-      const { error: updateError } = await supabase
+      // First, check if a record exists
+      const { data: existingRecord, error: fetchError } = await supabase
         .from('user_credits')
-        .upsert({
-          user_id: userId,
-          credits_remaining: newCredits
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (updateError) {
-        console.error("Error updating user credits:", updateError);
-        throw updateError;
+      if (fetchError) {
+        console.error("Error checking existing user credits:", fetchError);
+        throw fetchError;
+      }
+
+      if (existingRecord) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: newCredits })
+          .eq('user_id', userId);
+
+        if (updateError) {
+          console.error("Error updating user credits:", updateError);
+          throw updateError;
+        }
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert([{
+            user_id: userId,
+            credits_remaining: newCredits
+          }]);
+
+        if (insertError) {
+          console.error("Error inserting user credits:", insertError);
+          throw insertError;
+        }
       }
       
       console.log('Successfully updated credits for user:', userId);
@@ -91,17 +117,45 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     const ipAddress = await getIpAddress();
     console.log('Anonymous user, updating IP-based credits for:', ipAddress);
     
-    const { error: upsertError } = await supabase
+    // First, check if a record exists
+    const { data: existingRecord, error: fetchError } = await supabase
       .from('user_credits')
-      .upsert({
-        ip_address: ipAddress,
-        credits_remaining: newCredits,
-        user_id: null
-      });
+      .select('id')
+      .eq('ip_address', ipAddress)
+      .is('user_id', null)
+      .maybeSingle();
 
-    if (upsertError) {
-      console.error("Error upserting IP credits:", upsertError);
-      throw upsertError;
+    if (fetchError) {
+      console.error("Error checking existing IP credits:", fetchError);
+      throw fetchError;
+    }
+
+    if (existingRecord) {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('user_credits')
+        .update({ credits_remaining: newCredits })
+        .eq('ip_address', ipAddress)
+        .is('user_id', null);
+
+      if (updateError) {
+        console.error("Error updating IP credits:", updateError);
+        throw updateError;
+      }
+    } else {
+      // Insert new record
+      const { error: insertError } = await supabase
+        .from('user_credits')
+        .insert([{
+          ip_address: ipAddress,
+          credits_remaining: newCredits,
+          user_id: null
+        }]);
+
+      if (insertError) {
+        console.error("Error inserting IP credits:", insertError);
+        throw insertError;
+      }
     }
     
     console.log('Successfully updated credits for IP:', ipAddress);
