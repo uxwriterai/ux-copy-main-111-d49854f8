@@ -35,12 +35,12 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
       
       console.log('User-based credits data:', data);
       return data?.credits_remaining ?? null;
-    } 
-    
-    // Only proceed with IP-based credits if there is NO user ID
-    console.log('No user ID found, proceeding with IP-based credits');
+    }
+
+    // Only execute this block for anonymous users
+    console.log('Anonymous user, proceeding with IP-based credits');
     const ipAddress = await getIpAddress();
-    console.log('Anonymous user, fetching IP-based credits for:', ipAddress);
+    console.log('Fetching IP-based credits for:', ipAddress);
     
     const { data, error } = await supabase
       .from('user_credits')
@@ -72,91 +72,37 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     if (userId) {
       console.log('Updating ONLY user-based credits for user:', userId);
       
-      // First, check if a record exists
-      const { data: existingRecord, error: fetchError } = await supabase
+      const { error: updateError } = await supabase
         .from('user_credits')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle();
+        .upsert([{
+          user_id: userId,
+          credits_remaining: newCredits
+        }]);
 
-      if (fetchError) {
-        console.error("Error checking existing user credits:", fetchError);
-        throw fetchError;
-      }
-
-      if (existingRecord) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('user_credits')
-          .update({ credits_remaining: newCredits })
-          .eq('user_id', userId);
-
-        if (updateError) {
-          console.error("Error updating user credits:", updateError);
-          throw updateError;
-        }
-      } else {
-        // Insert new record
-        const { error: insertError } = await supabase
-          .from('user_credits')
-          .insert([{
-            user_id: userId,
-            credits_remaining: newCredits
-          }]);
-
-        if (insertError) {
-          console.error("Error inserting user credits:", insertError);
-          throw insertError;
-        }
+      if (updateError) {
+        console.error("Error updating user credits:", updateError);
+        throw updateError;
       }
       
       console.log('Successfully updated credits for user:', userId);
       return;
     }
     
-    // Only handle IP-based credits if there is NO user ID
+    // Only handle IP-based credits for anonymous users
     const ipAddress = await getIpAddress();
     console.log('Anonymous user, updating IP-based credits for:', ipAddress);
     
-    // First, check if a record exists
-    const { data: existingRecord, error: fetchError } = await supabase
+    const { error: updateError } = await supabase
       .from('user_credits')
-      .select('id')
-      .eq('ip_address', ipAddress)
-      .is('user_id', null)
-      .maybeSingle();
+      .upsert([{
+        ip_address: ipAddress,
+        credits_remaining: newCredits,
+        user_id: null
+      }]);
 
-    if (fetchError) {
-      console.error("Error checking existing IP credits:", fetchError);
-      throw fetchError;
-    }
-
-    if (existingRecord) {
-      // Update existing record
-      const { error: updateError } = await supabase
-        .from('user_credits')
-        .update({ credits_remaining: newCredits })
-        .eq('ip_address', ipAddress)
-        .is('user_id', null);
-
-      if (updateError) {
-        console.error("Error updating IP credits:", updateError);
-        throw updateError;
-      }
-    } else {
-      // Insert new record
-      const { error: insertError } = await supabase
-        .from('user_credits')
-        .insert([{
-          ip_address: ipAddress,
-          credits_remaining: newCredits,
-          user_id: null
-        }]);
-
-      if (insertError) {
-        console.error("Error inserting IP credits:", insertError);
-        throw insertError;
-      }
+    if (updateError) {
+      console.error("Error updating IP credits:", updateError);
+      throw updateError;
     }
     
     console.log('Successfully updated credits for IP:', ipAddress);
