@@ -1,11 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { HeroForm } from "@/components/hero/HeroForm";
 import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { generateHeroCopy } from "@/services/heroService";
 import { toast } from "sonner";
-import { useCredits } from "@/contexts/CreditsContext";
-import { supabase } from "@/integrations/supabase/client";
 
 interface HeroCopyVariant {
   headline: string;
@@ -16,23 +14,8 @@ interface HeroCopyVariant {
 const HeroCopyGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedVariants, setGeneratedVariants] = useState<HeroCopyVariant[]>([]);
-  const { useCredit, credits } = useCredits();
-  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const handleSubmit = async (formData: any) => {
-    // Check if we have any credits left
-    if (credits <= 0) {
-      setShowCreditsDialog(true);
-      return;
-    }
-
-    // Attempt to use a credit
-    const creditUsed = await useCredit();
-    if (!creditUsed) {
-      return;
-    }
-
     setIsLoading(true);
     try {
       const variants = await generateHeroCopy(formData);
@@ -45,20 +28,6 @@ const HeroCopyGenerator = () => {
       setIsLoading(false);
     }
   };
-
-  // Check auth state on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.log("User is not logged in - limited credits available");
-      } else {
-        console.log("User is logged in - full credits available");
-      }
-    };
-
-    checkAuth();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background py-8">
