@@ -155,11 +155,12 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div 
-                    className="w-full py-2 px-4 text-center rounded-md bg-secondary text-secondary-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                  <Button 
+                    variant="outline"
+                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors"
                   >
                     Open Tool
-                  </div>
+                  </Button>
                 </CardContent>
               </Card>
             ))}
