@@ -25,10 +25,15 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   // Initial credits fetch
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
-      console.log("[CreditsContext] Initial credits fetch");
+      console.log("[CreditsContext] Starting initial credits fetch");
       const initializeCredits = async () => {
-        await fetchCredits();
-        setInitialized(true);
+        try {
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error in initial credits fetch:", error);
+        } finally {
+          setInitialized(true);
+        }
       };
       initializeCredits();
     }
@@ -36,7 +41,10 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   // Handle auth state changes
   useEffect(() => {
-    if (authListenerSet.current || cleanupRef.current) return;
+    if (authListenerSet.current || cleanupRef.current) {
+      console.log("[CreditsContext] Auth listener already set, skipping");
+      return;
+    }
     
     console.log("[CreditsContext] Setting up auth state listener");
     authListenerSet.current = true;
@@ -50,13 +58,12 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setInitialized(false);
         
         try {
-          console.log("[CreditsContext] Fetching user credits");
           await fetchCredits();
         } catch (error) {
           console.error("[CreditsContext] Error fetching user credits:", error);
         } finally {
-          setIsLoading(false);
           setInitialized(true);
+          setIsLoading(false);
         }
       }
       
@@ -67,13 +74,12 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setCredits(null);
         
         try {
-          console.log("[CreditsContext] Fetching IP-based credits after sign out");
           await fetchCredits();
         } catch (error) {
           console.error("[CreditsContext] Error fetching IP-based credits:", error);
         } finally {
-          setIsLoading(false);
           setInitialized(true);
+          setIsLoading(false);
         }
       }
     });
