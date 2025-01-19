@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+const CREDITS_STORAGE_KEY = 'user_credits';
+
 export const getIpAddress = async (): Promise<string> => {
   try {
     const response = await fetch('https://api.ipify.org?format=json');
@@ -13,11 +15,34 @@ export const getIpAddress = async (): Promise<string> => {
   }
 };
 
+export const saveCreditsToStorage = (credits: number) => {
+  console.log('Saving credits to storage:', credits);
+  localStorage.setItem(CREDITS_STORAGE_KEY, credits.toString());
+};
+
+export const getCreditsFromStorage = (): number | null => {
+  const credits = localStorage.getItem(CREDITS_STORAGE_KEY);
+  console.log('Retrieved credits from storage:', credits);
+  return credits ? parseInt(credits, 10) : null;
+};
+
+export const clearCreditsFromStorage = () => {
+  console.log('Clearing credits from storage');
+  localStorage.removeItem(CREDITS_STORAGE_KEY);
+};
+
 export const fetchUserCredits = async (userId?: string | null): Promise<number | null> => {
   try {
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
-    // If user is logged in, only fetch user-based credits
+    // Check local storage first
+    const storedCredits = getCreditsFromStorage();
+    if (storedCredits !== null) {
+      console.log('Using credits from storage:', storedCredits);
+      return storedCredits;
+    }
+
+    // If user is logged in, fetch user-based credits
     if (userId) {
       console.log('User is logged in, fetching user-based credits');
       const { data, error } = await supabase
@@ -33,32 +58,42 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         throw error;
       }
       
-      console.log('User-based credits data:', data);
-      return data?.credits_remaining ?? null;
-    } 
-    
-    // Only fetch IP-based credits for anonymous users
-    else {
-      const ipAddress = await getIpAddress();
-      console.log('Anonymous user, fetching IP-based credits for:', ipAddress);
+      const credits = data?.credits_remaining ?? null;
+      console.log('User-based credits data:', credits);
       
-      const { data, error } = await supabase
-        .from('user_credits')
-        .select('credits_remaining')
-        .eq('ip_address', ipAddress)
-        .is('user_id', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching IP-based credits:', error);
-        throw error;
+      if (credits !== null) {
+        saveCreditsToStorage(credits);
       }
       
-      console.log('IP-based credits data:', data);
-      return data?.credits_remaining ?? null;
+      return credits;
+    } 
+    
+    // For anonymous users, fetch IP-based credits
+    const ipAddress = await getIpAddress();
+    console.log('Anonymous user, fetching IP-based credits for:', ipAddress);
+    
+    const { data, error } = await supabase
+      .from('user_credits')
+      .select('credits_remaining')
+      .eq('ip_address', ipAddress)
+      .is('user_id', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error fetching IP-based credits:', error);
+      throw error;
     }
+    
+    const credits = data?.credits_remaining ?? null;
+    console.log('IP-based credits data:', credits);
+    
+    if (credits !== null) {
+      saveCreditsToStorage(credits);
+    }
+    
+    return credits;
   } catch (error) {
     console.error("Error in fetchUserCredits:", error);
     throw error;
@@ -108,6 +143,8 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
         }
       }
       
+      // Save to local storage after successful update
+      saveCreditsToStorage(newCredits);
       console.log('Successfully updated credits for user:', userId);
     } else {
       // For anonymous users, handle IP-based credits
@@ -140,6 +177,8 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
         throw insertError;
       }
       
+      // Save to local storage after successful update
+      saveCreditsToStorage(newCredits);
       console.log('Successfully updated credits for IP:', ipAddress);
     }
   } catch (error) {
