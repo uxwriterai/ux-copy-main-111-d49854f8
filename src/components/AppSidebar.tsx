@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { useSidebar } from "@/components/ui/sidebar"
 import { Link, useLocation } from "react-router-dom"
 import { Menu } from "lucide-react"
@@ -41,13 +41,13 @@ const navigation = [
 ]
 
 export function AppSidebar() {
-  const isMobile = useMobile()
-  const { isOpen, setIsOpen } = useSidebar()
+  const isMobile = useIsMobile()
+  const { open, setOpen } = useSidebar()
   const location = useLocation()
 
   if (isMobile) {
     return (
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
