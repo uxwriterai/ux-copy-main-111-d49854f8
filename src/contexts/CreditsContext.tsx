@@ -47,14 +47,14 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if (!mounted) return;
 
       if (event === 'SIGNED_IN' && newSession?.user) {
-        console.log("[CreditsContext] User signed in, fetching credits");
+        console.log("[CreditsContext] User signed in, fetching user credits");
         setIsLoading(true);
         setInitialized(false);
         await fetchCredits();
       }
       
       if (event === 'SIGNED_OUT') {
-        console.log("[CreditsContext] User signed out, resetting credits state");
+        console.log("[CreditsContext] User signed out, resetting to IP-based credits");
         setIsLoading(true);
         setInitialized(false);
         setCredits(null);

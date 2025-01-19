@@ -18,13 +18,12 @@ export const useCreditsManagement = (session: Session | null) => {
       fetchInProgress.current = true;
       setIsLoading(true);
       
-      // If we have a session, prioritize fetching user credits
       if (session?.user?.id) {
-        console.log('[useCreditsManagement] Fetching user credits for:', session.user.id);
+        console.log('[useCreditsManagement] User is logged in, fetching user credits for:', session.user.id);
         const fetchedCredits = await fetchUserCredits(session.user.id);
         
         if (fetchedCredits === null) {
-          console.log("[useCreditsManagement] No user credits found, creating default");
+          console.log("[useCreditsManagement] No user credits found, creating default user credits");
           await updateCredits(6, session.user.id);
           setCredits(6);
         } else {
@@ -32,7 +31,8 @@ export const useCreditsManagement = (session: Session | null) => {
           setCredits(fetchedCredits);
         }
       } else {
-        console.log('[useCreditsManagement] No session, fetching IP-based credits');
+        // Only fetch IP-based credits if there's no user session
+        console.log('[useCreditsManagement] No user session, using IP-based credits');
         const fetchedCredits = await fetchUserCredits(null);
         
         if (fetchedCredits === null) {
@@ -47,7 +47,7 @@ export const useCreditsManagement = (session: Session | null) => {
       setInitialized(true);
     } catch (error) {
       console.error("[useCreditsManagement] Error in fetchCredits:", error);
-      // Set default credits in case of error
+      // Set default credits in case of error based on auth state
       setCredits(session?.user?.id ? 6 : 2);
       setInitialized(true);
     } finally {
