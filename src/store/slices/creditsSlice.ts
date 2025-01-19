@@ -8,7 +8,6 @@ interface CreditsState {
   isLoading: boolean;
   error: string | null;
   lastFetched: number | null;
-  fetchInProgress: boolean;
 }
 
 const initialState: CreditsState = {
@@ -16,7 +15,6 @@ const initialState: CreditsState = {
   isLoading: false,
   error: null,
   lastFetched: null,
-  fetchInProgress: false,
 };
 
 export const initializeCredits = createAsyncThunk(
@@ -25,14 +23,7 @@ export const initializeCredits = createAsyncThunk(
     const state = getState() as RootState;
     const lastFetched = state.credits.lastFetched;
     const userId = state.auth.userId;
-    const isFetching = state.credits.fetchInProgress;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-    // Prevent concurrent fetches
-    if (isFetching) {
-      console.log('[creditsSlice] Fetch already in progress, skipping');
-      return state.credits.credits;
-    }
 
     // Use cached credits if available and not expired
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
@@ -41,9 +32,9 @@ export const initializeCredits = createAsyncThunk(
     }
 
     try {
-      // If user is authenticated, ONLY fetch user-based credits
+      // If user is authenticated, fetch user-based credits
       if (userId) {
-        console.log('[creditsSlice] User is authenticated, fetching ONLY user-based credits for:', userId);
+        console.log('[creditsSlice] User is authenticated, fetching user-based credits');
         const { data, error } = await supabase
           .from('user_credits')
           .select('credits_remaining')
@@ -77,15 +68,7 @@ export const initializeCredits = createAsyncThunk(
 
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | undefined; credits: number }, { getState, rejectWithValue }) => {
-    const state = getState() as RootState;
-    const isFetching = state.credits.fetchInProgress;
-
-    if (isFetching) {
-      console.log('[creditsSlice] Update already in progress, skipping');
-      return state.credits.credits;
-    }
-
+  async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
     if (!userId) {
       console.log('[creditsSlice] No userId provided, skipping update');
       return credits;
@@ -116,7 +99,6 @@ const creditsSlice = createSlice({
       state.lastFetched = null;
       state.error = null;
       state.isLoading = false;
-      state.fetchInProgress = false;
     },
   },
   extraReducers: (builder) => {
@@ -124,29 +106,19 @@ const creditsSlice = createSlice({
       .addCase(initializeCredits.pending, (state) => {
         state.isLoading = true;
         state.error = null;
-        state.fetchInProgress = true;
       })
       .addCase(initializeCredits.fulfilled, (state, action) => {
         state.isLoading = false;
         state.credits = action.payload;
         state.lastFetched = Date.now();
-        state.fetchInProgress = false;
       })
       .addCase(initializeCredits.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-        state.fetchInProgress = false;
-      })
-      .addCase(updateUserCredits.pending, (state) => {
-        state.fetchInProgress = true;
       })
       .addCase(updateUserCredits.fulfilled, (state, action) => {
         state.credits = action.payload;
         state.lastFetched = Date.now();
-        state.fetchInProgress = false;
-      })
-      .addCase(updateUserCredits.rejected, (state) => {
-        state.fetchInProgress = false;
       });
   },
 });
