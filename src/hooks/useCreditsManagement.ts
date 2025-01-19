@@ -17,18 +17,30 @@ export const useCreditsManagement = (session: Session | null) => {
     try {
       fetchInProgress.current = true;
       setIsLoading(true);
-      console.log('[useCreditsManagement] Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
+      const userId = session?.user?.id;
       
-      const fetchedCredits = await fetchUserCredits(session?.user?.id);
-      console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);
-      
-      if (fetchedCredits === null) {
-        console.log("[useCreditsManagement] No credits record found, creating default");
-        const defaultCredits = session?.user?.id ? 6 : 2;
-        await updateCredits(defaultCredits, session?.user?.id);
-        setCredits(defaultCredits);
+      if (userId) {
+        console.log('[useCreditsManagement] Fetching credits for authenticated user:', userId);
+        const fetchedCredits = await fetchUserCredits(userId);
+        
+        if (fetchedCredits === null) {
+          console.log("[useCreditsManagement] No user credits record found, creating default");
+          await updateCredits(6, userId);
+          setCredits(6);
+        } else {
+          setCredits(fetchedCredits);
+        }
       } else {
-        setCredits(fetchedCredits);
+        console.log('[useCreditsManagement] Fetching credits for anonymous user');
+        const fetchedCredits = await fetchUserCredits(null);
+        
+        if (fetchedCredits === null) {
+          console.log("[useCreditsManagement] No anonymous credits record found, creating default");
+          await updateCredits(2, null);
+          setCredits(2);
+        } else {
+          setCredits(fetchedCredits);
+        }
       }
       
       setInitialized(true);
