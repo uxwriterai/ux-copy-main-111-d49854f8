@@ -15,7 +15,6 @@ import {
 import { generateEmptyState } from "@/services/emptyStateService"
 import { CopyVariant } from "@/components/microcopy/CopyVariant"
 import { Helmet } from 'react-helmet-async';
-import { EmptyStateContent } from "@/components/EmptyStateContent"
 
 const ELEMENT_TYPES = [
   "search",
@@ -79,10 +78,10 @@ const EmptyStateGenerator = () => {
       <div className="min-h-screen bg-background py-8">
         <div className="container max-w-4xl">
           <div className="space-y-6">
-            <div className="space-y-2 text-center">
-              <h1 className="text-3xl font-bold tracking-tight">Empty State Message Generator</h1>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">Craft Helpful Empty State Messages</h1>
               <p className="text-muted-foreground">
-                Craft thoughtful empty state messages with AI-generated text
+                Guide your users with clear, thoughtful AI-generated text
               </p>
             </div>
 
@@ -195,7 +194,6 @@ const EmptyStateGenerator = () => {
           </div>
         </div>
       </div>
-      <EmptyStateContent />
     </>
   )
 }

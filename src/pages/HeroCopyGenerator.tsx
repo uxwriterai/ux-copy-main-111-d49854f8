@@ -5,7 +5,6 @@ import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { generateHeroCopy } from "@/services/heroService";
 import { toast } from "sonner";
 import { Helmet } from 'react-helmet-async';
-import { HeroCopyContent } from "@/components/HeroCopyContent";
 
 interface HeroCopyVariant {
   headline: string;
@@ -46,10 +45,10 @@ const HeroCopyGenerator = () => {
       <div className="min-h-screen bg-background py-8">
         <div className="container max-w-6xl">
           <div className="space-y-6">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold tracking-tight">Hero Copy Generator</h1>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">Write Hero Copy That Stands Out</h1>
               <p className="text-muted-foreground">
-                Generate captivating hero section copy with AI
+                Generate headlines, taglines, and CTAs that grab attention
               </p>
             </div>
 
@@ -87,8 +86,6 @@ const HeroCopyGenerator = () => {
           </div>
         </div>
       </div>
-      
-      <HeroCopyContent />
     </>
   );
 };

@@ -15,7 +15,6 @@ import { useToast } from "@/hooks/use-toast";
 import { generateLandingPageCopy } from "@/services/landingPageService";
 import { LandingPageResult } from "@/components/landing-page/LandingPageResult";
 import { Helmet } from 'react-helmet-async';
-import { LandingPageContent } from "@/components/landing-page/LandingPageContent";
 
 const INDUSTRIES = [
   "Technology",
@@ -133,11 +132,11 @@ const LandingPageGenerator = () => {
 
       <div className="container max-w-6xl py-8">
         <div className="space-y-6">
-          <div className="text-center mb-8">
+          <div className="text-left mb-8">
             <h1 className="text-3xl font-bold tracking-tight">
-              Landing Page Generator
+              Build a Landing Page That Converts
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-muted-foreground">
               Create engaging copy for your landing page in just a few clicks
             </p>
           </div>
@@ -264,7 +263,6 @@ const LandingPageGenerator = () => {
           </Card>
         </div>
       </div>
-      <LandingPageContent />
     </>
   );
 };
