@@ -21,36 +21,27 @@ const initialState: CreditsState = {
 
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | null; credits: number }, { rejectWithValue, getState }) => {
+  async ({ userId, credits }: { userId: string | null; credits: number }, { rejectWithValue }) => {
     try {
-      const state = getState() as RootState;
-      const currentUserId = state.auth.userId;
-      
-      // If there's a user ID (either from auth state or passed), use that
-      if (currentUserId || userId) {
-        console.log('[creditsSlice] Updating credits for authenticated user:', currentUserId || userId);
+      if (userId) {
         const { error } = await supabase
           .from('user_credits')
-          .upsert([{
-            user_id: currentUserId || userId,
-            ip_address: null,
+          .upsert({
+            user_id: userId,
             credits_remaining: credits
-          }]);
+          });
 
         if (error) throw error;
         return credits;
       }
 
-      // Only fetch IP if there's no user ID
-      console.log('[creditsSlice] No user ID found, falling back to IP-based credits');
       const ipAddress = await getIpAddress();
       const { error } = await supabase
         .from('user_credits')
-        .upsert([{
+        .upsert({
           ip_address: ipAddress,
-          user_id: null,
           credits_remaining: credits
-        }]);
+        });
 
       if (error) throw error;
       return credits;
@@ -74,37 +65,28 @@ export const initializeCredits = createAsyncThunk(
       return rejectWithValue('Rehydration not complete');
     }
 
-    console.log('[creditsSlice] Current auth state - userId:', userId);
-
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
       console.log('[creditsSlice] Using cached credits from:', new Date(lastFetched).toISOString());
       return state.credits.credits;
     }
 
     try {
-      // If user is authenticated, only fetch user-based credits
       if (userId) {
-        console.log('[creditsSlice] Fetching credits for authenticated user:', userId);
         const { data, error } = await supabase
           .from('user_credits')
           .select('credits_remaining')
           .eq('user_id', userId)
-          .is('ip_address', null)
           .single();
 
         if (error) throw error;
-        console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
         return data?.credits_remaining ?? 6;
       }
 
-      // Only fetch IP-based credits if no user is authenticated
-      console.log('[creditsSlice] No user ID found, fetching IP-based credits');
       const ipAddress = await getIpAddress();
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits_remaining')
         .eq('ip_address', ipAddress)
-        .is('user_id', null)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
