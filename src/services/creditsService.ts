@@ -17,7 +17,9 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
   try {
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     
+    // If user is logged in, only fetch user-based credits
     if (userId) {
+      console.log('User is logged in, fetching user-based credits');
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -33,9 +35,12 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
       
       console.log('User-based credits data:', data);
       return data?.credits_remaining ?? null;
-    } else {
+    } 
+    
+    // Only fetch IP-based credits for anonymous users
+    else {
       const ipAddress = await getIpAddress();
-      console.log('Fetching credits for IP:', ipAddress);
+      console.log('Anonymous user, fetching IP-based credits for:', ipAddress);
       
       const { data, error } = await supabase
         .from('user_credits')
@@ -107,7 +112,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     } else {
       // For anonymous users, handle IP-based credits
       const ipAddress = await getIpAddress();
-      console.log('Updating credits for IP:', ipAddress);
+      console.log('Anonymous user, updating credits for IP:', ipAddress);
       
       // First, delete any existing record for this IP
       const { error: deleteError } = await supabase
