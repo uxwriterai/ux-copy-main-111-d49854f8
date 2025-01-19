@@ -8,30 +8,32 @@ export const useCreditsManagement = (session: Session | null) => {
   const [initialized, setInitialized] = useState(false);
 
   const fetchCredits = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      console.log('Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
-      
-      const fetchedCredits = await fetchUserCredits(session?.user?.id);
-      console.log('Fetched credits:', fetchedCredits);
-      
-      if (fetchedCredits === null) {
-        console.log("No credits record found, creating default");
-        const defaultCredits = session?.user?.id ? 6 : 2;
-        await updateCredits(defaultCredits, session?.user?.id);
-        setCredits(defaultCredits);
-      } else {
-        setCredits(fetchedCredits);
+    if (!initialized) {
+      try {
+        setIsLoading(true);
+        console.log('Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
+        
+        const fetchedCredits = await fetchUserCredits(session?.user?.id);
+        console.log('Fetched credits:', fetchedCredits);
+        
+        if (fetchedCredits === null) {
+          console.log("No credits record found, creating default");
+          const defaultCredits = session?.user?.id ? 6 : 2;
+          await updateCredits(defaultCredits, session?.user?.id);
+          setCredits(defaultCredits);
+        } else {
+          setCredits(fetchedCredits);
+        }
+        
+        setInitialized(true);
+      } catch (error) {
+        console.error("Error in fetchCredits:", error);
+        setInitialized(true);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setInitialized(true);
-    } catch (error) {
-      console.error("Error in fetchCredits:", error);
-      setInitialized(true);
-    } finally {
-      setIsLoading(false);
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, initialized]);
 
   const useCredit = async (): Promise<boolean> => {
     if (!initialized) {

@@ -21,21 +21,30 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   } = useCreditsManagement(session);
 
   useEffect(() => {
+    let isMounted = true;
     console.log("Session or initialization state changed");
-    console.log("Session state:", session?.user?.id ? "logged in" : "not logged in");
-    console.log("Initialized:", initialized);
-    console.log("Session loading:", isSessionLoading);
+    
+    const initializeCredits = async () => {
+      if (!isSessionLoading && !initialized && isMounted) {
+        console.log("Fetching credits...");
+        await fetchCredits();
+      }
+    };
 
-    if (!isSessionLoading && !initialized) {
-      console.log("Fetching credits...");
-      fetchCredits();
-    }
+    initializeCredits();
+
+    return () => {
+      isMounted = false;
+    };
   }, [session?.user?.id, isSessionLoading, initialized, fetchCredits]);
 
   useEffect(() => {
     console.log("Setting up auth state change listener");
+    let isMounted = true;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (!isMounted) return;
+      
       console.log("Auth state changed:", event);
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits state");
@@ -43,17 +52,24 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setInitialized(false);
         setCredits(null);
         
-        try {
-          console.log("Fetching IP-based credits");
-          await fetchCredits();
-        } catch (error) {
-          console.error("Error fetching IP-based credits:", error);
+        if (isMounted) {
+          try {
+            console.log("Fetching IP-based credits");
+            await fetchCredits();
+          } catch (error) {
+            console.error("Error fetching IP-based credits:", error);
+          } finally {
+            if (isMounted) {
+              setIsLoading(false);
+            }
+          }
         }
       }
     });
 
     return () => {
       console.log("Cleaning up auth state listener");
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [fetchCredits, setCredits, setIsLoading, setInitialized]);
