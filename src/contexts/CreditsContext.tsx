@@ -25,11 +25,12 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   // Single useEffect for initialization and session changes
   useEffect(() => {
     const initializeCredits = async () => {
-      if (!isSessionLoading && !initialized && session?.user?.id) {
-        console.log("[CreditsContext] Initial credits fetch for authenticated user");
+      if (!isSessionLoading && !initialized) {
+        console.log("[CreditsContext] Initializing credits");
         try {
           setIsLoading(true);
           await fetchCredits();
+          setInitialized(true);
         } catch (error) {
           console.error("[CreditsContext] Error in initial credits fetch:", error);
         } finally {
@@ -39,7 +40,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     };
 
     initializeCredits();
-  }, [isSessionLoading, initialized, session?.user?.id, fetchCredits, setIsLoading]);
+  }, [isSessionLoading, initialized, fetchCredits, setIsLoading, setInitialized]);
 
   // Separate useEffect for auth state changes
   useEffect(() => {
@@ -57,6 +58,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           setIsLoading(true);
           setInitialized(false);
           await fetchCredits();
+          setInitialized(true);
         } catch (error) {
           console.error("[CreditsContext] Error fetching credits on sign in:", error);
         } finally {
