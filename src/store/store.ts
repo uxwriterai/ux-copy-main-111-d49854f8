@@ -2,18 +2,15 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
-import creditsReducer, { initializeCredits, setRehydrationComplete } from './slices/creditsSlice';
-import authReducer from './slices/authSlice';
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['credits', 'auth'] // Only persist these reducers
+  whitelist: [] // Empty since we removed all reducers
 };
 
 const rootReducer = combineReducers({
-  credits: creditsReducer,
-  auth: authReducer,
+  // Add any future reducers here
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -29,23 +26,7 @@ export const store = configureStore({
   devTools: process.env.NODE_ENV !== 'production',
 });
 
-export const persistor = persistStore(store, {}, () => {
-  const state = store.getState();
-  const userId = state.auth.userId;
-
-  console.log("[store] Rehydration complete");
-  store.dispatch(setRehydrationComplete());
-
-  if (userId) {
-    console.log("[store] User ID found after rehydration:", userId);
-    console.log("[store] Fetching user-based credits...");
-    store.dispatch(initializeCredits());
-  } else {
-    console.log("[store] No user ID found after rehydration");
-    console.log("[store] Fetching IP-based credits...");
-    store.dispatch(initializeCredits());
-  }
-});
+export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
