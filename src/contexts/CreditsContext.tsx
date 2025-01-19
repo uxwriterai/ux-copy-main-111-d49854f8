@@ -24,13 +24,21 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
 
   // Wait for session to be loaded before initial fetch
   useEffect(() => {
-    if (!isSessionLoading && !initialized) {
-      console.log("[CreditsContext] Session loaded, initial state:", session ? "logged in" : "anonymous");
-      if (session?.user) {
-        console.log("[CreditsContext] User is logged in, fetching user credits");
+    const initializeCredits = async () => {
+      if (!isSessionLoading && !initialized) {
+        console.log("[CreditsContext] Session loaded, initial state:", session ? "logged in" : "anonymous");
+        if (session?.user) {
+          console.log("[CreditsContext] User is logged in, fetching user credits");
+        }
+        try {
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error in initial credits fetch:", error);
+        }
       }
-      fetchCredits();
-    }
+    };
+
+    initializeCredits();
   }, [isSessionLoading, initialized, fetchCredits, session]);
 
   // Handle auth state changes
@@ -46,18 +54,28 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       if (event === 'SIGNED_IN' && newSession?.user) {
         console.log("[CreditsContext] User signed in, fetching user credits");
         setIsLoading(true);
-        setInitialized(false);
-        await fetchCredits();
-        setIsLoading(false);
+        try {
+          setInitialized(false);
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error fetching user credits:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
       
       if (event === 'SIGNED_OUT') {
         console.log("[CreditsContext] User signed out, resetting credits state");
         setIsLoading(true);
-        setInitialized(false);
-        setCredits(null);
-        await fetchCredits();
-        setIsLoading(false);
+        try {
+          setInitialized(false);
+          setCredits(null);
+          await fetchCredits();
+        } catch (error) {
+          console.error("[CreditsContext] Error fetching anonymous credits:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     });
 
