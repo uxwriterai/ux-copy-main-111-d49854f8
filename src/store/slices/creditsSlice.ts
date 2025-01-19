@@ -63,6 +63,19 @@ export const initializeCredits = createAsyncThunk(
       console.error('[creditsSlice] Error initializing credits:', error);
       return rejectWithValue('Failed to initialize credits');
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      const userId = state.auth.userId;
+      
+      // If we have user-based credits, don't allow IP-based credits to overwrite them
+      if (state.credits.credits > 0 && !userId) {
+        console.log('[creditsSlice] Preventing IP credits from overwriting existing user credits');
+        return false;
+      }
+      return true;
+    }
   }
 );
 
@@ -108,8 +121,11 @@ const creditsSlice = createSlice({
         state.error = null;
       })
       .addCase(initializeCredits.fulfilled, (state, action) => {
+        // Only update credits if we don't already have user-based credits
+        if (state.credits === 0 || action.payload > state.credits) {
+          state.credits = action.payload;
+        }
         state.isLoading = false;
-        state.credits = action.payload;
         state.lastFetched = Date.now();
       })
       .addCase(initializeCredits.rejected, (state, action) => {
