@@ -32,7 +32,7 @@ export function useAuthState() {
             // Clear existing credits and fetch user-based credits
             dispatch(resetCredits())
             dispatch(setUser(currentSession.user.id))
-            dispatch(initializeCredits({ type: 'user', userId: currentSession.user.id }));
+            dispatch(initializeCredits())
           }
         }
 
@@ -47,7 +47,7 @@ export function useAuthState() {
             // Clear existing credits and fetch user-based credits
             dispatch(resetCredits())
             dispatch(setUser(newSession.user.id))
-            dispatch(initializeCredits({ type: 'user', userId: newSession.user.id }));
+            dispatch(initializeCredits())
             toast.success('Welcome back!')
           }
 

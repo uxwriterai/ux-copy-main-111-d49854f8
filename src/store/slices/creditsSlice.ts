@@ -19,9 +19,10 @@ const initialState: CreditsState = {
 
 export const initializeCredits = createAsyncThunk(
   'credits/initializeCredits',
-  async (params: { type: 'user' | 'ip', userId?: string }, { getState, rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     const state = getState() as RootState;
     const lastFetched = state.credits.lastFetched;
+    const userId = state.auth.userId;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
     // Use cached credits if available and not expired
@@ -31,12 +32,13 @@ export const initializeCredits = createAsyncThunk(
     }
 
     try {
-      if (params.type === 'user' && params.userId) {
+      // If user is authenticated, fetch user-based credits
+      if (userId) {
         console.log('[creditsSlice] User is authenticated, fetching user-based credits');
         const { data, error } = await supabase
           .from('user_credits')
           .select('credits_remaining')
-          .eq('user_id', params.userId)
+          .eq('user_id', userId)
           .single();
 
         if (error) throw error;
@@ -44,39 +46,34 @@ export const initializeCredits = createAsyncThunk(
         return data?.credits_remaining ?? 6;
       }
 
-      // Only fetch IP-based credits when user_id is explicitly null or undefined
-      if (params.type === 'ip' && params.userId === undefined || params.userId === null) {
-        console.log('[creditsSlice] Anonymous user, fetching IP-based credits');
-        const ipAddress = await getIpAddress();
-        console.log('[creditsSlice] Fetching IP-based credits for:', ipAddress);
-        
-        const { data, error } = await supabase
-          .from('user_credits')
-          .select('credits_remaining')
-          .eq('ip_address', ipAddress)
-          .is('user_id', null)
-          .single();
+      // Only fetch IP-based credits for anonymous users
+      console.log('[creditsSlice] Anonymous user, fetching IP-based credits');
+      const ipAddress = await getIpAddress();
+      console.log('[creditsSlice] Fetching IP-based credits for:', ipAddress);
+      
+      const { data, error } = await supabase
+        .from('user_credits')
+        .select('credits_remaining')
+        .eq('ip_address', ipAddress)
+        .is('user_id', null)
+        .single();
 
-        if (error && error.code !== 'PGRST116') throw error;
-        console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
-        return data?.credits_remaining ?? 2;
-      }
-
-      console.log('[creditsSlice] No valid fetch condition met');
-      return state.credits.credits;
+      if (error && error.code !== 'PGRST116') throw error;
+      console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
+      return data?.credits_remaining ?? 2;
     } catch (error) {
       console.error('[creditsSlice] Error initializing credits:', error);
       return rejectWithValue('Failed to initialize credits');
     }
   },
   {
-    condition: (params, { getState }) => {
+    condition: (_, { getState }) => {
       const state = getState() as RootState;
       const userId = state.auth.userId;
       
-      // Prevent IP-based fetches if user is authenticated
-      if (params.type === 'ip' && userId !== null && userId !== undefined) {
-        console.log('[creditsSlice] Preventing IP credits fetch - user is authenticated');
+      // If we have user-based credits, don't allow IP-based credits to overwrite them
+      if (state.credits.credits > 0 && !userId) {
+        console.log('[creditsSlice] Preventing IP credits from overwriting existing user credits');
         return false;
       }
       return true;
