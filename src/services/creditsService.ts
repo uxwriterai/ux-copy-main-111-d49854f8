@@ -24,16 +24,9 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .select('credits_remaining')
         .eq('user_id', userId)
         .is('ip_address', null)
-        .single();
+        .maybeSingle();
       
-      if (error) {
-        if (error.code === 'PGRST116') {
-          console.log('No existing credits found for user:', userId);
-          return null;
-        }
-        throw error;
-      }
-      
+      if (error) throw error;
       return data?.credits_remaining ?? null;
     }
 
@@ -44,16 +37,9 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
       .select('credits_remaining')
       .eq('ip_address', ipAddress)
       .is('user_id', null)
-      .single();
+      .maybeSingle();
     
-    if (error) {
-      if (error.code === 'PGRST116') {
-        console.log('No existing credits found for IP:', ipAddress);
-        return null;
-      }
-      throw error;
-    }
-    
+    if (error) throw error;
     return data?.credits_remaining ?? null;
   } catch (error) {
     console.error("Error in fetchUserCredits:", error);
@@ -65,14 +51,26 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
   try {
     if (userId) {
       // For authenticated users
-      const { error: updateError } = await supabase
+      const { data, error: selectError } = await supabase
         .from('user_credits')
-        .update({ credits_remaining: newCredits })
+        .select()
         .eq('user_id', userId)
-        .is('ip_address', null);
+        .is('ip_address', null)
+        .maybeSingle();
 
-      if (updateError && updateError.code === 'PGRST116') {
-        // Record doesn't exist, create it
+      if (selectError) throw selectError;
+
+      if (data) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: newCredits })
+          .eq('user_id', userId)
+          .is('ip_address', null);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new record
         const { error: insertError } = await supabase
           .from('user_credits')
           .insert({
@@ -82,20 +80,31 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
           });
         
         if (insertError) throw insertError;
-      } else if (updateError) {
-        throw updateError;
       }
     } else {
       // For anonymous users
       const ipAddress = await getIpAddress();
-      const { error: updateError } = await supabase
+      
+      const { data, error: selectError } = await supabase
         .from('user_credits')
-        .update({ credits_remaining: newCredits })
+        .select()
         .eq('ip_address', ipAddress)
-        .is('user_id', null);
+        .is('user_id', null)
+        .maybeSingle();
 
-      if (updateError && updateError.code === 'PGRST116') {
-        // Record doesn't exist, create it
+      if (selectError) throw selectError;
+
+      if (data) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: newCredits })
+          .eq('ip_address', ipAddress)
+          .is('user_id', null);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new record
         const { error: insertError } = await supabase
           .from('user_credits')
           .insert({
@@ -105,8 +114,6 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
           });
         
         if (insertError) throw insertError;
-      } else if (updateError) {
-        throw updateError;
       }
     }
   } catch (error) {
