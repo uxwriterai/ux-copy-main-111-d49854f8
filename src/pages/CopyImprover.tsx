@@ -4,9 +4,8 @@ import { ContextForm, type ContextData } from '@/components/ContextForm';
 import { Suggestions, type Suggestion } from '@/components/Suggestions';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Upload, Target, Zap, Users, Layout, Clock, TrendingUp, Repeat, Shield } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { supabase } from "@/integrations/supabase/client";
@@ -273,10 +272,6 @@ const Index = () => {
     toast.success(isPositive ? 'Thanks for the positive feedback!' : 'Thanks for the feedback. We\'ll improve our suggestions.');
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <>
       <Helmet>
@@ -291,149 +286,20 @@ const Index = () => {
 
       <div className="min-h-screen bg-background transition-colors duration-300">
         <div className="container max-w-6xl py-8">
+          <div className="text-left mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">Improve Your UX Copy Instantly</h1>
+            <p className="text-lg text-muted-foreground mt-2">
+              Let AI help you refine your words for better user experiences
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
+            </p>
+          </div>
+
           {!showResults ? (
-            <div className="space-y-12">
-              <div className="text-center space-y-4 max-w-3xl mx-auto">
-                <h1 className="text-4xl font-bold tracking-tight">AI UX Copy Enhancer — 100% Free, No Email Required</h1>
-                <p className="text-xl text-muted-foreground">
-                  Refine and enhance your UX copy with AI-driven suggestions. Perfect for improving UI text and optimizing user experience.
-                </p>
-              </div>
-
-              <div className="max-w-2xl mx-auto space-y-8">
-                <ImageUpload onImageUpload={handleImageUpload} />
-                <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
-              </div>
-
-              <div className="space-y-12">
-                <div className="text-center">
-                  <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-                </div>
-                
-                <div className="grid md:grid-cols-4 gap-6">
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">1</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Upload Screenshot</h3>
-                    <p className="text-sm text-muted-foreground">Drag and drop your design file</p>
-                  </Card>
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">2</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Define Parameters</h3>
-                    <p className="text-sm text-muted-foreground">Set audience and tone</p>
-                  </Card>
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">3</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Get AI Insights</h3>
-                    <p className="text-sm text-muted-foreground">Receive tailored suggestions</p>
-                  </Card>
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">4</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Implement</h3>
-                    <p className="text-sm text-muted-foreground">Apply and test changes</p>
-                  </Card>
-                </div>
-                <div className="text-center mt-8">
-                  <Button 
-                    size="lg" 
-                    onClick={scrollToTop}
-                    className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-semibold"
-                  >
-                    Try Now — 100% Free, No Sign-up Required
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-6">
-                <Card className="p-6">
-                  <Zap className="w-12 h-12 text-primary mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Improve UX Writing with AI</h3>
-                  <p className="text-muted-foreground">Say goodbye to guesswork and manual iterations. Our AI-Powered UX Copy Tool leverages advanced algorithms for clear, concise content.</p>
-                </Card>
-                <Card className="p-6">
-                  <Target className="w-12 h-12 text-primary mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Optimize User Experience</h3>
-                  <p className="text-muted-foreground">Fine-tune every detail of your interface text to boost engagement, reduce friction, and drive conversions.</p>
-                </Card>
-                <Card className="p-6">
-                  <Users className="w-12 h-12 text-primary mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Tailored for Your Audience</h3>
-                  <p className="text-muted-foreground">Define your target audience and goals, and get suggestions perfectly tailored to your specific needs.</p>
-                </Card>
-              </div>
-
-              <div className="space-y-12">
-                <div className="text-center">
-                  <h2 className="text-3xl font-bold mb-4">Features That Set Us Apart</h2>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <Upload className="w-8 h-8 text-primary" />
-                    <h3 className="text-xl font-semibold">Upload and Analyze Screenshots</h3>
-                    <p className="text-muted-foreground">Upload your UI designs directly and let our AI work its magic on every element.</p>
-                  </div>
-                  <div className="space-y-4">
-                    <Layout className="w-8 h-8 text-primary" />
-                    <h3 className="text-xl font-semibold">Customizable Tone and Voice</h3>
-                    <p className="text-muted-foreground">Adapt the copy to match your brand's unique voice and personality.</p>
-                  </div>
-                  <div className="space-y-4">
-                    <Clock className="w-8 h-8 text-primary" />
-                    <h3 className="text-xl font-semibold">Real-Time Feedback</h3>
-                    <p className="text-muted-foreground">Get instant insights and actionable feedback on your UI text.</p>
-                  </div>
-                  <div className="space-y-4">
-                    <Shield className="w-8 h-8 text-primary" />
-                    <h3 className="text-xl font-semibold">Optimized for Accessibility</h3>
-                    <p className="text-muted-foreground">Ensure your text meets accessibility standards for all users.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                <div className="text-center">
-                  <h2 className="text-3xl font-bold mb-4">Who Is This Tool For?</h2>
-                </div>
-                
-                <div className="grid md:grid-cols-4 gap-6">
-                  <Card className="p-6">
-                    <h3 className="font-semibold mb-2">UI/UX Designers</h3>
-                    <p className="text-sm text-muted-foreground">Simplify the process of creating effective microcopy.</p>
-                  </Card>
-                  <Card className="p-6">
-                    <h3 className="font-semibold mb-2">Product Managers</h3>
-                    <p className="text-sm text-muted-foreground">Ensure that your product messaging aligns with user needs.</p>
-                  </Card>
-                  <Card className="p-6">
-                    <h3 className="font-semibold mb-2">Marketers</h3>
-                    <p className="text-sm text-muted-foreground">Craft compelling CTAs that drive action.</p>
-                  </Card>
-                  <Card className="p-6">
-                    <h3 className="font-semibold mb-2">Developers</h3>
-                    <p className="text-sm text-muted-foreground">Improve clarity and usability without becoming a wordsmith.</p>
-                  </Card>
-                </div>
-              </div>
-
-              <div className="text-center space-y-6">
-                <h2 className="text-3xl font-bold">Ready to elevate your user experience?</h2>
-                <p className="text-xl text-muted-foreground">Transform how you approach UX writing with our AI-powered tool.</p>
-                <Button 
-                  size="lg" 
-                  onClick={scrollToTop}
-                  className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-semibold"
-                >
-                  Start Optimizing Your UX Text — It's Free!
-                </Button>
-              </div>
+            <div className="max-w-2xl mx-auto space-y-8">
+              <ImageUpload onImageUpload={handleImageUpload} />
+              <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
             </div>
           ) : (
             <div className="space-y-8">
