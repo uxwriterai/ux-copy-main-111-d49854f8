@@ -51,7 +51,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
   try {
     if (userId) {
       // For authenticated users
-      const { data, error: selectError } = await supabase
+      const { data: existingData, error: selectError } = await supabase
         .from('user_credits')
         .select()
         .eq('user_id', userId)
@@ -60,7 +60,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
 
       if (selectError) throw selectError;
 
-      if (data) {
+      if (existingData) {
         // Update existing record
         const { error: updateError } = await supabase
           .from('user_credits')
@@ -85,7 +85,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
       // For anonymous users
       const ipAddress = await getIpAddress();
       
-      const { data, error: selectError } = await supabase
+      const { data: existingData, error: selectError } = await supabase
         .from('user_credits')
         .select()
         .eq('ip_address', ipAddress)
@@ -94,7 +94,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
 
       if (selectError) throw selectError;
 
-      if (data) {
+      if (existingData) {
         // Update existing record
         const { error: updateError } = await supabase
           .from('user_credits')
