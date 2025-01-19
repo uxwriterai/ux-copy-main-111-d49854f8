@@ -20,7 +20,17 @@ const initialState: CreditsState = {
 // Async thunk for fetching credits based on authentication status
 export const initializeCredits = createAsyncThunk(
   'credits/initializeCredits',
-  async (_, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+    const lastFetched = state.credits.lastFetched;
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    // If credits were fetched recently, use cached value
+    if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
+      console.log('[creditsSlice] Using cached credits, last fetched:', new Date(lastFetched).toISOString());
+      return state.credits.credits;
+    }
+
     try {
       console.log('[creditsSlice] Initializing credits');
       const { data: { session } } = await supabase.auth.getSession();
@@ -150,6 +160,7 @@ const creditsSlice = createSlice({
       })
       .addCase(updateUserCredits.fulfilled, (state, action) => {
         state.credits = action.payload;
+        state.lastFetched = Date.now();
       });
   },
 });

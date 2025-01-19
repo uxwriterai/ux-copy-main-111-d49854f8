@@ -26,8 +26,10 @@ export const useCreditsRedux = () => {
     const shouldFetch = !lastFetched || Date.now() - lastFetched > CACHE_DURATION;
     
     if (shouldFetch && !isLoading) {
-      console.log('Fetching credits for user:', userId);
+      console.log('[useCreditsRedux] Fetching credits for user:', userId);
       dispatch(fetchUserCredits(userId));
+    } else {
+      console.log('[useCreditsRedux] Using cached credits from:', new Date(lastFetched!).toISOString());
     }
   }, [dispatch, userId, lastFetched, isLoading]);
 
@@ -41,7 +43,7 @@ export const useCreditsRedux = () => {
       await dispatch(updateUserCredits({ userId, credits: credits - 1 })).unwrap();
       return true;
     } catch (error) {
-      console.error('Error using credit:', error);
+      console.error('[useCreditsRedux] Error using credit:', error);
       toast.error('Failed to use credit');
       return false;
     }
