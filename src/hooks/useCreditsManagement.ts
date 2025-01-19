@@ -17,12 +17,7 @@ export const useCreditsManagement = (session: Session | null) => {
     try {
       fetchInProgress.current = true;
       setIsLoading(true);
-      
-      if (session?.user?.id) {
-        console.log('[useCreditsManagement] Fetching credits for user:', session.user.id);
-      } else {
-        console.log('[useCreditsManagement] Fetching credits for anonymous user');
-      }
+      console.log('[useCreditsManagement] Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
       
       const fetchedCredits = await fetchUserCredits(session?.user?.id);
       console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);
