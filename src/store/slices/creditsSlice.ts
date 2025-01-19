@@ -21,24 +21,48 @@ const initialState: CreditsState = {
 
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | null; credits: number }, { rejectWithValue }) => {
+  async ({ userId, credits }: { userId: string | null; credits: number }, { rejectWithValue, getState }) => {
     try {
-      if (userId) {
+      const state = getState() as RootState;
+      // Ensure we're using the most up-to-date userId from the auth state
+      const currentUserId = state.auth.userId;
+      
+      // If there's a mismatch between passed userId and current auth state, use the auth state
+      const effectiveUserId = currentUserId || userId;
+
+      if (effectiveUserId) {
+        console.log('[creditsSlice] Updating credits for authenticated user:', effectiveUserId);
         const { error } = await supabase
           .from('user_credits')
-          .upsert({ user_id: userId, credits_remaining: credits })
-          .eq('user_id', userId);
+          .upsert([{
+            user_id: effectiveUserId,
+            credits_remaining: credits
+          }]);
 
         if (error) throw error;
       } else {
+        console.log('[creditsSlice] Updating credits for anonymous user');
         const ipAddress = await getIpAddress();
         const { error } = await supabase
           .from('user_credits')
-          .upsert({ ip_address: ipAddress, credits_remaining: credits })
-          .is('user_id', null)
-          .eq('ip_address', ipAddress);
+          .update({ credits_remaining: credits })
+          .eq('ip_address', ipAddress)
+          .is('user_id', null);
 
-        if (error) throw error;
+        if (error && error.code === '23505') {
+          console.log('[creditsSlice] Record exists, attempting update');
+          const { error: insertError } = await supabase
+            .from('user_credits')
+            .insert([{
+              ip_address: ipAddress,
+              credits_remaining: credits,
+              user_id: null
+            }]);
+
+          if (insertError) throw insertError;
+        } else if (error) {
+          throw error;
+        }
       }
       return credits;
     } catch (error) {
@@ -56,22 +80,22 @@ export const initializeCredits = createAsyncThunk(
     const userId = state.auth.userId;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-    // Skip if rehydration is not complete
     if (!state.credits.rehydrationComplete) {
       console.log('[creditsSlice] Skipping fetch - rehydration not complete');
       return rejectWithValue('Rehydration not complete');
     }
 
-    // Use cached credits if available and not expired
+    // Ensure we have a valid auth state before proceeding
+    console.log('[creditsSlice] Current auth state - userId:', userId);
+
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
       console.log('[creditsSlice] Using cached credits from:', new Date(lastFetched).toISOString());
       return state.credits.credits;
     }
 
     try {
-      // If user is authenticated, fetch user-based credits
       if (userId) {
-        console.log('[creditsSlice] User is authenticated, fetching user-based credits');
+        console.log('[creditsSlice] Fetching credits for authenticated user:', userId);
         const { data, error } = await supabase
           .from('user_credits')
           .select('credits_remaining')
@@ -83,11 +107,8 @@ export const initializeCredits = createAsyncThunk(
         return data?.credits_remaining ?? 6;
       }
 
-      // Only fetch IP-based credits for anonymous users
-      console.log('[creditsSlice] Anonymous user, fetching IP-based credits');
+      console.log('[creditsSlice] Fetching credits for anonymous user');
       const ipAddress = await getIpAddress();
-      console.log('[creditsSlice] Fetching IP-based credits for:', ipAddress);
-      
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits_remaining')
@@ -96,7 +117,6 @@ export const initializeCredits = createAsyncThunk(
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
       return data?.credits_remaining ?? 2;
     } catch (error) {
       console.error('[creditsSlice] Error initializing credits:', error);
@@ -106,15 +126,7 @@ export const initializeCredits = createAsyncThunk(
   {
     condition: (_, { getState }) => {
       const state = getState() as RootState;
-      const userId = state.auth.userId;
-      
       if (!state.credits.rehydrationComplete) {
-        console.log('[creditsSlice] Skipping fetch - rehydration not complete');
-        return false;
-      }
-      
-      if (state.credits.credits > 0 && !userId) {
-        console.log('[creditsSlice] Preventing IP credits from overwriting existing user credits');
         return false;
       }
       return true;
