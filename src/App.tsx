@@ -8,16 +8,16 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { Layout } from '@/components/layout/Layout';
 import { Home } from '@/pages/Home';
 import { Dashboard } from '@/pages/Dashboard';
-import { Settings } from '@/pages/Settings';
+import Settings from '@/pages/Settings';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(initializeCredits({ type: 'ip' }));
-  }, []);
+  }, [dispatch]);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
