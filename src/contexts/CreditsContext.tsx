@@ -22,7 +22,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     fetchCredits
   } = useCreditsManagement(session);
 
-  // Single useEffect for initialization
+  // Initial credits fetch
   useEffect(() => {
     if (!isSessionLoading && !initialized) {
       console.log("[CreditsContext] Initial credits fetch");
@@ -30,7 +30,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     }
   }, [isSessionLoading, initialized, fetchCredits]);
 
-  // Separate useEffect for auth state changes
+  // Auth state changes
   useEffect(() => {
     if (authListenerSet.current || cleanupRef.current) return;
     
@@ -44,6 +44,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         console.log("[CreditsContext] User signed in, fetching credits");
         setIsLoading(true);
         setInitialized(false);
+        localStorage.removeItem('user_credits'); // Clear stored credits on sign in
         
         setTimeout(async () => {
           try {
@@ -62,8 +63,9 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setIsLoading(true);
         setInitialized(false);
         setCredits(null);
+        localStorage.removeItem('user_credits'); // Clear stored credits on sign out
         
-        // Ensure we fetch IP-based credits after sign out
+        // Fetch IP-based credits after sign out
         setTimeout(async () => {
           try {
             console.log("[CreditsContext] Fetching IP-based credits after sign out");
@@ -89,7 +91,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, []); // Empty dependency array since we use refs to prevent multiple setups
+  }, []); 
 
   const value = {
     credits: credits ?? 0,
