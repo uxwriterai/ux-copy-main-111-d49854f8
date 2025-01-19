@@ -37,8 +37,25 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     console.log("[CreditsContext] Setting up auth state listener");
     authListenerSet.current = true;
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log("[CreditsContext] Auth state changed:", event);
+      
+      if (event === 'SIGNED_IN' && newSession?.user) {
+        console.log("[CreditsContext] User signed in, fetching credits");
+        setIsLoading(true);
+        setInitialized(false);
+        
+        setTimeout(async () => {
+          try {
+            console.log("[CreditsContext] Fetching user credits after sign in");
+            await fetchCredits();
+          } catch (error) {
+            console.error("[CreditsContext] Error fetching user credits:", error);
+          } finally {
+            setIsLoading(false);
+          }
+        }, 0);
+      }
       
       if (event === 'SIGNED_OUT') {
         console.log("[CreditsContext] User signed out, resetting credits state");
