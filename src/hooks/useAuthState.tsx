@@ -9,11 +9,12 @@ export function useAuthState() {
   const [session, setSession] = useState<Session | null>(null)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const authListenerSet = useRef(false)
+  const cleanupRef = useRef<(() => void) | null>(null)
   const navigate = useNavigate()
   const { resetCredits, setCredits } = useCredits()
 
   useEffect(() => {
-    if (authListenerSet.current) return;
+    if (authListenerSet.current || cleanupRef.current) return;
     
     let mounted = true
     console.log("Initializing auth state listener")
@@ -30,7 +31,7 @@ export function useAuthState() {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
           if (!mounted) return
           
-          console.log("Auth state changed:", event)
+          console.log("Auth event:", event)
 
           if (event === 'SIGNED_IN' && newSession?.user) {
             setSession(newSession)
@@ -61,11 +62,12 @@ export function useAuthState() {
           }
         })
 
-        return () => {
+        cleanupRef.current = () => {
           console.log("Cleaning up auth state listener")
           mounted = false
           subscription.unsubscribe()
           authListenerSet.current = false
+          cleanupRef.current = null
         }
       } catch (error) {
         console.error("Error in auth state management:", error)
@@ -77,6 +79,12 @@ export function useAuthState() {
     }
 
     initializeAuth()
+
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current()
+      }
+    }
   }, [navigate, resetCredits, setCredits])
 
   const handleSignOut = async () => {
