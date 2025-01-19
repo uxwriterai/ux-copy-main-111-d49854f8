@@ -8,7 +8,11 @@ import {
   Type,
   FileX,
   Layout,
-  LayoutTemplate
+  LayoutTemplate,
+  Palette,
+  PenTool,
+  Target,
+  Users
 } from "lucide-react"
 import {
   Accordion,
@@ -83,6 +87,29 @@ const faqs = [
   }
 ]
 
+const audiences = [
+  {
+    title: "UX Designers",
+    description: "Looking to enhance their projects with polished, effective copy.",
+    icon: Palette,
+  },
+  {
+    title: "Content Writers",
+    description: "Seeking assistance in crafting user-focused text.",
+    icon: PenTool,
+  },
+  {
+    title: "Marketers",
+    description: "Aiming to optimize conversions through data-backed copy.",
+    icon: Target,
+  },
+  {
+    title: "Product Teams",
+    description: "That need consistent messaging across digital experiences.",
+    icon: Users,
+  },
+]
+
 const Index = () => {
   const navigate = useNavigate()
 
@@ -134,6 +161,32 @@ const Index = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          <div className="mt-24 mb-24">
+            <h2 className="text-3xl font-bold text-center mb-12">Who Are These Tools For?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {audiences.map((audience, index) => (
+                <Card 
+                  key={index}
+                  className="group hover:shadow-lg transition-all duration-300 hover:bg-primary/5 animate-tilt cursor-default"
+                >
+                  <CardHeader>
+                    <div className="flex flex-col items-center text-center gap-4">
+                      <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <audience.icon className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl mb-2">{audience.title}</CardTitle>
+                        <CardDescription>
+                          {audience.description}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
           </div>
 
           <div className="mt-24 max-w-3xl mx-auto px-4">
