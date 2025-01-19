@@ -8,7 +8,7 @@ export const useCreditsManagement = (session: Session | null) => {
   const [initialized, setInitialized] = useState(false);
   const fetchInProgress = useRef(false);
 
-  const fetchCredits = useCallback(async (forceUserCredits?: boolean) => {
+  const fetchCredits = useCallback(async () => {
     if (fetchInProgress.current) {
       console.log("[useCreditsManagement] Fetch already in progress, skipping");
       return;
@@ -18,10 +18,11 @@ export const useCreditsManagement = (session: Session | null) => {
       fetchInProgress.current = true;
       setIsLoading(true);
       
-      // Always use session user ID if it exists, regardless of forceUserCredits
+      // Get the user ID from the session if it exists
       const userId = session?.user?.id;
+      
       if (userId) {
-        console.log('[useCreditsManagement] User session exists, fetching user credits for:', userId);
+        console.log('[useCreditsManagement] User is authenticated, fetching user credits for:', userId);
       } else {
         console.log('[useCreditsManagement] No user session, fetching IP-based credits');
       }
