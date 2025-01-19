@@ -56,11 +56,11 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>UX Writing Tools - AI-Powered Copy Generation</title>
-        <meta name="description" content="A collection of AI-powered tools to help you write better UX copy, including copy improvement, microcopy generation, and A/B testing tools." />
-        <meta name="keywords" content="UX writing, AI copywriting, microcopy generator, UX tools, copy improvement" />
-        <meta property="og:title" content="UX Writing Tools - AI-Powered Copy Generation" />
-        <meta property="og:description" content="Transform your UX writing with our suite of AI-powered copywriting tools." />
+        <title>UX Writing AI Tools — Free Copy Generators for UX Writers</title>
+        <meta name="description" content="Discover the ultimate suite of UX writing AI tools to improve copy, create microcopy, optimize A/B tests, and design landing pages. 100% free, no email required." />
+        <meta name="keywords" content="UX writing tools, AI UX writing generators, Free UX copywriting tools, AI-powered UX copy tools, Microcopy generators for UX, Free UX tools for designers" />
+        <meta property="og:title" content="UX Writing AI Tools — Free Copy Generators for UX Writers" />
+        <meta property="og:description" content="Discover the ultimate suite of UX writing AI tools to improve copy, create microcopy, optimize A/B tests, and design landing pages. 100% free, no email required." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/" />
       </Helmet>
