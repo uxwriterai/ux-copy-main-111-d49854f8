@@ -53,11 +53,6 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
     }
 
     // Only execute this block for anonymous users
-    if (shouldSkipIpOperations) {
-      console.log('[creditsService] Skipping IP-based credits fetch - user is logged in');
-      return null;
-    }
-
     console.log('Anonymous user, proceeding with IP-based credits');
     const ipAddress = await getIpAddress();
     console.log('Fetching IP-based credits for:', ipAddress);
@@ -132,13 +127,9 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     }
     
     // Only handle IP-based credits for anonymous users
-    if (shouldSkipIpOperations) {
-      console.log('[creditsService] Skipping IP-based credits update - user is logged in');
-      return;
-    }
-
+    console.log('Anonymous user, updating IP-based credits');
     const ipAddress = await getIpAddress();
-    console.log('Anonymous user, updating IP-based credits for:', ipAddress);
+    console.log('Updating IP-based credits for:', ipAddress);
     
     const { error: updateError } = await supabase
       .from('user_credits')
