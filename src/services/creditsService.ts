@@ -93,12 +93,34 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     if (userId) {
       console.log('Updating ONLY user-based credits for user:', userId);
       
-      const { error: updateError } = await supabase
+      // First check if a record exists
+      const { data: existingRecord } = await supabase
         .from('user_credits')
-        .upsert([{
-          user_id: userId,
-          credits_remaining: newCredits
-        }]);
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+
+      let updateError;
+      
+      if (existingRecord) {
+        // Update existing record
+        console.log('Updating existing record for user:', userId);
+        const { error } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: newCredits })
+          .eq('user_id', userId);
+        updateError = error;
+      } else {
+        // Insert new record
+        console.log('Creating new record for user:', userId);
+        const { error } = await supabase
+          .from('user_credits')
+          .insert([{
+            user_id: userId,
+            credits_remaining: newCredits
+          }]);
+        updateError = error;
+      }
 
       if (updateError) {
         console.error("Error updating user credits:", updateError);
