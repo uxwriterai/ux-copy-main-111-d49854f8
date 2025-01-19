@@ -288,7 +288,7 @@ const Index = () => {
       <div className="min-h-screen bg-background transition-colors duration-300">
         <div className="container max-w-6xl py-8">
           {/* Tool Section */}
-          <div className="text-left mb-8">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight">Improve Your UX Copy Instantly</h1>
             <p className="text-lg text-muted-foreground mt-2">
               Let AI help you refine your words for better user experiences
