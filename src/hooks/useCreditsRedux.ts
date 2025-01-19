@@ -28,6 +28,8 @@ export const useCreditsRedux = () => {
     if (shouldFetch && !isLoading) {
       console.log('[useCreditsRedux] Fetching credits for user:', userId);
       dispatch(initializeCredits());
+    } else {
+      console.log('[useCreditsRedux] Using cached credits from:', new Date(lastFetched!).toISOString());
     }
   }, [dispatch, userId, lastFetched, isLoading]);
 
