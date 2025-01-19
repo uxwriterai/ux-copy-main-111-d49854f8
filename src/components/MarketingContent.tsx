@@ -30,7 +30,7 @@ export const MarketingContent = () => {
             AI UX Copy Enhancer
           </h1>
           <p className="text-xl text-muted-foreground">
-            Transform your interface text with AI-powered suggestions
+            Let AI help you refine your words for better user experiences
           </p>
         </div>
 
