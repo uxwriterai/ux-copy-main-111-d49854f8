@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { supabase } from '@/integrations/supabase/client';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreditsState {
   credits: number;
@@ -16,7 +16,7 @@ const initialState: CreditsState = {
   lastFetched: null,
 };
 
-// Async thunk for fetching credits
+// Async thunk for fetching user credits
 export const fetchUserCredits = createAsyncThunk(
   'credits/fetchUserCredits',
   async (userId: string | undefined, { rejectWithValue }) => {
@@ -44,7 +44,7 @@ export const fetchUserCredits = createAsyncThunk(
   }
 );
 
-// Async thunk for updating credits
+// Async thunk for updating user credits
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
   async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
