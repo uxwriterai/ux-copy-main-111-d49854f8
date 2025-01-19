@@ -99,8 +99,8 @@ export const MarketingContent = () => {
         <div className="text-center mt-8">
           <Button 
             size="lg" 
+            variant="secondary"
             onClick={scrollToTop}
-            className="bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600"
           >
             Try Now for FREE
             <ArrowUp className="ml-2 h-4 w-4" />
@@ -130,6 +130,44 @@ export const MarketingContent = () => {
         </div>
       </section>
 
+      {/* FAQs */}
+      <section className="space-y-6">
+        <h2 className="text-3xl font-bold text-center">Frequently Asked Questions</h2>
+        <div className="grid gap-4">
+          {[
+            { 
+              question: "What is the AI UX Copywriting Tool?",
+              answer: "It is an AI-powered platform designed to refine and optimize the text used in user interfaces, such as buttons, tooltips, and onboarding screens."
+            },
+            {
+              question: "How does the tool improve UX writing with AI?",
+              answer: "By analyzing your UI screenshot and providing tailored suggestions based on your goals, audience, and desired tone."
+            },
+            {
+              question: "Can I use this tool for different industries?",
+              answer: "Absolutely! Whether you're in e-commerce, SaaS, healthcare, or any other sector, the tool adapts to your unique requirements."
+            },
+            {
+              question: "Is this tool suitable for non-designers?",
+              answer: "Yes, the tool is intuitive and easy to use, making it accessible for marketers, developers, and other professionals."
+            },
+            {
+              question: "Does it support accessibility standards?",
+              answer: "Yes, the tool ensures that your copy is inclusive and accessible to all users."
+            }
+          ].map((faq, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle className="text-lg">{faq.question}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{faq.answer}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="text-center space-y-6">
         <h2 className="text-3xl font-bold">Start Optimizing Your UX Text Today</h2>
@@ -138,8 +176,8 @@ export const MarketingContent = () => {
         </p>
         <Button 
           size="lg" 
+          variant="secondary"
           onClick={scrollToTop}
-          className="bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600"
         >
           Analyze Your UI Copy Now
           <ArrowUp className="ml-2 h-4 w-4" />
