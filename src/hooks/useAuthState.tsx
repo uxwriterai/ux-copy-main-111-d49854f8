@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
 import { setUser, clearUser } from '@/store/slices/authSlice'
-import { resetCredits, fetchUserCredits } from '@/store/slices/creditsSlice'
+import { resetCredits, initializeCredits } from '@/store/slices/creditsSlice'
 
 export function useAuthState() {
   const [session, setSession] = useState<Session | null>(null)
@@ -32,7 +32,7 @@ export function useAuthState() {
             // Clear existing credits and fetch user-based credits
             dispatch(resetCredits())
             dispatch(setUser(currentSession.user.id))
-            dispatch(fetchUserCredits(currentSession.user.id))
+            dispatch(initializeCredits())
           }
         }
 
@@ -47,7 +47,7 @@ export function useAuthState() {
             // Clear existing credits and fetch user-based credits
             dispatch(resetCredits())
             dispatch(setUser(newSession.user.id))
-            dispatch(fetchUserCredits(newSession.user.id))
+            dispatch(initializeCredits())
             toast.success('Welcome back!')
           }
 

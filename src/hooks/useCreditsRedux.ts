@@ -5,7 +5,7 @@ import {
   selectCreditsLoading,
   selectCreditsError,
   selectLastFetched,
-  fetchUserCredits,
+  initializeCredits,
   updateUserCredits,
   resetCredits,
 } from '@/store/slices/creditsSlice';
@@ -27,7 +27,7 @@ export const useCreditsRedux = () => {
     
     if (shouldFetch && !isLoading) {
       console.log('[useCreditsRedux] Fetching credits for user:', userId);
-      dispatch(fetchUserCredits(userId));
+      dispatch(initializeCredits());
     } else {
       console.log('[useCreditsRedux] Using cached credits from:', new Date(lastFetched!).toISOString());
     }
