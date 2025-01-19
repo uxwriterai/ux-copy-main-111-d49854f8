@@ -1,4 +1,5 @@
 import { ABTestingForm } from "@/components/ab-testing/ABTestingForm"
+import { ABTestingContent } from "@/components/ABTestingContent"
 import { Helmet } from 'react-helmet-async';
 
 const Generator = () => {
@@ -22,6 +23,7 @@ const Generator = () => {
           </p>
         </div>
         <ABTestingForm />
+        <ABTestingContent />
       </div>
     </>
   )
