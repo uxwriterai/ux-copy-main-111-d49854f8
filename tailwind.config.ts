@@ -74,17 +74,11 @@ export default {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        tilt: {
-          "0%, 100%": { transform: "rotate3d(0, 0, 0, 0deg)" },
-          "25%": { transform: "rotate3d(1, 1, 0, 2deg)" },
-          "75%": { transform: "rotate3d(-1, -1, 0, 2deg)" },
-        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.5s ease-out",
-        tilt: "tilt 10s infinite linear"
       },
     },
   },
