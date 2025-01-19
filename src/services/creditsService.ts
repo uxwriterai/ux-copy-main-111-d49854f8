@@ -51,38 +51,65 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
   try {
     if (userId) {
       // For authenticated users
-      const { error } = await supabase
+      const { data: existingRecord, error: fetchError } = await supabase
         .from('user_credits')
-        .upsert({
-          user_id: userId,
-          ip_address: null,
-          credits_remaining: newCredits
-        }, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false
-        });
+        .select()
+        .eq('user_id', userId)
+        .is('ip_address', null)
+        .maybeSingle();
 
-      if (error) {
-        console.error("Error updating authenticated user credits:", error);
-        throw error;
+      if (fetchError) throw fetchError;
+
+      if (existingRecord) {
+        const { error } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: newCredits })
+          .eq('user_id', userId)
+          .is('ip_address', null);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('user_credits')
+          .insert({
+            user_id: userId,
+            ip_address: null,
+            credits_remaining: newCredits
+          });
+
+        if (error) throw error;
       }
     } else {
       // For anonymous users
       const ipAddress = await getIpAddress();
-      const { error } = await supabase
+      
+      const { data: existingRecord, error: fetchError } = await supabase
         .from('user_credits')
-        .upsert({
-          ip_address: ipAddress,
-          user_id: null,
-          credits_remaining: newCredits
-        }, {
-          onConflict: 'ip_address',
-          ignoreDuplicates: false
-        });
+        .select()
+        .eq('ip_address', ipAddress)
+        .is('user_id', null)
+        .maybeSingle();
 
-      if (error) {
-        console.error("Error updating anonymous user credits:", error);
-        throw error;
+      if (fetchError) throw fetchError;
+
+      if (existingRecord) {
+        const { error } = await supabase
+          .from('user_credits')
+          .update({ credits_remaining: newCredits })
+          .eq('ip_address', ipAddress)
+          .is('user_id', null);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('user_credits')
+          .insert({
+            ip_address: ipAddress,
+            user_id: null,
+            credits_remaining: newCredits
+          });
+
+        if (error) throw error;
       }
     }
   } catch (error) {
