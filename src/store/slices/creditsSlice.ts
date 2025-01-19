@@ -24,46 +24,35 @@ export const updateUserCredits = createAsyncThunk(
   async ({ userId, credits }: { userId: string | null; credits: number }, { rejectWithValue, getState }) => {
     try {
       const state = getState() as RootState;
-      // Ensure we're using the most up-to-date userId from the auth state
       const currentUserId = state.auth.userId;
       
-      // If there's a mismatch between passed userId and current auth state, use the auth state
-      const effectiveUserId = currentUserId || userId;
-
-      if (effectiveUserId) {
-        console.log('[creditsSlice] Updating credits for authenticated user:', effectiveUserId);
+      // If there's a user ID (either from auth state or passed), use that
+      if (currentUserId || userId) {
+        console.log('[creditsSlice] Updating credits for authenticated user:', currentUserId || userId);
         const { error } = await supabase
           .from('user_credits')
           .upsert([{
-            user_id: effectiveUserId,
+            user_id: currentUserId || userId,
+            ip_address: null,
             credits_remaining: credits
           }]);
 
         if (error) throw error;
-      } else {
-        console.log('[creditsSlice] Updating credits for anonymous user');
-        const ipAddress = await getIpAddress();
-        const { error } = await supabase
-          .from('user_credits')
-          .update({ credits_remaining: credits })
-          .eq('ip_address', ipAddress)
-          .is('user_id', null);
-
-        if (error && error.code === '23505') {
-          console.log('[creditsSlice] Record exists, attempting update');
-          const { error: insertError } = await supabase
-            .from('user_credits')
-            .insert([{
-              ip_address: ipAddress,
-              credits_remaining: credits,
-              user_id: null
-            }]);
-
-          if (insertError) throw insertError;
-        } else if (error) {
-          throw error;
-        }
+        return credits;
       }
+
+      // Only fetch IP if there's no user ID
+      console.log('[creditsSlice] No user ID found, falling back to IP-based credits');
+      const ipAddress = await getIpAddress();
+      const { error } = await supabase
+        .from('user_credits')
+        .upsert([{
+          ip_address: ipAddress,
+          user_id: null,
+          credits_remaining: credits
+        }]);
+
+      if (error) throw error;
       return credits;
     } catch (error) {
       console.error('[creditsSlice] Error updating credits:', error);
@@ -85,7 +74,6 @@ export const initializeCredits = createAsyncThunk(
       return rejectWithValue('Rehydration not complete');
     }
 
-    // Ensure we have a valid auth state before proceeding
     console.log('[creditsSlice] Current auth state - userId:', userId);
 
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
@@ -94,12 +82,14 @@ export const initializeCredits = createAsyncThunk(
     }
 
     try {
+      // If user is authenticated, only fetch user-based credits
       if (userId) {
         console.log('[creditsSlice] Fetching credits for authenticated user:', userId);
         const { data, error } = await supabase
           .from('user_credits')
           .select('credits_remaining')
           .eq('user_id', userId)
+          .is('ip_address', null)
           .single();
 
         if (error) throw error;
@@ -107,7 +97,8 @@ export const initializeCredits = createAsyncThunk(
         return data?.credits_remaining ?? 6;
       }
 
-      console.log('[creditsSlice] Fetching credits for anonymous user');
+      // Only fetch IP-based credits if no user is authenticated
+      console.log('[creditsSlice] No user ID found, fetching IP-based credits');
       const ipAddress = await getIpAddress();
       const { data, error } = await supabase
         .from('user_credits')
@@ -126,10 +117,7 @@ export const initializeCredits = createAsyncThunk(
   {
     condition: (_, { getState }) => {
       const state = getState() as RootState;
-      if (!state.credits.rehydrationComplete) {
-        return false;
-      }
-      return true;
+      return state.credits.rehydrationComplete;
     }
   }
 );
