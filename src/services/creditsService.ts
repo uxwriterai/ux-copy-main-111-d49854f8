@@ -1,6 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// Add an interceptor to check if we should skip IP operations
+let shouldSkipIpOperations = false;
+
+export const setSkipIpOperations = (userId: string | null | undefined) => {
+  shouldSkipIpOperations = !!userId;
+  console.log('[creditsService] IP operations skip status:', shouldSkipIpOperations, 'for userId:', userId);
+};
+
 export const getIpAddress = async (): Promise<string> => {
+  // Skip IP fetch if user is logged in
+  if (shouldSkipIpOperations) {
+    console.log('[creditsService] Skipping IP address fetch - user is logged in');
+    return '';
+  }
+
   try {
     const response = await fetch('https://api.ipify.org?format=json');
     if (!response.ok) throw new Error('Failed to fetch IP address');
@@ -16,6 +30,7 @@ export const getIpAddress = async (): Promise<string> => {
 export const fetchUserCredits = async (userId?: string | null): Promise<number | null> => {
   try {
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
+    setSkipIpOperations(userId);
     
     // If user is logged in, ONLY fetch user-based credits and return immediately
     if (userId) {
@@ -38,6 +53,11 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
     }
 
     // Only execute this block for anonymous users
+    if (shouldSkipIpOperations) {
+      console.log('[creditsService] Skipping IP-based credits fetch - user is logged in');
+      return null;
+    }
+
     console.log('Anonymous user, proceeding with IP-based credits');
     const ipAddress = await getIpAddress();
     console.log('Fetching IP-based credits for:', ipAddress);
@@ -67,6 +87,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
 export const updateCredits = async (newCredits: number, userId?: string | null): Promise<void> => {
   try {
     console.log('Updating credits:', { newCredits, userId });
+    setSkipIpOperations(userId);
     
     // For logged-in users, only update user-based credits
     if (userId) {
@@ -89,6 +110,11 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     }
     
     // Only handle IP-based credits for anonymous users
+    if (shouldSkipIpOperations) {
+      console.log('[creditsService] Skipping IP-based credits update - user is logged in');
+      return;
+    }
+
     const ipAddress = await getIpAddress();
     console.log('Anonymous user, updating IP-based credits for:', ipAddress);
     
