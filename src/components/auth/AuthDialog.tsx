@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Auth } from '@supabase/auth-ui-react'
 import { supabase } from "@/integrations/supabase/client"
 import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { useState } from 'react'
 
 interface AuthDialogProps {
   isOpen: boolean
@@ -9,8 +10,9 @@ interface AuthDialogProps {
   view?: 'sign_in' | 'sign_up' | 'forgotten_password'
 }
 
-export function AuthDialog({ isOpen, onClose, view = 'sign_in' }: AuthDialogProps) {
-  console.log("Current view:", view) // Debug log to track the current view
+export function AuthDialog({ isOpen, onClose, view: initialView = 'sign_in' }: AuthDialogProps) {
+  const [currentView, setCurrentView] = useState(initialView)
+  console.log("Current view:", currentView) // Debug log to track the current view
 
   const titles = {
     sign_in: "Welcome back!",
@@ -28,14 +30,14 @@ export function AuthDialog({ isOpen, onClose, view = 'sign_in' }: AuthDialogProp
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{titles[view]}</DialogTitle>
+          <DialogTitle>{titles[currentView]}</DialogTitle>
           <DialogDescription>
-            {descriptions[view]}
+            {descriptions[currentView]}
           </DialogDescription>
         </DialogHeader>
         <Auth
           supabaseClient={supabase}
-          view={view}
+          view={currentView}
           appearance={{
             theme: ThemeSupa,
             variables: {
@@ -48,6 +50,10 @@ export function AuthDialog({ isOpen, onClose, view = 'sign_in' }: AuthDialogProp
             }
           }}
           providers={[]}
+          onViewChange={({ view }) => {
+            console.log("View changed to:", view)
+            setCurrentView(view)
+          }}
         />
       </DialogContent>
     </Dialog>
