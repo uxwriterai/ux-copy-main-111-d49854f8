@@ -151,10 +151,6 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             theme={theme}
             providers={[]}
             redirectTo={window.location.origin + window.location.pathname}
-            onError={(error) => {
-              console.error("Auth error:", error)
-              setError(getErrorMessage(error))
-            }}
           />
         </DialogContent>
       </Dialog>
