@@ -2,39 +2,15 @@ import { useState, useCallback, useRef } from "react";
 import { Session } from "@supabase/supabase-js";
 import { fetchUserCredits, updateCredits } from "@/services/creditsService";
 
-const CREDITS_STORAGE_KEY = 'user_credits';
-
-const getStoredCredits = (): number | null => {
-  const stored = localStorage.getItem(CREDITS_STORAGE_KEY);
-  return stored ? parseInt(stored, 10) : null;
-};
-
-const setStoredCredits = (credits: number | null) => {
-  if (credits === null) {
-    localStorage.removeItem(CREDITS_STORAGE_KEY);
-  } else {
-    localStorage.setItem(CREDITS_STORAGE_KEY, credits.toString());
-  }
-};
-
 export const useCreditsManagement = (session: Session | null) => {
-  const [credits, setCredits] = useState<number | null>(() => getStoredCredits());
+  const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const fetchInProgress = useRef(false);
 
   const fetchCredits = useCallback(async () => {
-    // Skip if fetch is in progress or credits are already loaded
     if (fetchInProgress.current) {
       console.log("[useCreditsManagement] Fetch already in progress, skipping");
-      return;
-    }
-
-    // Check if credits are in localStorage
-    const storedCredits = getStoredCredits();
-    if (storedCredits !== null && initialized) {
-      console.log("[useCreditsManagement] Using stored credits:", storedCredits);
-      setCredits(storedCredits);
       return;
     }
 
@@ -51,10 +27,8 @@ export const useCreditsManagement = (session: Session | null) => {
         const defaultCredits = session?.user?.id ? 6 : 2;
         await updateCredits(defaultCredits, session?.user?.id);
         setCredits(defaultCredits);
-        setStoredCredits(defaultCredits);
       } else {
         setCredits(fetchedCredits);
-        setStoredCredits(fetchedCredits);
       }
       
       setInitialized(true);
@@ -65,7 +39,7 @@ export const useCreditsManagement = (session: Session | null) => {
       setIsLoading(false);
       fetchInProgress.current = false;
     }
-  }, [session?.user?.id, initialized]);
+  }, [session?.user?.id]);
 
   const useCredit = async (): Promise<boolean> => {
     if (!initialized) {
@@ -81,9 +55,7 @@ export const useCreditsManagement = (session: Session | null) => {
     try {
       console.log('[useCreditsManagement] Using credit. Current credits:', credits);
       await updateCredits(credits - 1, session?.user?.id);
-      const newCredits = credits - 1;
-      setCredits(newCredits);
-      setStoredCredits(newCredits);
+      setCredits(credits - 1);
       return true;
     } catch (error) {
       console.error("[useCreditsManagement] Error using credit:", error);
@@ -93,9 +65,7 @@ export const useCreditsManagement = (session: Session | null) => {
 
   const resetCredits = async () => {
     console.log('[useCreditsManagement] Resetting credits');
-    setStoredCredits(null);
     setInitialized(false);
-    setCredits(null);
     await fetchCredits();
   };
 
