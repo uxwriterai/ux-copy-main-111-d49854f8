@@ -12,9 +12,8 @@ interface AuthDialogProps {
 
 export function AuthDialog({ isOpen, onClose, view: initialView = 'sign_in' }: AuthDialogProps) {
   const [currentView, setCurrentView] = useState(initialView)
-  console.log("Current view:", currentView) // Debug log to track the current view
 
-  // Reset view when dialog opens/closes
+  // Reset view when dialog opens
   useEffect(() => {
     if (isOpen) {
       setCurrentView(initialView)
@@ -23,38 +22,39 @@ export function AuthDialog({ isOpen, onClose, view: initialView = 'sign_in' }: A
 
   // Listen to auth state changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth event:", event) // Debug log for auth events
-      
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         onClose()
-      } else if (event === 'USER_UPDATED') {
-        // Handle password reset, etc.
-        setCurrentView('sign_in')
       }
     })
 
     return () => subscription.unsubscribe()
   }, [onClose])
 
-  // Listen specifically for view changes
+  // Listen for view changes using MutationObserver
   useEffect(() => {
-    const handleViewChange = (event: any) => {
-      if (event.target?.classList.contains('supabase-auth-ui_ui-anchor')) {
-        // Small delay to ensure view updates after click
-        setTimeout(() => {
-          const newView = document.querySelector('.supabase-auth-ui_ui-container')?.getAttribute('data-supabase-auth-view')
-          if (newView) {
-            console.log("View changed to:", newView)
-            setCurrentView(newView as 'sign_in' | 'sign_up' | 'forgotten_password')
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.target instanceof Element) {
+          const view = mutation.target.getAttribute('data-supabase-auth-view')
+          if (view === 'sign_in' || view === 'sign_up' || view === 'forgotten_password') {
+            console.log('View changed to:', view)
+            setCurrentView(view)
           }
-        }, 100)
-      }
+        }
+      })
+    })
+
+    const container = document.querySelector('.supabase-auth-ui_ui-container')
+    if (container) {
+      observer.observe(container, {
+        attributes: true,
+        attributeFilter: ['data-supabase-auth-view']
+      })
     }
 
-    document.addEventListener('click', handleViewChange)
-    return () => document.removeEventListener('click', handleViewChange)
-  }, [])
+    return () => observer.disconnect()
+  }, [isOpen]) // Re-run when dialog opens/closes
 
   const titles = {
     sign_in: "Welcome back!",
