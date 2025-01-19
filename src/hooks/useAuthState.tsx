@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
 import { setUser, clearUser } from '@/store/slices/authSlice'
-import { initializeCredits } from '@/store/slices/creditsSlice'
+import { resetCredits, fetchUserCredits } from '@/store/slices/creditsSlice'
 
 export function useAuthState() {
   const [session, setSession] = useState<Session | null>(null)
@@ -29,8 +29,10 @@ export function useAuthState() {
           console.log("[useAuthState] Initial session state:", currentSession ? "logged in" : "not logged in")
           setSession(currentSession)
           if (currentSession?.user) {
+            // Clear existing credits and fetch user-based credits
+            dispatch(resetCredits())
             dispatch(setUser(currentSession.user.id))
-            dispatch(initializeCredits())
+            dispatch(fetchUserCredits(currentSession.user.id))
           }
         }
 
@@ -42,8 +44,10 @@ export function useAuthState() {
           if (event === 'SIGNED_IN' && newSession?.user) {
             setSession(newSession)
             setIsSigningOut(false)
+            // Clear existing credits and fetch user-based credits
+            dispatch(resetCredits())
             dispatch(setUser(newSession.user.id))
-            dispatch(initializeCredits())
+            dispatch(fetchUserCredits(newSession.user.id))
             toast.success('Welcome back!')
           }
 
@@ -51,6 +55,7 @@ export function useAuthState() {
             setSession(null)
             setIsSigningOut(false)
             dispatch(clearUser())
+            dispatch(resetCredits())
             navigate('/')
             toast.success('Signed out successfully')
           }
@@ -69,6 +74,7 @@ export function useAuthState() {
           setSession(null)
           setIsSigningOut(false)
           dispatch(clearUser())
+          dispatch(resetCredits())
         }
       }
     }

@@ -122,8 +122,11 @@ const creditsSlice = createSlice({
   initialState,
   reducers: {
     resetCredits: (state) => {
+      console.log('[creditsSlice] Resetting credits state');
       state.credits = 0;
       state.lastFetched = null;
+      state.error = null;
+      state.isLoading = false;
     },
   },
   extraReducers: (builder) => {
