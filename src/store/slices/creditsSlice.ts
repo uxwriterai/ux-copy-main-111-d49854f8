@@ -9,6 +9,7 @@ interface CreditsState {
   error: string | null;
   lastFetched: number | null;
   userId: string | null;
+  fetchInProgress: boolean;
 }
 
 const initialState: CreditsState = {
@@ -17,6 +18,7 @@ const initialState: CreditsState = {
   error: null,
   lastFetched: null,
   userId: null,
+  fetchInProgress: false,
 };
 
 export const initializeCredits = createAsyncThunk(
@@ -25,7 +27,14 @@ export const initializeCredits = createAsyncThunk(
     const state = getState() as RootState;
     const lastFetched = state.credits.lastFetched;
     const userId = state.auth.userId;
+    const fetchInProgress = state.credits.fetchInProgress;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+    // Skip if fetch is already in progress
+    if (fetchInProgress) {
+      console.log('[creditsSlice] Fetch already in progress, skipping');
+      return rejectWithValue('Fetch already in progress');
+    }
 
     // Use cached credits if available and not expired
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
@@ -70,7 +79,16 @@ export const initializeCredits = createAsyncThunk(
 
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
+  async ({ userId, credits }: { userId: string | undefined; credits: number }, { getState, rejectWithValue }) => {
+    const state = getState() as RootState;
+    const fetchInProgress = state.credits.fetchInProgress;
+
+    // Skip if fetch is already in progress
+    if (fetchInProgress) {
+      console.log('[creditsSlice] Update already in progress, skipping');
+      return rejectWithValue('Update already in progress');
+    }
+
     if (!userId) {
       console.log('[creditsSlice] No userId provided, skipping update');
       return { credits, userId: null };
@@ -125,6 +143,7 @@ const creditsSlice = createSlice({
       state.error = null;
       state.isLoading = false;
       state.userId = null;
+      state.fetchInProgress = false;
     },
   },
   extraReducers: (builder) => {
@@ -132,6 +151,7 @@ const creditsSlice = createSlice({
       .addCase(initializeCredits.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.fetchInProgress = true;
       })
       .addCase(initializeCredits.fulfilled, (state, action) => {
         // Only update if:
@@ -146,10 +166,15 @@ const creditsSlice = createSlice({
         } else {
           console.log('[creditsSlice] Skipping update - different userId');
         }
+        state.fetchInProgress = false;
       })
       .addCase(initializeCredits.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+        state.fetchInProgress = false;
+      })
+      .addCase(updateUserCredits.pending, (state) => {
+        state.fetchInProgress = true;
       })
       .addCase(updateUserCredits.fulfilled, (state, action) => {
         // Only update if same userId or no previous userId
@@ -160,6 +185,10 @@ const creditsSlice = createSlice({
         } else {
           console.log('[creditsSlice] Skipping update - different userId');
         }
+        state.fetchInProgress = false;
+      })
+      .addCase(updateUserCredits.rejected, (state) => {
+        state.fetchInProgress = false;
       });
   },
 });
@@ -170,5 +199,6 @@ export const selectCredits = (state: RootState) => state.credits.credits;
 export const selectCreditsLoading = (state: RootState) => state.credits.isLoading;
 export const selectCreditsError = (state: RootState) => state.credits.error;
 export const selectLastFetched = (state: RootState) => state.credits.lastFetched;
+export const selectFetchInProgress = (state: RootState) => state.credits.fetchInProgress;
 
 export default creditsSlice.reducer;
