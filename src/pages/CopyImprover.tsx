@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from 'react-helmet-async';
+import { MarketingContent } from '@/components/MarketingContent';
 
 const MAX_SUGGESTIONS = 15;
 
@@ -286,6 +287,7 @@ const Index = () => {
 
       <div className="min-h-screen bg-background transition-colors duration-300">
         <div className="container max-w-6xl py-8">
+          {/* Tool Section */}
           <div className="text-left mb-8">
             <h1 className="text-3xl font-bold tracking-tight">Improve Your UX Copy Instantly</h1>
             <p className="text-lg text-muted-foreground mt-2">
@@ -297,10 +299,13 @@ const Index = () => {
           </div>
 
           {!showResults ? (
-            <div className="max-w-2xl mx-auto space-y-8">
-              <ImageUpload onImageUpload={handleImageUpload} />
-              <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
-            </div>
+            <>
+              <div className="max-w-2xl mx-auto space-y-8">
+                <ImageUpload onImageUpload={handleImageUpload} />
+                <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+              </div>
+              <MarketingContent />
+            </>
           ) : (
             <div className="space-y-8">
               <div className="flex justify-between items-center mb-8">
