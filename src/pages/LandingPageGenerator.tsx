@@ -132,10 +132,8 @@ const LandingPageGenerator = () => {
 
       <div className="container max-w-6xl py-8">
         <div className="space-y-6">
-          <div className="text-left mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Landing Page Copy Generator
-            </h1>
+          <div className="text-center space-y-2 mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">Landing Page Copy Generator</h1>
             <p className="text-muted-foreground">
               Generate compelling copy for every section of your landing page
             </p>
