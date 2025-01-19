@@ -284,7 +284,7 @@ const MicrocopyGenerator = () => {
       </Helmet>
 
       <div className="container max-w-6xl py-8">
-        <div className="text-left mb-8">
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Create Perfect Microcopy in Seconds</h1>
           <p className="text-lg text-muted-foreground mt-2">
             Write concise, effective text for buttons, forms, and menus with ease
