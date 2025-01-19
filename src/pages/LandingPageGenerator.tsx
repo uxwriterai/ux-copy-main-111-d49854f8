@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { generateLandingPageCopy } from "@/services/landingPageService";
 import { LandingPageResult } from "@/components/landing-page/LandingPageResult";
+import { Helmet } from 'react-helmet-async';
 
 const INDUSTRIES = [
   "Technology",
@@ -118,139 +119,151 @@ const LandingPageGenerator = () => {
   }
 
   return (
-    <div className="container max-w-6xl py-8">
-      <div className="space-y-6">
-        <div className="text-left mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Landing Page Copy Generator
-          </h1>
-          <p className="text-muted-foreground">
-            Generate compelling copy for every section of your landing page
-          </p>
+    <>
+      <Helmet>
+        <title>Landing Page Copy Generator - Create Compelling Content</title>
+        <meta name="description" content="Generate persuasive and effective copy for your landing pages with our AI-powered tool." />
+        <meta name="keywords" content="landing page copy, copywriting, content generation, AI writing" />
+        <meta property="og:title" content="Landing Page Copy Generator - Create Compelling Content" />
+        <meta property="og:description" content="Create engaging landing page copy that converts visitors into customers." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="/landing-page" />
+      </Helmet>
+
+      <div className="container max-w-6xl py-8">
+        <div className="space-y-6">
+          <div className="text-left mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Landing Page Copy Generator
+            </h1>
+            <p className="text-muted-foreground">
+              Generate compelling copy for every section of your landing page
+            </p>
+          </div>
+
+          <Card className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="productName">Product/Service Name</Label>
+                  <Input
+                    id="productName"
+                    name="productName"
+                    value={formData.productName}
+                    onChange={handleInputChange}
+                    placeholder="e.g., TaskMaster Pro"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="industry">Industry</Label>
+                  <Select
+                    value={formData.industry}
+                    onValueChange={(value) => handleSelectChange("industry", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="targetAudience">Target Audience</Label>
+                  <Select
+                    value={formData.targetAudience}
+                    onValueChange={(value) => handleSelectChange("targetAudience", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select target audience" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TARGET_AUDIENCES.map((audience) => (
+                        <SelectItem key={audience} value={audience}>
+                          {audience}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="tone">Brand Tone</Label>
+                  <Select
+                    value={formData.tone}
+                    onValueChange={(value) => handleSelectChange("tone", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TONES.map((tone) => (
+                        <SelectItem key={tone} value={tone}>
+                          {tone}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="uniqueSellingPoints">
+                    Unique Selling Points
+                  </Label>
+                  <Textarea
+                    id="uniqueSellingPoints"
+                    name="uniqueSellingPoints"
+                    value={formData.uniqueSellingPoints}
+                    onChange={handleInputChange}
+                    placeholder="What makes your product/service unique?"
+                    className="min-h-[100px]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="keyFeatures">Key Features</Label>
+                  <Textarea
+                    id="keyFeatures"
+                    name="keyFeatures"
+                    value={formData.keyFeatures}
+                    onChange={handleInputChange}
+                    placeholder="List the main features of your product/service"
+                    className="min-h-[100px]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="additionalContext">
+                    Additional Context (Optional)
+                  </Label>
+                  <Textarea
+                    id="additionalContext"
+                    name="additionalContext"
+                    value={formData.additionalContext}
+                    onChange={handleInputChange}
+                    placeholder="Any other details that might help generate better copy"
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Generating..." : "Generate Landing Page Copy"}
+              </Button>
+            </form>
+          </Card>
         </div>
-
-        <Card className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="productName">Product/Service Name</Label>
-                <Input
-                  id="productName"
-                  name="productName"
-                  value={formData.productName}
-                  onChange={handleInputChange}
-                  placeholder="e.g., TaskMaster Pro"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="industry">Industry</Label>
-                <Select
-                  value={formData.industry}
-                  onValueChange={(value) => handleSelectChange("industry", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIES.map((industry) => (
-                      <SelectItem key={industry} value={industry}>
-                        {industry}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="targetAudience">Target Audience</Label>
-                <Select
-                  value={formData.targetAudience}
-                  onValueChange={(value) => handleSelectChange("targetAudience", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select target audience" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TARGET_AUDIENCES.map((audience) => (
-                      <SelectItem key={audience} value={audience}>
-                        {audience}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="tone">Brand Tone</Label>
-                <Select
-                  value={formData.tone}
-                  onValueChange={(value) => handleSelectChange("tone", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select tone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TONES.map((tone) => (
-                      <SelectItem key={tone} value={tone}>
-                        {tone}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="uniqueSellingPoints">
-                  Unique Selling Points
-                </Label>
-                <Textarea
-                  id="uniqueSellingPoints"
-                  name="uniqueSellingPoints"
-                  value={formData.uniqueSellingPoints}
-                  onChange={handleInputChange}
-                  placeholder="What makes your product/service unique?"
-                  className="min-h-[100px]"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="keyFeatures">Key Features</Label>
-                <Textarea
-                  id="keyFeatures"
-                  name="keyFeatures"
-                  value={formData.keyFeatures}
-                  onChange={handleInputChange}
-                  placeholder="List the main features of your product/service"
-                  className="min-h-[100px]"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="additionalContext">
-                  Additional Context (Optional)
-                </Label>
-                <Textarea
-                  id="additionalContext"
-                  name="additionalContext"
-                  value={formData.additionalContext}
-                  onChange={handleInputChange}
-                  placeholder="Any other details that might help generate better copy"
-                  className="min-h-[100px]"
-                />
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Generating..." : "Generate Landing Page Copy"}
-            </Button>
-          </form>
-        </Card>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from 'react-helmet-async';
 
 const MAX_SUGGESTIONS = 15;
 
@@ -272,90 +273,102 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
-      <div className="container max-w-6xl py-8">
-        <div className="text-left mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">UX Copy Improver</h1>
-          <p className="text-lg text-muted-foreground mt-2">
-            Transform your UI text with AI-powered suggestions
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
-          </p>
-        </div>
+    <>
+      <Helmet>
+        <title>UX Copy Improver - AI-Powered Copy Suggestions</title>
+        <meta name="description" content="Transform your UI text with AI-powered suggestions for better user experience and engagement." />
+        <meta name="keywords" content="UX writing, copy improvement, AI copywriting, UI text optimization" />
+        <meta property="og:title" content="UX Copy Improver - AI-Powered Copy Suggestions" />
+        <meta property="og:description" content="Get intelligent suggestions to improve your UI copy and enhance user experience." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="/copy-improver" />
+      </Helmet>
 
-        {!showResults ? (
-          <div className="max-w-2xl mx-auto space-y-8">
-            <ImageUpload onImageUpload={handleImageUpload} />
-            <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+      <div className="min-h-screen bg-background transition-colors duration-300">
+        <div className="container max-w-6xl py-8">
+          <div className="text-left mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">UX Copy Improver</h1>
+            <p className="text-lg text-muted-foreground mt-2">
+              Transform your UI text with AI-powered suggestions
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {suggestions.length > 0 ? `${suggestions.length} suggestions generated` : ''}
+            </p>
           </div>
-        ) : (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center mb-8">
-              <Button 
-                variant="outline" 
-                onClick={handleRestart}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Start Over
-              </Button>
-              {suggestions.length > 0 && (
-                <Button
-                  variant="outline"
-                  onClick={handleDownloadPDF}
+
+          {!showResults ? (
+            <div className="max-w-2xl mx-auto space-y-8">
+              <ImageUpload onImageUpload={handleImageUpload} />
+              <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <div className="flex justify-between items-center mb-8">
+                <Button 
+                  variant="outline" 
+                  onClick={handleRestart}
                   className="flex items-center gap-2"
                 >
-                  <Download className="w-4 h-4" />
-                  Download PDF
+                  <ArrowLeft className="w-4 h-4" />
+                  Start Over
                 </Button>
+                {suggestions.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleDownloadPDF}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download PDF
+                  </Button>
+                )}
+              </div>
+              <Suggestions 
+                suggestions={suggestions} 
+                onFeedback={handleFeedback}
+                imageUrl={imagePreviewUrl}
+              />
+              
+              {suggestions.length > 0 && (
+                <div className="mt-8 rounded-lg border bg-card">
+                  <div className="p-4 border-b">
+                    <h2 className="text-xl font-semibold">Improvement Details</h2>
+                  </div>
+                  <div className="p-4 overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">#</TableHead>
+                          <TableHead className="w-32">Element</TableHead>
+                          <TableHead>Original Text</TableHead>
+                          <TableHead>Improved Text</TableHead>
+                          <TableHead className="w-64">Explanation</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {suggestions.map((suggestion, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>{suggestion.element}</TableCell>
+                            <TableCell>{suggestion.original}</TableCell>
+                            <TableCell className="font-medium text-primary">
+                              {suggestion.improved}
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {suggestion.explanation}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               )}
             </div>
-            <Suggestions 
-              suggestions={suggestions} 
-              onFeedback={handleFeedback}
-              imageUrl={imagePreviewUrl}
-            />
-            
-            {suggestions.length > 0 && (
-              <div className="mt-8 rounded-lg border bg-card">
-                <div className="p-4 border-b">
-                  <h2 className="text-xl font-semibold">Improvement Details</h2>
-                </div>
-                <div className="p-4 overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12">#</TableHead>
-                        <TableHead className="w-32">Element</TableHead>
-                        <TableHead>Original Text</TableHead>
-                        <TableHead>Improved Text</TableHead>
-                        <TableHead className="w-64">Explanation</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {suggestions.map((suggestion, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{index + 1}</TableCell>
-                          <TableCell>{suggestion.element}</TableCell>
-                          <TableCell>{suggestion.original}</TableCell>
-                          <TableCell className="font-medium text-primary">
-                            {suggestion.improved}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {suggestion.explanation}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
