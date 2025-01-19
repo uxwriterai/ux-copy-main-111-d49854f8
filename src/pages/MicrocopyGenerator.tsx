@@ -15,9 +15,6 @@ import { toast } from "sonner";
 import { useToast } from "@/hooks/use-toast";
 import { generateMicrocopy } from "@/services/geminiService";
 import { CopyVariant } from "@/components/microcopy/CopyVariant";
-import { useCredits } from "@/contexts/CreditsContext";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AuthDialog } from "@/components/auth/AuthDialog";
 
 type ElementType = 
   | "button"
@@ -69,25 +66,12 @@ const MicrocopyGenerator = () => {
     additionalNotes: "",
   });
   const [generatedCopy, setGeneratedCopy] = useState<string[]>([]);
-  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { toast: toastFn } = useToast();
-  const { credits, useCredit } = useCredits();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      if (credits <= 0) {
-        setShowCreditsDialog(true);
-        return;
-      }
-
-      // Check and use a credit before proceeding
-      if (!await useCredit()) {
-        throw new Error('No credits remaining');
-      }
-
       setIsLoading(true);
       const variants = await generateMicrocopy(
         request.elementType,
@@ -255,37 +239,6 @@ const MicrocopyGenerator = () => {
               </div>
             </Card>
           </div>
-
-          <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Unlock 5x More Credits</DialogTitle>
-                <DialogDescription className="pt-2">
-                  You've used all your free credits! Sign up now to get:
-                  <ul className="list-disc pl-6 mt-2 space-y-1">
-                    <li>5x more credits to generate content</li>
-                    <li>Priority support</li>
-                  </ul>
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex gap-3 justify-end">
-                <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
-                  Maybe later
-                </Button>
-                <Button onClick={() => {
-                  setShowCreditsDialog(false);
-                  setShowAuthDialog(true);
-                }}>
-                  Sign up
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <AuthDialog 
-            open={showAuthDialog} 
-            onOpenChange={setShowAuthDialog} 
-          />
         </div>
       </div>
     </div>

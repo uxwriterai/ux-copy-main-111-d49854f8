@@ -8,9 +8,6 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { useCredits } from '@/contexts/CreditsContext';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AuthDialog } from "@/components/auth/AuthDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 const MAX_SUGGESTIONS = 15;
@@ -21,9 +18,6 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [showCreditsDialog, setShowCreditsDialog] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const { credits, useCredit } = useCredits();
 
   const handleImageUpload = (file: File) => {
     setUploadedImage(file);
@@ -84,16 +78,6 @@ const Index = () => {
 
   const analyzeUIWithGemini = async (image: File, context: ContextData) => {
     try {
-      if (credits <= 0) {
-        setShowCreditsDialog(true);
-        return;
-      }
-
-      // Check and use a credit before proceeding
-      if (!await useCredit()) {
-        throw new Error('No credits remaining');
-      }
-
       if (image.size > 4 * 1024 * 1024) {
         throw new Error('Image size must be less than 4MB');
       }
@@ -370,37 +354,6 @@ const Index = () => {
             )}
           </div>
         )}
-
-        <Dialog open={showCreditsDialog} onOpenChange={setShowCreditsDialog}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Unlock 5x More Credits</DialogTitle>
-              <DialogDescription className="pt-2">
-                You've used all your free credits! Sign up now to get:
-                <ul className="list-disc pl-6 mt-2 space-y-1">
-                  <li>5x more credits to generate content</li>
-                  <li>Priority support</li>
-                </ul>
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex gap-3 justify-end">
-              <Button variant="ghost" onClick={() => setShowCreditsDialog(false)}>
-                Maybe later
-              </Button>
-              <Button onClick={() => {
-                setShowCreditsDialog(false);
-                setShowAuthDialog(true);
-              }}>
-                Sign up
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <AuthDialog 
-          open={showAuthDialog} 
-          onOpenChange={setShowAuthDialog} 
-        />
       </div>
     </div>
   );
