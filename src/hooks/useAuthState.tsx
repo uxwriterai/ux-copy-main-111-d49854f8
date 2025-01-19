@@ -4,8 +4,6 @@ import { supabase } from '@/integrations/supabase/client'
 import { useNavigate } from 'react-router-dom'
 import { useCredits } from '@/contexts/CreditsContext'
 import { toast } from 'sonner'
-import { useAppDispatch } from './useAppSelector'
-import { setCredits } from '@/store/slices/creditsSlice'
 
 export function useAuthState() {
   const [session, setSession] = useState<Session | null>(null)
@@ -13,8 +11,7 @@ export function useAuthState() {
   const authListenerSet = useRef(false)
   const cleanupRef = useRef<(() => void) | null>(null)
   const navigate = useNavigate()
-  const { resetCredits } = useCredits()
-  const dispatch = useAppDispatch()
+  const { resetCredits, setCredits } = useCredits()
 
   useEffect(() => {
     if (authListenerSet.current || cleanupRef.current) return;
@@ -48,7 +45,7 @@ export function useAuthState() {
                 .maybeSingle()
 
               if (existingCredits) {
-                dispatch(setCredits(existingCredits.credits_remaining))
+                setCredits(existingCredits.credits_remaining)
                 toast.success('Welcome back!')
               }
             } catch (error) {
@@ -88,7 +85,7 @@ export function useAuthState() {
         cleanupRef.current()
       }
     }
-  }, [navigate, resetCredits, dispatch])
+  }, [navigate, resetCredits, setCredits])
 
   const handleSignOut = async () => {
     if (isSigningOut) return

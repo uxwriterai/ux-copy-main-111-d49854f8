@@ -6,10 +6,8 @@ export interface UserCredits {
 
 export interface CreditsContextType {
   credits: number;
+  setCredits: (credits: number | null) => void;
   useCredit: () => Promise<boolean>;
   resetCredits: () => Promise<void>;
   isLoading: boolean;
-  initialized: boolean;
-  setInitialized: (initialized: boolean) => void;
-  fetchCredits: () => Promise<void>;
 }
