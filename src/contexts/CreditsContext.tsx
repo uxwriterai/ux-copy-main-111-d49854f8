@@ -3,6 +3,8 @@ import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCreditsManagement } from "@/hooks/useCreditsManagement";
 import { CreditsContextType } from "@/types/credits";
+import { useAppDispatch } from "@/hooks/useAppSelector";
+import { setCredits, setLoading } from "@/store/slices/creditsSlice";
 
 const CreditsContext = createContext<CreditsContextType | undefined>(undefined);
 
@@ -10,13 +12,12 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
   const { session, isLoading: isSessionLoading } = useSessionContext();
   const authListenerSet = useRef(false);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const dispatch = useAppDispatch();
   const {
     credits,
-    setCredits,
     useCredit,
     resetCredits,
     isLoading,
-    setIsLoading,
     initialized,
     setInitialized,
     fetchCredits
@@ -42,7 +43,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
       
       if (event === 'SIGNED_IN' && newSession?.user) {
         console.log("[CreditsContext] User signed in, fetching credits");
-        setIsLoading(true);
+        dispatch(setLoading(true));
         setInitialized(false);
         
         setTimeout(async () => {
@@ -52,16 +53,16 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           } catch (error) {
             console.error("[CreditsContext] Error fetching user credits:", error);
           } finally {
-            setIsLoading(false);
+            dispatch(setLoading(false));
           }
         }, 0);
       }
       
       if (event === 'SIGNED_OUT') {
         console.log("[CreditsContext] User signed out, resetting credits state");
-        setIsLoading(true);
+        dispatch(setLoading(true));
         setInitialized(false);
-        setCredits(null);
+        dispatch(setCredits(null));
         
         // Ensure we fetch IP-based credits after sign out
         setTimeout(async () => {
@@ -71,7 +72,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
           } catch (error) {
             console.error("[CreditsContext] Error fetching IP-based credits:", error);
           } finally {
-            setIsLoading(false);
+            dispatch(setLoading(false));
           }
         }, 0);
       }
@@ -89,14 +90,16 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         cleanupRef.current();
       }
     };
-  }, []); // Empty dependency array since we use refs to prevent multiple setups
+  }, [dispatch]); // Added dispatch to dependencies
 
   const value = {
     credits: credits ?? 0,
-    setCredits,
     useCredit,
     resetCredits,
-    isLoading
+    isLoading,
+    initialized,
+    setInitialized,
+    fetchCredits
   };
 
   return (
