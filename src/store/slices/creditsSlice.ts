@@ -16,11 +16,22 @@ const initialState: CreditsState = {
   lastFetched: null,
 };
 
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 // Async thunk for fetching user credits
 export const fetchUserCredits = createAsyncThunk(
   'credits/fetchUserCredits',
-  async (userId: string | undefined, { rejectWithValue }) => {
+  async (userId: string | undefined, { getState, rejectWithValue }) => {
     try {
+      const state = getState() as RootState;
+      const lastFetched = state.credits.lastFetched;
+      
+      // Skip fetch if data is fresh
+      if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
+        console.log('Using cached credits data');
+        return state.credits.credits;
+      }
+
       console.log('Fetching credits for user:', userId);
       
       if (userId) {
@@ -54,7 +65,10 @@ export const updateUserCredits = createAsyncThunk(
       if (userId) {
         const { error } = await supabase
           .from('user_credits')
-          .upsert({ user_id: userId, credits_remaining: credits });
+          .upsert({ 
+            user_id: userId, 
+            credits_remaining: credits 
+          });
 
         if (error) throw error;
       }
@@ -72,7 +86,7 @@ const creditsSlice = createSlice({
   initialState,
   reducers: {
     resetCredits: (state) => {
-      state.credits = 0;
+      state.credits = 2; // Reset to anonymous user credits
       state.lastFetched = null;
     },
   },
@@ -93,6 +107,7 @@ const creditsSlice = createSlice({
       })
       .addCase(updateUserCredits.fulfilled, (state, action) => {
         state.credits = action.payload;
+        state.lastFetched = Date.now();
       });
   },
 });
