@@ -136,10 +136,14 @@ const Index = () => {
         <div className="w-full px-4 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
             {tools.map((tool) => (
-              <Card key={tool.route} className="group hover:shadow-lg transition-all w-full max-w-sm">
+              <Card 
+                key={tool.route} 
+                className="group hover:shadow-lg transition-all duration-300 w-full max-w-sm hover:scale-105 cursor-pointer animate-tilt"
+                onClick={() => navigate(tool.route)}
+              >
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                       <tool.icon className="w-6 h-6" />
                     </div>
                     <div>
@@ -151,13 +155,11 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    variant="secondary" 
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                    onClick={() => navigate(tool.route)}
+                  <div 
+                    className="w-full py-2 px-4 text-center rounded-md bg-secondary text-secondary-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                   >
                     Open Tool
-                  </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
