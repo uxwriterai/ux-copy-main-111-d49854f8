@@ -14,6 +14,7 @@ import { useState, useEffect } from "react"
 import { WelcomeDialog } from "./WelcomeDialog"
 import { AuthConfetti } from "./AuthConfetti"
 import { getErrorMessage } from "@/utils/authErrors"
+import { useCredits } from "@/contexts/CreditsContext"
 
 interface AuthDialogProps {
   open: boolean
@@ -26,24 +27,33 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [showWelcome, setShowWelcome] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [view, setView] = useState<'sign_in' | 'sign_up' | 'forgotten_password'>('sign_in')
+  const { resetCredits } = useCredits()
 
   useEffect(() => {
     console.log("Setting up auth state change listener")
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       console.log("Auth event:", event)
       
       if (event === 'SIGNED_IN') {
         onOpenChange(false)
-      }
-      
-      // Handle new user sign up
-      if (event === 'USER_UPDATED') {
-        onOpenChange(false)
-        setShowConfetti(true)
-        setTimeout(() => {
-          setShowWelcome(true)
-        }, 1000)
+        // For new sign ups, show confetti and welcome dialog
+        const { data: { user } } = await supabase.auth.getUser()
+        const { data: userCredits } = await supabase
+          .from('user_credits')
+          .select('created_at')
+          .eq('user_id', user?.id)
+          .single()
+        
+        // If userCredits was just created (within last 5 seconds), this is a new signup
+        if (userCredits && 
+            new Date().getTime() - new Date(userCredits.created_at).getTime() < 5000) {
+          setShowConfetti(true)
+          await resetCredits()
+          setTimeout(() => {
+            setShowWelcome(true)
+          }, 1000)
+        }
       }
     })
 
@@ -51,7 +61,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       console.log("Cleaning up auth state listener")
       subscription.unsubscribe()
     }
-  }, [onOpenChange]) // Add onOpenChange as dependency
+  }, [onOpenChange, resetCredits])
 
   const getAuthContent = () => {
     switch (view) {
