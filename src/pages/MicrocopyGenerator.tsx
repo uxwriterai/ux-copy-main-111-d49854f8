@@ -115,7 +115,7 @@ const MicrocopyGenerator = () => {
       <div className="min-h-screen bg-background py-8">
         <div className="container max-w-4xl">
           <div className="space-y-6">
-            <div className="space-y-2">
+            <div className="text-center space-y-2">
               <h1 className="text-3xl font-bold tracking-tight">Microcopy Generator</h1>
               <p className="text-muted-foreground">
                 Generate clear and effective microcopy for your UI elements
