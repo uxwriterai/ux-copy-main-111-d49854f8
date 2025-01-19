@@ -79,10 +79,10 @@ const EmptyStateGenerator = () => {
       <div className="min-h-screen bg-background py-8">
         <div className="container max-w-4xl">
           <div className="space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">Craft Helpful Empty State Messages</h1>
+            <div className="space-y-2 text-center">
+              <h1 className="text-3xl font-bold tracking-tight">Empty State Message Generator</h1>
               <p className="text-muted-foreground">
-                Guide your users with clear, thoughtful AI-generated text
+                Craft thoughtful empty state messages with AI-generated text
               </p>
             </div>
 
