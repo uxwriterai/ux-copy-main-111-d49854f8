@@ -9,81 +9,64 @@ export function useAuthState() {
   const [session, setSession] = useState<Session | null>(null)
   const [isSigningOut, setIsSigningOut] = useState(false)
   const authListenerSet = useRef(false)
-  const cleanupRef = useRef<(() => void) | null>(null)
-  const navigate = useNavigate()
   const { resetCredits, setCredits } = useCredits()
+  const navigate = useNavigate()
 
   useEffect(() => {
-    if (authListenerSet.current || cleanupRef.current) return;
-    
-    let mounted = true
+    // Only set up the listener once
+    if (authListenerSet.current) return
+
     console.log("Initializing auth state listener")
-    authListenerSet.current = true;
+    authListenerSet.current = true
+    let mounted = true
 
-    async function initializeAuth() {
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession()
-        if (mounted) {
-          console.log("Initial session state:", currentSession ? "logged in" : "not logged in")
-          setSession(currentSession)
-        }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (!mounted) return
+      console.log("Initial session state:", currentSession ? "logged in" : "not logged in")
+      setSession(currentSession)
+    })
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-          if (!mounted) return
-          
-          console.log("Auth event:", event)
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!mounted) return
+      
+      console.log("Auth event:", event)
 
-          if (event === 'SIGNED_IN' && newSession?.user) {
-            setSession(newSession)
-            setIsSigningOut(false)
+      if (event === 'SIGNED_IN' && newSession?.user) {
+        setSession(newSession)
+        setIsSigningOut(false)
 
-            try {
-              const { data: existingCredits } = await supabase
-                .from('user_credits')
-                .select('credits_remaining')
-                .eq('user_id', newSession.user.id)
-                .maybeSingle()
+        try {
+          const { data: existingCredits } = await supabase
+            .from('user_credits')
+            .select('credits_remaining')
+            .eq('user_id', newSession.user.id)
+            .maybeSingle()
 
-              if (existingCredits) {
-                setCredits(existingCredits.credits_remaining)
-                toast.success('Welcome back!')
-              }
-            } catch (error) {
-              console.error("Error fetching user credits:", error)
-            }
+          if (existingCredits) {
+            setCredits(existingCredits.credits_remaining)
+            toast.success('Welcome back!')
           }
-
-          if (event === 'SIGNED_OUT') {
-            setSession(null)
-            setIsSigningOut(false)
-            resetCredits()
-            navigate('/')
-            toast.success('Signed out successfully')
-          }
-        })
-
-        cleanupRef.current = () => {
-          console.log("Cleaning up auth state listener")
-          mounted = false
-          subscription.unsubscribe()
-          authListenerSet.current = false
-          cleanupRef.current = null
-        }
-      } catch (error) {
-        console.error("Error in auth state management:", error)
-        if (mounted) {
-          setSession(null)
-          setIsSigningOut(false)
+        } catch (error) {
+          console.error("Error fetching user credits:", error)
         }
       }
-    }
 
-    initializeAuth()
+      if (event === 'SIGNED_OUT') {
+        setSession(null)
+        setIsSigningOut(false)
+        resetCredits()
+        navigate('/')
+        toast.success('Signed out successfully')
+      }
+    })
 
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current()
-      }
+      console.log("Cleaning up auth state listener")
+      mounted = false
+      subscription.unsubscribe()
+      authListenerSet.current = false
     }
   }, [navigate, resetCredits, setCredits])
 
