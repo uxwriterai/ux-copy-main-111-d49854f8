@@ -8,7 +8,6 @@ interface CreditsState {
   isLoading: boolean;
   error: string | null;
   lastFetched: number | null;
-  userId: string | null;
 }
 
 const initialState: CreditsState = {
@@ -16,7 +15,6 @@ const initialState: CreditsState = {
   isLoading: false,
   error: null,
   lastFetched: null,
-  userId: null,
 };
 
 export const initializeCredits = createAsyncThunk(
@@ -30,11 +28,11 @@ export const initializeCredits = createAsyncThunk(
     // Use cached credits if available and not expired
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
       console.log('[creditsSlice] Using cached credits from:', new Date(lastFetched).toISOString());
-      return { credits: state.credits.credits, userId };
+      return state.credits.credits;
     }
 
     try {
-      // If user is authenticated, ONLY fetch user-based credits
+      // If user is authenticated, fetch user-based credits
       if (userId) {
         console.log('[creditsSlice] User is authenticated, fetching user-based credits');
         const { data, error } = await supabase
@@ -45,7 +43,7 @@ export const initializeCredits = createAsyncThunk(
 
         if (error) throw error;
         console.log('[creditsSlice] User credits fetched:', data?.credits_remaining);
-        return { credits: data?.credits_remaining ?? 6, userId };
+        return data?.credits_remaining ?? 6;
       }
 
       // Only fetch IP-based credits for anonymous users
@@ -60,7 +58,7 @@ export const initializeCredits = createAsyncThunk(
 
       if (error && error.code !== 'PGRST116') throw error;
       console.log('[creditsSlice] IP-based credits fetched:', data?.credits_remaining);
-      return { credits: data?.credits_remaining ?? 2, userId: null };
+      return data?.credits_remaining ?? 2;
     } catch (error) {
       console.error('[creditsSlice] Error initializing credits:', error);
       return rejectWithValue('Failed to initialize credits');
@@ -73,40 +71,17 @@ export const updateUserCredits = createAsyncThunk(
   async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
     if (!userId) {
       console.log('[creditsSlice] No userId provided, skipping update');
-      return { credits, userId: null };
+      return credits;
     }
 
     try {
-      console.log('[creditsSlice] Updating user credits:', { userId, credits });
-      
-      // First check if record exists
-      const { data: existingRecord } = await supabase
+      console.log('[creditsSlice] Updating credits:', { userId, credits });
+      const { error } = await supabase
         .from('user_credits')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
+        .upsert({ user_id: userId, credits_remaining: credits });
 
-      if (existingRecord) {
-        // Update existing record
-        const { error } = await supabase
-          .from('user_credits')
-          .update({ credits_remaining: credits })
-          .eq('user_id', userId);
-
-        if (error) throw error;
-      } else {
-        // Insert new record
-        const { error } = await supabase
-          .from('user_credits')
-          .insert([{
-            user_id: userId,
-            credits_remaining: credits
-          }]);
-
-        if (error) throw error;
-      }
-
-      return { credits, userId };
+      if (error) throw error;
+      return credits;
     } catch (error) {
       console.error('[creditsSlice] Error updating credits:', error);
       return rejectWithValue('Failed to update credits');
@@ -124,7 +99,6 @@ const creditsSlice = createSlice({
       state.lastFetched = null;
       state.error = null;
       state.isLoading = false;
-      state.userId = null;
     },
   },
   extraReducers: (builder) => {
@@ -134,32 +108,17 @@ const creditsSlice = createSlice({
         state.error = null;
       })
       .addCase(initializeCredits.fulfilled, (state, action) => {
-        // Only update if:
-        // 1. No existing userId (new state) OR
-        // 2. Same userId (updating existing user) OR
-        // 3. No userId in payload (anonymous user)
-        if (!state.userId || state.userId === action.payload.userId || !action.payload.userId) {
-          state.isLoading = false;
-          state.credits = action.payload.credits;
-          state.userId = action.payload.userId;
-          state.lastFetched = Date.now();
-        } else {
-          console.log('[creditsSlice] Skipping update - different userId');
-        }
+        state.isLoading = false;
+        state.credits = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(initializeCredits.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
       .addCase(updateUserCredits.fulfilled, (state, action) => {
-        // Only update if same userId or no previous userId
-        if (!state.userId || state.userId === action.payload.userId) {
-          state.credits = action.payload.credits;
-          state.userId = action.payload.userId;
-          state.lastFetched = Date.now();
-        } else {
-          console.log('[creditsSlice] Skipping update - different userId');
-        }
+        state.credits = action.payload;
+        state.lastFetched = Date.now();
       });
   },
 });
