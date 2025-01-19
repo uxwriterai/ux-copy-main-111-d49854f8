@@ -20,64 +20,42 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     fetchCredits
   } = useCreditsManagement(session);
 
+  // Single useEffect for initialization and session changes
   useEffect(() => {
-    let isMounted = true;
     console.log("Session or initialization state changed");
-    
-    const initializeCredits = async () => {
-      if (!isSessionLoading && !initialized && isMounted) {
-        console.log("Fetching credits...");
-        try {
-          await fetchCredits();
-        } catch (error) {
-          console.error("Error fetching credits:", error);
-        } finally {
-          if (isMounted) {
-            setIsLoading(false);
-          }
-        }
-      }
-    };
+    console.log("Session state:", session?.user?.id ? "logged in" : "not logged in");
+    console.log("Initialized:", initialized);
+    console.log("Session loading:", isSessionLoading);
 
-    initializeCredits();
+    if (!isSessionLoading && !initialized) {
+      console.log("Fetching credits...");
+      fetchCredits();
+    }
+  }, [session?.user?.id, isSessionLoading, initialized, fetchCredits]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [session?.user?.id, isSessionLoading, initialized, fetchCredits, setIsLoading]);
-
+  // Separate useEffect for auth state changes
   useEffect(() => {
     console.log("Setting up auth state change listener");
-    let isMounted = true;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (!isMounted) return;
-      
       console.log("Auth state changed:", event);
       if (event === 'SIGNED_OUT') {
         console.log("User signed out, resetting credits state");
         setIsLoading(true);
-        setInitialized(false);
+        setInitialized(false); // Reset initialized state
         setCredits(null);
         
-        if (isMounted) {
-          try {
-            console.log("Fetching IP-based credits");
-            await fetchCredits();
-          } catch (error) {
-            console.error("Error fetching IP-based credits:", error);
-          } finally {
-            if (isMounted) {
-              setIsLoading(false);
-            }
-          }
+        try {
+          console.log("Fetching IP-based credits");
+          await fetchCredits();
+        } catch (error) {
+          console.error("Error fetching IP-based credits:", error);
         }
       }
     });
 
     return () => {
       console.log("Cleaning up auth state listener");
-      isMounted = false;
       subscription.unsubscribe();
     };
   }, [fetchCredits, setCredits, setIsLoading, setInitialized]);
@@ -87,8 +65,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     setCredits,
     useCredit,
     resetCredits,
-    isLoading,
-    setIsLoading
+    isLoading
   };
 
   return (
