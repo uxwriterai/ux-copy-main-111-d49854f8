@@ -33,11 +33,11 @@ const HeroCopyGenerator = () => {
   return (
     <>
       <Helmet>
-        <title>Hero Copy Generator - UX Writing Tools</title>
-        <meta name="description" content="Generate compelling headlines, taglines, and CTAs for your hero sections with AI assistance." />
-        <meta name="keywords" content="hero section, copywriting, landing page, CTA writing" />
-        <meta property="og:title" content="Hero Copy Generator - UX Writing Tools" />
-        <meta property="og:description" content="Create impactful hero section copy that converts." />
+        <title>Hero Section Copy Generator — 100% Free, No Email Required</title>
+        <meta name="description" content="Generate captivating hero section copy with AI. Create impactful headlines, taglines, and CTAs to boost conversions. Free and easy to use, no email required." />
+        <meta name="keywords" content="Hero section copy generator, AI tools for hero headlines, Generate CTAs for hero sections, UX hero text creation tools, Free AI tools for hero copywriting" />
+        <meta property="og:title" content="Hero Section Copy Generator — 100% Free, No Email Required" />
+        <meta property="og:description" content="Generate captivating hero section copy with AI. Create impactful headlines, taglines, and CTAs to boost conversions. Free and easy to use, no email required." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/hero-copy" />
       </Helmet>

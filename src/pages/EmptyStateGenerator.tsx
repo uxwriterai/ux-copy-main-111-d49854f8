@@ -66,11 +66,11 @@ const EmptyStateGenerator = () => {
   return (
     <>
       <Helmet>
-        <title>Empty State Generator - UX Writing Tools</title>
-        <meta name="description" content="Create engaging and effective empty state messages that guide users and improve UX." />
-        <meta name="keywords" content="empty state design, UX writing, user experience, empty state messages" />
-        <meta property="og:title" content="Empty State Generator - UX Writing Tools" />
-        <meta property="og:description" content="Generate clear and effective empty state messages for better user experience." />
+        <title>Empty State Message Builder — 100% Free, No Email Required</title>
+        <meta name="description" content="Design engaging and user-friendly empty state messages with AI. Guide users effectively with this free, no-signup-needed tool." />
+        <meta name="keywords" content="Empty state design tools, AI-generated empty state messages, UX tools for empty state copywriting, Create engaging empty state text, Free empty state generators" />
+        <meta property="og:title" content="Empty State Message Builder — 100% Free, No Email Required" />
+        <meta property="og:description" content="Design engaging and user-friendly empty state messages with AI. Guide users effectively with this free, no-signup-needed tool." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/empty-state" />
       </Helmet>

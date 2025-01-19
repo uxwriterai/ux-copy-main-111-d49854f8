@@ -103,11 +103,11 @@ const MicrocopyGenerator = () => {
   return (
     <>
       <Helmet>
-        <title>Microcopy Generator - Create Effective UI Text</title>
-        <meta name="description" content="Generate clear and effective microcopy for buttons, forms, tooltips, and other UI elements." />
-        <meta name="keywords" content="microcopy, UX writing, UI text, user interface copy" />
-        <meta property="og:title" content="Microcopy Generator - Create Effective UI Text" />
-        <meta property="og:description" content="Create user-friendly microcopy that guides and engages your users." />
+        <title>AI Microcopy Creator — 100% Free, No Email Required</title>
+        <meta name="description" content="Create effective and concise microcopy for buttons, forms, and UI elements with this AI-powered tool. Free to use with no email required." />
+        <meta name="keywords" content="Microcopy creation for UI, AI microcopy generator for UX, Generate effective button text with AI, UX-focused AI microcopy tools, Free AI tools for creating microcopy" />
+        <meta property="og:title" content="AI Microcopy Creator — 100% Free, No Email Required" />
+        <meta property="og:description" content="Create effective and concise microcopy for buttons, forms, and UI elements with this AI-powered tool. Free to use with no email required." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/microcopy" />
       </Helmet>

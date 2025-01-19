@@ -275,11 +275,11 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>UX Copy Improver - AI-Powered Copy Suggestions</title>
-        <meta name="description" content="Transform your UI text with AI-powered suggestions for better user experience and engagement." />
-        <meta name="keywords" content="UX writing, copy improvement, AI copywriting, UI text optimization" />
-        <meta property="og:title" content="UX Copy Improver - AI-Powered Copy Suggestions" />
-        <meta property="og:description" content="Get intelligent suggestions to improve your UI copy and enhance user experience." />
+        <title>AI UX Copy Enhancer — 100% Free, No Email Required</title>
+        <meta name="description" content="Refine and enhance your UX copy with AI-driven suggestions. Perfect for improving UI text and optimizing user experience. 100% free, no signup required." />
+        <meta name="keywords" content="Enhance UX copy with AI, AI-powered UX text optimizer, Improve UI text with AI tools, UX writing AI copy improvement, Free UX copy enhancement tools" />
+        <meta property="og:title" content="AI UX Copy Enhancer — 100% Free, No Email Required" />
+        <meta property="og:description" content="Refine and enhance your UX copy with AI-driven suggestions. Perfect for improving UI text and optimizing user experience. 100% free, no signup required." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/copy-improver" />
       </Helmet>

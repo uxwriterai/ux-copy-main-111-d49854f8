@@ -121,11 +121,11 @@ const LandingPageGenerator = () => {
   return (
     <>
       <Helmet>
-        <title>Landing Page Copy Generator - Create Compelling Content</title>
-        <meta name="description" content="Generate persuasive and effective copy for your landing pages with our AI-powered tool." />
-        <meta name="keywords" content="landing page copy, copywriting, content generation, AI writing" />
-        <meta property="og:title" content="Landing Page Copy Generator - Create Compelling Content" />
-        <meta property="og:description" content="Create engaging landing page copy that converts visitors into customers." />
+        <title>Landing Page Copy Generator — 100% Free, No Email Required</title>
+        <meta name="description" content="Generate high-quality landing page copy with AI. Build engaging headlines, descriptions, and CTAs effortlessly. Free and no signup needed." />
+        <meta name="keywords" content="Landing page text generator, AI tools for landing page copywriting, Create landing page CTAs with AI, Optimize landing pages with AI text tools, Free landing page copywriting tools" />
+        <meta property="og:title" content="Landing Page Copy Generator — 100% Free, No Email Required" />
+        <meta property="og:description" content="Generate high-quality landing page copy with AI. Build engaging headlines, descriptions, and CTAs effortlessly. Free and no signup needed." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/landing-page" />
       </Helmet>

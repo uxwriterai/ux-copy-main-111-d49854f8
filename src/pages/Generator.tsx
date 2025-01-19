@@ -5,11 +5,11 @@ const Generator = () => {
   return (
     <>
       <Helmet>
-        <title>A/B Testing Copy Generator - UX Writing Tools</title>
-        <meta name="description" content="Generate and compare A/B test variations for your UX copy with AI-powered insights and analysis." />
-        <meta name="keywords" content="A/B testing, copy testing, UX writing, conversion optimization" />
-        <meta property="og:title" content="A/B Testing Copy Generator - UX Writing Tools" />
-        <meta property="og:description" content="Create and analyze A/B test variations for your UX copy." />
+        <title>A/B Copy Test Generator — 100% Free, No Email Required</title>
+        <meta name="description" content="Effortlessly generate A/B test variations for UX copy with AI. Optimize user interactions and improve conversions. 100% free, no signup needed." />
+        <meta name="keywords" content="A/B testing tools for UX copy, AI-powered A/B test generator, Optimize UX copy with A/B tests, Conversion-focused A/B test tools, Free A/B test generators for UX" />
+        <meta property="og:title" content="A/B Copy Test Generator — 100% Free, No Email Required" />
+        <meta property="og:description" content="Effortlessly generate A/B test variations for UX copy with AI. Optimize user interactions and improve conversions. 100% free, no signup needed." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/generator" />
       </Helmet>
