@@ -4,6 +4,7 @@ import { HeroForm } from "@/components/hero/HeroForm";
 import { CopyVariant } from "@/components/microcopy/CopyVariant";
 import { generateHeroCopy } from "@/services/heroService";
 import { toast } from "sonner";
+import { Helmet } from 'react-helmet-async';
 
 interface HeroCopyVariant {
   headline: string;
@@ -30,50 +31,62 @@ const HeroCopyGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container max-w-6xl">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Hero Copy Generator</h1>
-            <p className="text-muted-foreground">
-              Generate impactful headlines, taglines, and CTAs for your hero sections
-            </p>
-          </div>
+    <>
+      <Helmet>
+        <title>Hero Copy Generator - UX Writing Tools</title>
+        <meta name="description" content="Generate compelling headlines, taglines, and CTAs for your hero sections with AI assistance." />
+        <meta name="keywords" content="hero section, copywriting, landing page, CTA writing" />
+        <meta property="og:title" content="Hero Copy Generator - UX Writing Tools" />
+        <meta property="og:description" content="Create impactful hero section copy that converts." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="/hero-copy" />
+      </Helmet>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="p-6">
-              <HeroForm onSubmit={handleSubmit} isLoading={isLoading} />
-            </Card>
+      <div className="min-h-screen bg-background py-8">
+        <div className="container max-w-6xl">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">Hero Copy Generator</h1>
+              <p className="text-muted-foreground">
+                Generate impactful headlines, taglines, and CTAs for your hero sections
+              </p>
+            </div>
 
-            <Card className="p-6">
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Generated Variants</h2>
-                {generatedVariants.length > 0 ? (
-                  <div className="space-y-8">
-                    {generatedVariants.map((variant, index) => (
-                      <div key={index} className="space-y-4">
-                        <h3 className="text-sm font-medium text-muted-foreground">
-                          Variant {index + 1}
-                        </h3>
-                        <div className="space-y-2">
-                          <CopyVariant text={variant.headline} label="Headline" />
-                          <CopyVariant text={variant.tagline} label="Tagline" />
-                          <CopyVariant text={variant.cta} label="CTA" />
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="p-6">
+                <HeroForm onSubmit={handleSubmit} isLoading={isLoading} />
+              </Card>
+
+              <Card className="p-6">
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold">Generated Variants</h2>
+                  {generatedVariants.length > 0 ? (
+                    <div className="space-y-8">
+                      {generatedVariants.map((variant, index) => (
+                        <div key={index} className="space-y-4">
+                          <h3 className="text-sm font-medium text-muted-foreground">
+                            Variant {index + 1}
+                          </h3>
+                          <div className="space-y-2">
+                            <CopyVariant text={variant.headline} label="Headline" />
+                            <CopyVariant text={variant.tagline} label="Tagline" />
+                            <CopyVariant text={variant.cta} label="CTA" />
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">
-                    Generated hero copy variants will appear here
-                  </p>
-                )}
-              </div>
-            </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Generated hero copy variants will appear here
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

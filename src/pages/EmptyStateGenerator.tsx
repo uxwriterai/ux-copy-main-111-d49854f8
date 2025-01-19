@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { generateEmptyState } from "@/services/emptyStateService"
 import { CopyVariant } from "@/components/microcopy/CopyVariant"
+import { Helmet } from 'react-helmet-async';
 
 const ELEMENT_TYPES = [
   "search",
@@ -63,125 +64,137 @@ const EmptyStateGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container max-w-4xl">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Empty State Generator</h1>
-            <p className="text-muted-foreground">
-              Generate clear and effective empty state messages with calls-to-action
-            </p>
-          </div>
+    <>
+      <Helmet>
+        <title>Empty State Generator - UX Writing Tools</title>
+        <meta name="description" content="Create engaging and effective empty state messages that guide users and improve UX." />
+        <meta name="keywords" content="empty state design, UX writing, user experience, empty state messages" />
+        <meta property="og:title" content="Empty State Generator - UX Writing Tools" />
+        <meta property="og:description" content="Generate clear and effective empty state messages for better user experience." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="/empty-state" />
+      </Helmet>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="elementType">Element Type</Label>
-                  <Select
-                    value={elementType}
-                    onValueChange={setElementType}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select element type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ELEMENT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+      <div className="min-h-screen bg-background py-8">
+        <div className="container max-w-4xl">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight">Empty State Generator</h1>
+              <p className="text-muted-foreground">
+                Generate clear and effective empty state messages with calls-to-action
+              </p>
+            </div>
 
-                {elementType === "custom" && (
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="customElementType">Custom Element Type</Label>
-                    <Input
-                      id="customElementType"
-                      placeholder="e.g., Activity Feed"
-                      value={customElementType}
-                      onChange={(e) => setCustomElementType(e.target.value)}
+                    <Label htmlFor="elementType">Element Type</Label>
+                    <Select
+                      value={elementType}
+                      onValueChange={setElementType}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select element type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ELEMENT_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {elementType === "custom" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="customElementType">Custom Element Type</Label>
+                      <Input
+                        id="customElementType"
+                        placeholder="e.g., Activity Feed"
+                        value={customElementType}
+                        onChange={(e) => setCustomElementType(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="context">Context</Label>
+                    <Textarea
+                      id="context"
+                      placeholder="Describe the context and purpose of this empty state"
+                      value={context}
+                      onChange={(e) => setContext(e.target.value)}
+                      className="min-h-[100px]"
                     />
                   </div>
-                )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="context">Context</Label>
-                  <Textarea
-                    id="context"
-                    placeholder="Describe the context and purpose of this empty state"
-                    value={context}
-                    onChange={(e) => setContext(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tone">Brand Tone</Label>
-                  <Select
-                    value={tone}
-                    onValueChange={setTone}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select tone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TONES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t.charAt(0).toUpperCase() + t.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="additionalNotes">Additional Notes</Label>
-                  <Textarea
-                    id="additionalNotes"
-                    placeholder="Any specific requirements or preferences"
-                    value={additionalNotes}
-                    onChange={(e) => setAdditionalNotes(e.target.value)}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Generating..." : "Generate Empty State Copy"}
-                </Button>
-              </form>
-            </Card>
-
-            <Card className="p-6">
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Generated Variants</h2>
-                {variants.length > 0 ? (
-                  <div className="space-y-6">
-                    {variants.map((variant, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="text-sm font-medium text-muted-foreground">
-                          Variant {index + 1}
-                        </div>
-                        <CopyVariant text={variant.message} />
-                        <div className="text-sm font-medium text-muted-foreground mt-2">
-                          Call-to-Action
-                        </div>
-                        <CopyVariant text={variant.cta} />
-                      </div>
-                    ))}
+                  <div className="space-y-2">
+                    <Label htmlFor="tone">Brand Tone</Label>
+                    <Select
+                      value={tone}
+                      onValueChange={setTone}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TONES.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t.charAt(0).toUpperCase() + t.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                ) : (
-                  <p className="text-muted-foreground">
-                    Generated empty state messages will appear here
-                  </p>
-                )}
-              </div>
-            </Card>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="additionalNotes">Additional Notes</Label>
+                    <Textarea
+                      id="additionalNotes"
+                      placeholder="Any specific requirements or preferences"
+                      value={additionalNotes}
+                      onChange={(e) => setAdditionalNotes(e.target.value)}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Generating..." : "Generate Empty State Copy"}
+                  </Button>
+                </form>
+              </Card>
+
+              <Card className="p-6">
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold">Generated Variants</h2>
+                  {variants.length > 0 ? (
+                    <div className="space-y-6">
+                      {variants.map((variant, index) => (
+                        <div key={index} className="space-y-2">
+                          <div className="text-sm font-medium text-muted-foreground">
+                            Variant {index + 1}
+                          </div>
+                          <CopyVariant text={variant.message} />
+                          <div className="text-sm font-medium text-muted-foreground mt-2">
+                            Call-to-Action
+                          </div>
+                          <CopyVariant text={variant.cta} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Generated empty state messages will appear here
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
