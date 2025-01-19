@@ -273,6 +273,10 @@ const Index = () => {
     toast.success(isPositive ? 'Thanks for the positive feedback!' : 'Thanks for the feedback. We\'ll improve our suggestions.');
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
       <Helmet>
@@ -290,10 +294,61 @@ const Index = () => {
           {!showResults ? (
             <div className="space-y-12">
               <div className="text-center space-y-4 max-w-3xl mx-auto">
-                <h1 className="text-4xl font-bold tracking-tight">Improve Your UX Copy Instantly</h1>
+                <h1 className="text-4xl font-bold tracking-tight">AI UX Copy Enhancer — 100% Free, No Email Required</h1>
                 <p className="text-xl text-muted-foreground">
-                  In today's fast-paced digital world, crafting user experiences that captivate and guide users seamlessly is more important than ever.
+                  Refine and enhance your UX copy with AI-driven suggestions. Perfect for improving UI text and optimizing user experience.
                 </p>
+              </div>
+
+              <div className="max-w-2xl mx-auto space-y-8">
+                <ImageUpload onImageUpload={handleImageUpload} />
+                <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+              </div>
+
+              <div className="space-y-12">
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+                </div>
+                
+                <div className="grid md:grid-cols-4 gap-6">
+                  <Card className="p-6 text-center">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-xl font-bold text-primary">1</span>
+                    </div>
+                    <h3 className="font-semibold mb-2">Upload Screenshot</h3>
+                    <p className="text-sm text-muted-foreground">Drag and drop your design file</p>
+                  </Card>
+                  <Card className="p-6 text-center">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-xl font-bold text-primary">2</span>
+                    </div>
+                    <h3 className="font-semibold mb-2">Define Parameters</h3>
+                    <p className="text-sm text-muted-foreground">Set audience and tone</p>
+                  </Card>
+                  <Card className="p-6 text-center">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-xl font-bold text-primary">3</span>
+                    </div>
+                    <h3 className="font-semibold mb-2">Get AI Insights</h3>
+                    <p className="text-sm text-muted-foreground">Receive tailored suggestions</p>
+                  </Card>
+                  <Card className="p-6 text-center">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-xl font-bold text-primary">4</span>
+                    </div>
+                    <h3 className="font-semibold mb-2">Implement</h3>
+                    <p className="text-sm text-muted-foreground">Apply and test changes</p>
+                  </Card>
+                </div>
+                <div className="text-center mt-8">
+                  <Button 
+                    size="lg" 
+                    onClick={scrollToTop}
+                    className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-semibold"
+                  >
+                    Try Now — 100% Free, No Sign-up Required
+                  </Button>
+                </div>
               </div>
 
               <div className="grid md:grid-cols-3 gap-6">
@@ -345,44 +400,39 @@ const Index = () => {
 
               <div className="space-y-8">
                 <div className="text-center">
-                  <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+                  <h2 className="text-3xl font-bold mb-4">Who Is This Tool For?</h2>
                 </div>
                 
                 <div className="grid md:grid-cols-4 gap-6">
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">1</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Upload Screenshot</h3>
-                    <p className="text-sm text-muted-foreground">Drag and drop your design file</p>
+                  <Card className="p-6">
+                    <h3 className="font-semibold mb-2">UI/UX Designers</h3>
+                    <p className="text-sm text-muted-foreground">Simplify the process of creating effective microcopy.</p>
                   </Card>
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">2</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Define Parameters</h3>
-                    <p className="text-sm text-muted-foreground">Set audience and tone</p>
+                  <Card className="p-6">
+                    <h3 className="font-semibold mb-2">Product Managers</h3>
+                    <p className="text-sm text-muted-foreground">Ensure that your product messaging aligns with user needs.</p>
                   </Card>
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">3</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Get AI Insights</h3>
-                    <p className="text-sm text-muted-foreground">Receive tailored suggestions</p>
+                  <Card className="p-6">
+                    <h3 className="font-semibold mb-2">Marketers</h3>
+                    <p className="text-sm text-muted-foreground">Craft compelling CTAs that drive action.</p>
                   </Card>
-                  <Card className="p-6 text-center">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-xl font-bold text-primary">4</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Implement</h3>
-                    <p className="text-sm text-muted-foreground">Apply and test changes</p>
+                  <Card className="p-6">
+                    <h3 className="font-semibold mb-2">Developers</h3>
+                    <p className="text-sm text-muted-foreground">Improve clarity and usability without becoming a wordsmith.</p>
                   </Card>
                 </div>
               </div>
 
-              <div className="max-w-2xl mx-auto space-y-8">
-                <ImageUpload onImageUpload={handleImageUpload} />
-                <ContextForm onSubmit={handleContextSubmit} isLoading={isLoading} />
+              <div className="text-center space-y-6">
+                <h2 className="text-3xl font-bold">Ready to elevate your user experience?</h2>
+                <p className="text-xl text-muted-foreground">Transform how you approach UX writing with our AI-powered tool.</p>
+                <Button 
+                  size="lg" 
+                  onClick={scrollToTop}
+                  className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-semibold"
+                >
+                  Start Optimizing Your UX Text — It's Free!
+                </Button>
               </div>
             </div>
           ) : (
