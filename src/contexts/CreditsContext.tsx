@@ -22,13 +22,13 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
     fetchCredits
   } = useCreditsManagement(session);
 
-  // Single useEffect for initialization
+  // Single useEffect for initialization and session changes
   useEffect(() => {
-    if (!isSessionLoading && !initialized) {
-      console.log("[CreditsContext] Initial credits fetch");
+    if (!isSessionLoading && !initialized && session?.user?.id) {
+      console.log("[CreditsContext] Initial credits fetch for authenticated user");
       fetchCredits();
     }
-  }, [isSessionLoading, initialized, fetchCredits]);
+  }, [isSessionLoading, initialized, session?.user?.id, fetchCredits]);
 
   // Separate useEffect for auth state changes
   useEffect(() => {
@@ -44,17 +44,8 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         console.log("[CreditsContext] User signed in, fetching credits");
         setIsLoading(true);
         setInitialized(false);
-        
-        setTimeout(async () => {
-          try {
-            console.log("[CreditsContext] Fetching user credits after sign in");
-            await fetchCredits();
-          } catch (error) {
-            console.error("[CreditsContext] Error fetching user credits:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        }, 0);
+        await fetchCredits();
+        setIsLoading(false);
       }
       
       if (event === 'SIGNED_OUT') {
@@ -62,18 +53,7 @@ export const CreditsProvider = ({ children }: { children: React.ReactNode }) => 
         setIsLoading(true);
         setInitialized(false);
         setCredits(null);
-        
-        // Ensure we fetch IP-based credits after sign out
-        setTimeout(async () => {
-          try {
-            console.log("[CreditsContext] Fetching IP-based credits after sign out");
-            await fetchCredits();
-          } catch (error) {
-            console.error("[CreditsContext] Error fetching IP-based credits:", error);
-          } finally {
-            setIsLoading(false);
-          }
-        }, 0);
+        setIsLoading(false);
       }
     });
 
