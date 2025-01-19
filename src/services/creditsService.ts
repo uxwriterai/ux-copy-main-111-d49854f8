@@ -39,6 +39,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .from('user_credits')
         .select('credits_remaining')
         .eq('user_id', userId)
+        .is('ip_address', null) // Ensure we only get user-based records
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -62,7 +63,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .from('user_credits')
         .select('credits_remaining')
         .eq('ip_address', ipAddress)
-        .is('user_id', null)
+        .is('user_id', null) // Ensure we only get IP-based records
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -96,6 +97,7 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
         .from('user_credits')
         .upsert([{
           user_id: userId,
+          ip_address: null, // Ensure this is a user-based record
           credits_remaining: newCredits
         }]);
 
