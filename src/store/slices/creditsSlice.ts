@@ -22,6 +22,7 @@ export const initializeCredits = createAsyncThunk(
   async (_, { getState, rejectWithValue }) => {
     const state = getState() as RootState;
     const lastFetched = state.credits.lastFetched;
+    const userId = state.auth.userId;
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
     if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) {
@@ -70,7 +71,7 @@ export const initializeCredits = createAsyncThunk(
 
 export const fetchUserCredits = createAsyncThunk(
   'credits/fetchUserCredits',
-  async (userId: string | undefined, { rejectWithValue }) => {
+  async (userId: string | undefined, { getState, rejectWithValue }) => {
     try {
       console.log('[creditsSlice] Fetching credits for user:', userId);
       
@@ -87,7 +88,7 @@ export const fetchUserCredits = createAsyncThunk(
         return data?.credits_remaining ?? 6;
       }
       
-      return 2;
+      return 2; // Default credits for non-authenticated users
     } catch (error) {
       console.error('[creditsSlice] Error fetching credits:', error);
       return rejectWithValue('Failed to fetch credits');
@@ -97,7 +98,7 @@ export const fetchUserCredits = createAsyncThunk(
 
 export const updateUserCredits = createAsyncThunk(
   'credits/updateUserCredits',
-  async ({ userId, credits }: { userId: string | undefined; credits: number }, { rejectWithValue }) => {
+  async ({ userId, credits }: { userId: string | undefined; credits: number }, { getState, rejectWithValue }) => {
     try {
       console.log('[creditsSlice] Updating credits:', { userId, credits });
       
