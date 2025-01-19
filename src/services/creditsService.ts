@@ -32,16 +32,13 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
     console.log('Fetching credits for:', userId ? `user ${userId}` : 'anonymous user');
     setSkipIpOperations(userId);
     
-    // If user is logged in, ONLY fetch user-based credits
     if (userId) {
       console.log('User is logged in, fetching ONLY user-based credits');
       const { data, error } = await supabase
         .from('user_credits')
         .select('credits_remaining')
         .eq('user_id', userId)
-        .is('ip_address', null) // Ensure we only get user-based records
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .is('ip_address', null)
         .maybeSingle();
       
       if (error) {
@@ -53,7 +50,6 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
       return data?.credits_remaining ?? null;
     }
 
-    // Only execute IP-based credits fetch if userId is explicitly null or undefined
     if (!userId) {
       console.log('Anonymous user, proceeding with IP-based credits');
       const ipAddress = await getIpAddress();
@@ -63,9 +59,7 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
         .from('user_credits')
         .select('credits_remaining')
         .eq('ip_address', ipAddress)
-        .is('user_id', null) // Ensure we only get IP-based records
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .is('user_id', null)
         .maybeSingle();
       
       if (error) {
@@ -77,7 +71,6 @@ export const fetchUserCredits = async (userId?: string | null): Promise<number |
       return data?.credits_remaining ?? null;
     }
 
-    console.log('No valid user ID or IP-based credits scenario, returning null');
     return null;
   } catch (error) {
     console.error("Error in fetchUserCredits:", error);
@@ -90,33 +83,54 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
     console.log('Updating credits:', { newCredits, userId });
     setSkipIpOperations(userId);
     
-    // For logged-in users, only update user-based credits
     if (userId) {
       console.log('Updating ONLY user-based credits for user:', userId);
-      const { error } = await supabase
+      
+      // First try to update existing record
+      const { error: updateError } = await supabase
         .from('user_credits')
-        .upsert([{
-          user_id: userId,
-          ip_address: null, // Ensure this is a user-based record
-          credits_remaining: newCredits
-        }]);
+        .update({ credits_remaining: newCredits })
+        .eq('user_id', userId)
+        .is('ip_address', null);
 
-      if (error) {
-        console.error("Error updating user credits:", error);
-        throw error;
+      if (updateError) {
+        // If update fails (no record exists), try to insert
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            user_id: userId,
+            ip_address: null,
+            credits_remaining: newCredits
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          if (insertError.code === '23505') {
+            // If we hit a race condition where record was created between our update and insert
+            // Try the update one more time
+            const { error: finalUpdateError } = await supabase
+              .from('user_credits')
+              .update({ credits_remaining: newCredits })
+              .eq('user_id', userId)
+              .is('ip_address', null);
+
+            if (finalUpdateError) throw finalUpdateError;
+          } else {
+            throw insertError;
+          }
+        }
       }
       
       console.log('Successfully updated credits for user:', userId);
       return;
     }
 
-    // Only handle IP-based credits when userId is explicitly null or undefined
     if (!userId) {
       console.log('Anonymous user, updating IP-based credits');
       const ipAddress = await getIpAddress();
       console.log('Updating IP-based credits for:', ipAddress);
       
-      // First, try to update existing record
       const { error: updateError } = await supabase
         .from('user_credits')
         .update({ credits_remaining: newCredits })
@@ -124,24 +138,33 @@ export const updateCredits = async (newCredits: number, userId?: string | null):
         .is('user_id', null);
 
       if (updateError) {
-        // If update fails, try to insert new record
         const { error: insertError } = await supabase
           .from('user_credits')
-          .insert([{
+          .insert({
             ip_address: ipAddress,
             credits_remaining: newCredits,
             user_id: null
-          }]);
+          })
+          .select()
+          .single();
 
         if (insertError) {
-          console.error("Error inserting IP credits:", insertError);
-          throw insertError;
+          if (insertError.code === '23505') {
+            // Handle race condition
+            const { error: finalUpdateError } = await supabase
+              .from('user_credits')
+              .update({ credits_remaining: newCredits })
+              .eq('ip_address', ipAddress)
+              .is('user_id', null);
+
+            if (finalUpdateError) throw finalUpdateError;
+          } else {
+            throw insertError;
+          }
         }
       }
       
       console.log('Successfully updated credits for IP:', ipAddress);
-    } else {
-      console.log('Skipping credit update - no valid user ID or IP scenario');
     }
   } catch (error) {
     console.error("Error in updateCredits:", error);
