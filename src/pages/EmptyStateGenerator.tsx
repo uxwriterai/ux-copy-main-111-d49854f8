@@ -15,6 +15,7 @@ import {
 import { generateEmptyState } from "@/services/emptyStateService"
 import { CopyVariant } from "@/components/microcopy/CopyVariant"
 import { Helmet } from 'react-helmet-async';
+import { EmptyStateContent } from "@/components/EmptyStateContent"
 
 const ELEMENT_TYPES = [
   "search",
@@ -194,6 +195,7 @@ const EmptyStateGenerator = () => {
           </div>
         </div>
       </div>
+      <EmptyStateContent />
     </>
   )
 }
