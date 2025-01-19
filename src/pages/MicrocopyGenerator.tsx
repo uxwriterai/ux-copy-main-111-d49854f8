@@ -1,10 +1,10 @@
 import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Suggestions, type Suggestion } from '@/components/Suggestions';
 import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 import { ContextForm, type ContextData } from '@/components/ContextForm';
+import { Suggestions, type Suggestion } from '@/components/Suggestions';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
