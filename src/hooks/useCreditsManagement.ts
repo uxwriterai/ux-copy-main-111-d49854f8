@@ -1,12 +1,14 @@
 import { useState, useCallback, useRef } from "react";
 import { Session } from "@supabase/supabase-js";
 import { fetchUserCredits, updateCredits } from "@/services/creditsService";
+import { useAppDispatch, useAppSelector } from "@/hooks/useAppSelector";
+import { setCredits, setUserId, setLoading, setError } from "@/store/slices/creditsSlice";
 
 export const useCreditsManagement = (session: Session | null) => {
-  const [credits, setCredits] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const fetchInProgress = useRef(false);
+  const dispatch = useAppDispatch();
+  const { credits, isLoading } = useAppSelector(state => state.credits);
 
   const fetchCredits = useCallback(async () => {
     if (fetchInProgress.current) {
@@ -16,9 +18,13 @@ export const useCreditsManagement = (session: Session | null) => {
 
     try {
       fetchInProgress.current = true;
-      setIsLoading(true);
+      dispatch(setLoading(true));
       console.log('[useCreditsManagement] Fetching credits for:', session?.user?.id ? `user ${session.user.id}` : 'anonymous user');
       
+      if (session?.user?.id) {
+        dispatch(setUserId(session.user.id));
+      }
+
       const fetchedCredits = await fetchUserCredits(session?.user?.id);
       console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);
       
@@ -26,20 +32,21 @@ export const useCreditsManagement = (session: Session | null) => {
         console.log("[useCreditsManagement] No credits record found, creating default");
         const defaultCredits = session?.user?.id ? 6 : 2;
         await updateCredits(defaultCredits, session?.user?.id);
-        setCredits(defaultCredits);
+        dispatch(setCredits(defaultCredits));
       } else {
-        setCredits(fetchedCredits);
+        dispatch(setCredits(fetchedCredits));
       }
       
       setInitialized(true);
     } catch (error) {
       console.error("[useCreditsManagement] Error in fetchCredits:", error);
+      dispatch(setError(error instanceof Error ? error.message : 'Unknown error'));
       setInitialized(true);
     } finally {
-      setIsLoading(false);
+      dispatch(setLoading(false));
       fetchInProgress.current = false;
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, dispatch]);
 
   const useCredit = async (): Promise<boolean> => {
     if (!initialized) {
@@ -55,7 +62,7 @@ export const useCreditsManagement = (session: Session | null) => {
     try {
       console.log('[useCreditsManagement] Using credit. Current credits:', credits);
       await updateCredits(credits - 1, session?.user?.id);
-      setCredits(credits - 1);
+      dispatch(setCredits(credits - 1));
       return true;
     } catch (error) {
       console.error("[useCreditsManagement] Error using credit:", error);
@@ -71,11 +78,9 @@ export const useCreditsManagement = (session: Session | null) => {
 
   return {
     credits: initialized ? (credits ?? 0) : null,
-    setCredits,
     useCredit,
     resetCredits,
     isLoading,
-    setIsLoading,
     initialized,
     setInitialized,
     fetchCredits
