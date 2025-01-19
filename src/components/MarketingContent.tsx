@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { ArrowUp, Upload, Settings2, Target, BarChart, Clock, Users, Lightbulb, CheckCircle, Upload as UploadIcon, Sliders, Goal, Zap, Users as UsersIcon, Code, MessageSquare } from "lucide-react";
+import { ArrowUp, Upload, Settings2, Target, BarChart, Users, Lightbulb, CheckCircle, Upload as UploadIcon, Sliders, Goal, Zap, Code, MessageSquare } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 
 export const MarketingContent = () => {
@@ -12,190 +12,191 @@ export const MarketingContent = () => {
   return (
     <>
       <Helmet>
-        <title>AI UX Copy Enhancer — Optimize Your Interface Text</title>
-        <meta name="description" content="Transform your UX writing with AI-powered suggestions. Get instant improvements for buttons, forms, and interface text. Perfect for designers, developers, and marketers." />
-        <meta name="keywords" content="UX writing, AI copywriting, interface text, UX copy optimization, microcopy generator" />
-        <meta property="og:title" content="AI UX Copy Enhancer — Optimize Your Interface Text" />
-        <meta property="og:description" content="Transform your UX writing with AI-powered suggestions. Get instant improvements for buttons, forms, and interface text." />
+        <title>A/B Testing Copy Generator — Compare and Optimize UI Text</title>
+        <meta name="description" content="Compare and evaluate design or copy variations with AI-powered insights. Make data-driven decisions for your UX writing and design choices." />
+        <meta name="keywords" content="A/B testing, UI copy testing, design comparison, UX writing optimization, AI copy testing" />
+        <meta property="og:title" content="A/B Testing Copy Generator — Compare and Optimize UI Text" />
+        <meta property="og:description" content="Compare and evaluate design or copy variations with AI-powered insights. Perfect for designers, developers, and marketers." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI UX Copy Enhancer — Optimize Your Interface Text" />
-        <meta name="twitter:description" content="Transform your UX writing with AI-powered suggestions. Perfect for designers, developers, and marketers." />
+        <meta name="twitter:title" content="A/B Testing Copy Generator — Compare and Optimize UI Text" />
+        <meta name="twitter:description" content="Compare and evaluate design or copy variations with AI-powered insights. Make data-driven decisions for your UX writing." />
       </Helmet>
 
       <div className="space-y-12 py-12">
         {/* Main Title and Subtitle */}
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            AI UX Copy Enhancer
+            A/B Testing Copy Generator
           </h1>
           <p className="text-xl text-muted-foreground">
-            Transform your interface text with AI-powered suggestions
+            Compare and evaluate design or copy variations with AI-powered insights
           </p>
         </div>
 
         {/* Introduction */}
         <section className="text-center max-w-3xl mx-auto">
           <p className="text-lg text-muted-foreground">
-            In today's fast-paced digital world, crafting user experiences that captivate and guide users seamlessly is more important than ever. Introducing the AI UX Copywriting Tool – your ultimate solution for refining user interface text with precision, speed, and creativity. This AI-driven platform empowers designers, developers, and marketers to create user-friendly, impactful, and goal-oriented UX content effortlessly.
+            In the fast-evolving world of UI/UX design, choosing the right words or layout can make all the difference. Introducing the A/B Testing Copy Generator – a powerful AI-driven tool that helps you test and refine your UI text or design variations with confidence. Whether you're comparing button text, headlines, or entire layouts, this tool provides actionable insights to make data-backed decisions effortlessly.
           </p>
         </section>
 
-      <section className="space-y-6">
-        <h2 className="text-3xl font-bold text-center">Why Choose Our AI UX Copywriting Tool?</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <Lightbulb className="w-8 h-8 text-primary mb-2" />
-              <CardTitle>Improve UX Writing with AI</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Say goodbye to guesswork and manual iterations. Our AI-Powered UX Copy Tool leverages advanced algorithms to analyze your existing text and provide actionable suggestions.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <MessageSquare className="w-8 h-8 text-primary mb-2" />
-              <CardTitle>Optimize User Experience Text</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Words matter in user interfaces. Whether you're working on a button, modal, or onboarding flow, the UX Text Refinement Tool helps you fine-tune every detail.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Users className="w-8 h-8 text-primary mb-2" />
-              <CardTitle>Tailored for Your Audience</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                No more one-size-fits-all solutions. Simply upload your UI screenshot, define your target audience, and set the tone and goals for your copy.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="space-y-6">
-        <h2 className="text-3xl font-bold text-center">Features That Set Our AI UX Copywriting Tool Apart</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { icon: UploadIcon, title: "Upload and Analyze Screenshots", description: "Upload your UI designs directly to our tool and let the AI work its magic." },
-            { icon: Sliders, title: "Customizable Tone and Voice", description: "Whether you want to sound professional, friendly, or playful, our AI adapts to your desired tone." },
-            { icon: Target, title: "Goal-Oriented Suggestions", description: "Define the purpose of your screen and ensure your copy aligns perfectly with your goals." },
-            { icon: Zap, title: "Real-Time Feedback", description: "Get instant insights and actionable feedback on your UI text." },
-            { icon: CheckCircle, title: "Optimized for Accessibility", description: "Ensure your text meets accessibility standards, making your interface inclusive." }
-          ].map((feature, index) => (
-            <Card key={index}>
+        {/* Why Choose Section */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-center">Why Choose Our A/B Testing Copy Generator?</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card>
               <CardHeader>
-                <feature.icon className="w-8 h-8 text-primary mb-2" />
-                <CardTitle className="text-lg">{feature.title}</CardTitle>
+                <Lightbulb className="w-8 h-8 text-primary mb-2" />
+                <CardTitle>Evaluate and Improve with AI</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <p className="text-muted-foreground">
+                  Stop second-guessing your copy or design choices. The AI-Powered A/B Testing Tool compares your variations and provides feedback that is clear, concise, and tailored to user experience goals.
+                </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* How it Works */}
-      <section className="space-y-6">
-        <h2 className="text-3xl font-bold text-center">How the UX Text Refinement Tool Works</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { icon: Upload, title: "Upload Your UI Screenshot", description: "Easily drag and drop your design file into the tool." },
-            { icon: Settings2, title: "Define Your Parameters", description: "Set your target audience, emotional tone, and desired goals." },
-            { icon: Target, title: "Get AI-Powered Insights", description: "Receive refined copy suggestions tailored to your needs." },
-            { icon: CheckCircle, title: "Implement and Test", description: "Integrate the optimized text and improve your UX." }
-          ].map((step, index) => (
-            <Card key={index}>
+            <Card>
               <CardHeader>
-                <step.icon className="w-8 h-8 text-primary mb-2" />
-                <CardTitle className="text-lg">Step {index + 1}: {step.title}</CardTitle>
+                <MessageSquare className="w-8 h-8 text-primary mb-2" />
+                <CardTitle>Optimize User Experience Text</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{step.description}</p>
+                <p className="text-muted-foreground">
+                  Ensure every word on your interface works towards engaging and converting users. From error messages to CTAs, this tool refines your UX writing for maximum impact.
+                </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-        <div className="text-center mt-8">
-          <Button 
-            size="lg" 
-            variant="secondary"
-            onClick={scrollToTop}
-          >
-            Try Now for FREE
-            <ArrowUp className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </section>
-
-      {/* Who is it for */}
-      <section className="space-y-6">
-        <h2 className="text-3xl font-bold text-center">Who Is This Tool For?</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {[
-            { icon: Users, title: "UI/UX Designers", description: "Simplify the process of creating effective microcopy." },
-            { icon: Target, title: "Product Managers", description: "Ensure that your product messaging aligns with user needs." },
-            { icon: BarChart, title: "Marketers", description: "Craft compelling CTAs that drive action." },
-            { icon: Code, title: "Developers", description: "Improve clarity and usability without becoming a wordsmith." }
-          ].map((role, index) => (
-            <Card key={index}>
+            <Card>
               <CardHeader>
-                <role.icon className="w-8 h-8 text-primary mb-2" />
-                <CardTitle>{role.title}</CardTitle>
+                <BarChart className="w-8 h-8 text-primary mb-2" />
+                <CardTitle>Make Data-Driven Decisions</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">{role.description}</p>
+                <p className="text-muted-foreground">
+                  Eliminate subjective choices. Use actionable insights from the A/B Testing Copy Generator to select the variation that performs best.
+                </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-center">Features That Set Our A/B Testing Copy Generator Apart</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: UploadIcon, title: "Upload and Analyze Variations", description: "Drag and drop your UI screenshots or enter your copy for two versions you want to test." },
+              { icon: Zap, title: "AI-Powered Insights", description: "Compare Variations A and B with AI-generated suggestions for clarity, effectiveness, and alignment with user goals." },
+              { icon: Sliders, title: "Customizable Evaluation Criteria", description: "Set your parameters—tone, audience, emotional response, and goals—to get personalized recommendations." },
+              { icon: Users, title: "User-Centric Feedback", description: "Receive actionable insights on how each variation resonates with your target audience." },
+              { icon: CheckCircle, title: "Focus on Accessibility", description: "Ensure both variations meet accessibility standards, offering inclusivity for all users." }
+            ].map((feature, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <feature.icon className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle className="text-lg">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* How it Works */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-center">How the A/B Testing Copy Generator Works</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: Upload, title: "Upload Variations", description: "Easily drag and drop screenshots or enter the text for both Variation A and Variation B." },
+              { icon: Goal, title: "Define Your Goals", description: "Set the purpose of the test, target audience, and emotional tone to guide the evaluation." },
+              { icon: Target, title: "Analyze with AI", description: "Let the tool provide insights into which variation better aligns with your UX goals." },
+              { icon: CheckCircle, title: "Implement the Best Option", description: "Choose the winning variation and integrate it into your design for better user engagement." }
+            ].map((step, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <step.icon className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle className="text-lg">Step {index + 1}: {step.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{step.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Button 
+              size="lg" 
+              variant="secondary"
+              onClick={scrollToTop}
+            >
+              Try Now for FREE
+              <ArrowUp className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </section>
+
+        {/* Who is it for */}
+        <section className="space-y-6">
+          <h2 className="text-3xl font-bold text-center">Who Is This Tool For?</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              { icon: Users, title: "UI/UX Designers", description: "Test variations of your microcopy, headlines, and CTAs to ensure they hit the mark." },
+              { icon: Target, title: "Product Managers", description: "Evaluate messaging strategies and refine them for maximum impact." },
+              { icon: BarChart, title: "Marketers", description: "Optimize campaign elements like landing pages, ad copy, and email subject lines." },
+              { icon: Code, title: "Developers", description: "Collaborate with content teams to implement the most effective UI text effortlessly." }
+            ].map((role, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <role.icon className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>{role.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{role.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
 
         {/* FAQs */}
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-center">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
             <AccordionItem value="item-1">
-              <AccordionTrigger>What is the AI UX Copywriting Tool?</AccordionTrigger>
+              <AccordionTrigger>What is the A/B Testing Copy Generator?</AccordionTrigger>
               <AccordionContent>
-                It is an AI-powered platform designed to refine and optimize the text used in user interfaces, such as buttons, tooltips, and onboarding screens.
+                It's an AI-powered tool designed to compare two UI text or design variations for usability and effectiveness.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-2">
-              <AccordionTrigger>How does the tool improve UX writing with AI?</AccordionTrigger>
+              <AccordionTrigger>How does the tool evaluate variations?</AccordionTrigger>
               <AccordionContent>
-                By analyzing your UI screenshot and providing tailored suggestions based on your goals, audience, and desired tone.
+                The AI analyzes variations based on user goals, audience, tone, and clarity, offering actionable suggestions.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-3">
-              <AccordionTrigger>Can I use this tool for different industries?</AccordionTrigger>
+              <AccordionTrigger>Can I use this tool for visuals and text together?</AccordionTrigger>
               <AccordionContent>
-                Absolutely! Whether you're in e-commerce, SaaS, healthcare, or any other sector, the tool adapts to your unique requirements.
+                Yes, you can upload UI screenshots or just compare text-based copy variations.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-4">
-              <AccordionTrigger>Is this tool suitable for non-designers?</AccordionTrigger>
+              <AccordionTrigger>Is the tool suitable for non-technical users?</AccordionTrigger>
               <AccordionContent>
-                Yes, the tool is intuitive and easy to use, making it accessible for marketers, developers, and other professionals.
+                Absolutely. Its intuitive interface makes it accessible for anyone, regardless of technical expertise.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-5">
               <AccordionTrigger>Does it support accessibility standards?</AccordionTrigger>
               <AccordionContent>
-                Yes, the tool ensures that your copy is inclusive and accessible to all users.
+                Yes, the tool ensures that all variations adhere to accessibility best practices.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -203,16 +204,16 @@ export const MarketingContent = () => {
 
         {/* Final CTA */}
         <section className="text-center space-y-6">
-          <h2 className="text-3xl font-bold">Start Optimizing Your UX Text Today</h2>
+          <h2 className="text-3xl font-bold">Start Comparing Variations Today</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Ready to elevate your user experience? Transform how you approach UX writing with the AI UX Copywriting Tool. Start refining your interface text today and watch your conversions soar!
+            Ready to refine your user interface and elevate user experiences? The A/B Testing Copy Generator helps you make informed, data-driven decisions for better results. Test, compare, and implement the best option today!
           </p>
           <Button 
             size="lg" 
             variant="secondary"
             onClick={scrollToTop}
           >
-            Analyze Your UI Copy Now
+            Compare Your Variations Now
             <ArrowUp className="ml-2 h-4 w-4" />
           </Button>
         </section>
