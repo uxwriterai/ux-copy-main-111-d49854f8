@@ -21,22 +21,27 @@ export const useCreditsManagement = (session: Session | null) => {
       // Get the user ID from the session if it exists
       const userId = session?.user?.id;
       
-      if (userId) {
-        console.log('[useCreditsManagement] User is authenticated, fetching user credits for:', userId);
-      } else {
-        console.log('[useCreditsManagement] No user session, fetching IP-based credits');
-      }
-      
-      const fetchedCredits = await fetchUserCredits(userId);
-      console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);
-      
-      if (fetchedCredits === null) {
-        console.log("[useCreditsManagement] No credits record found, creating default");
-        const defaultCredits = userId ? 6 : 2;
-        await updateCredits(defaultCredits, userId);
-        setCredits(defaultCredits);
-      } else {
-        setCredits(fetchedCredits);
+      // Only proceed with fetching if:
+      // 1. We have a userId (logged in user)
+      // 2. OR we don't have a userId (anonymous user) AND credits are not initialized
+      if (userId || (!userId && !initialized)) {
+        if (userId) {
+          console.log('[useCreditsManagement] User is authenticated, fetching user credits for:', userId);
+        } else {
+          console.log('[useCreditsManagement] No user session, fetching IP-based credits');
+        }
+        
+        const fetchedCredits = await fetchUserCredits(userId);
+        console.log('[useCreditsManagement] Fetched credits:', fetchedCredits);
+        
+        if (fetchedCredits === null) {
+          console.log("[useCreditsManagement] No credits record found, creating default");
+          const defaultCredits = userId ? 6 : 2;
+          await updateCredits(defaultCredits, userId);
+          setCredits(defaultCredits);
+        } else {
+          setCredits(fetchedCredits);
+        }
       }
       
       setInitialized(true);
@@ -47,7 +52,7 @@ export const useCreditsManagement = (session: Session | null) => {
       setIsLoading(false);
       fetchInProgress.current = false;
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, initialized]);
 
   const useCredit = async (): Promise<boolean> => {
     if (!initialized) {
