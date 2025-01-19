@@ -10,6 +10,8 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ isOpen, onClose, view = 'sign_in' }: AuthDialogProps) {
+  console.log("Current view:", view) // Debug log to track the current view
+
   const titles = {
     sign_in: "Welcome back!",
     sign_up: "Join our community",
