@@ -1,11 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// Cache IP address to prevent multiple fetches
+let cachedIpAddress: string | null = null;
+
 export const getIpAddress = async (): Promise<string> => {
+  if (cachedIpAddress) {
+    console.log('Using cached IP address:', cachedIpAddress);
+    return cachedIpAddress;
+  }
+
   try {
     const response = await fetch('https://api.ipify.org?format=json');
     if (!response.ok) throw new Error('Failed to fetch IP address');
     const data = await response.json();
     console.log('Fetched IP address:', data.ip);
+    cachedIpAddress = data.ip;
     return data.ip;
   } catch (error) {
     console.error("Error fetching IP address:", error);
