@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Upload, Settings2, Target, BarChart, Clock, Users, Lightbulb, CheckCircle, Upload as UploadIcon, Sliders, Goal, Zap, Users as UsersIcon, Code, MessageSquare } from "lucide-react";
 
 export const MarketingContent = () => {
   const scrollToTop = () => {
@@ -22,6 +22,7 @@ export const MarketingContent = () => {
         <div className="grid md:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
+              <Lightbulb className="w-8 h-8 text-primary mb-2" />
               <CardTitle>Improve UX Writing with AI</CardTitle>
             </CardHeader>
             <CardContent>
@@ -32,6 +33,7 @@ export const MarketingContent = () => {
           </Card>
           <Card>
             <CardHeader>
+              <MessageSquare className="w-8 h-8 text-primary mb-2" />
               <CardTitle>Optimize User Experience Text</CardTitle>
             </CardHeader>
             <CardContent>
@@ -42,6 +44,7 @@ export const MarketingContent = () => {
           </Card>
           <Card>
             <CardHeader>
+              <Users className="w-8 h-8 text-primary mb-2" />
               <CardTitle>Tailored for Your Audience</CardTitle>
             </CardHeader>
             <CardContent>
@@ -58,14 +61,15 @@ export const MarketingContent = () => {
         <h2 className="text-3xl font-bold text-center">Features That Set Our AI UX Copywriting Tool Apart</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { title: "Upload and Analyze Screenshots", description: "Upload your UI designs directly to our tool and let the AI work its magic." },
-            { title: "Customizable Tone and Voice", description: "Whether you want to sound professional, friendly, or playful, our AI adapts to your desired tone." },
-            { title: "Goal-Oriented Suggestions", description: "Define the purpose of your screen and ensure your copy aligns perfectly with your goals." },
-            { title: "Real-Time Feedback", description: "Get instant insights and actionable feedback on your UI text." },
-            { title: "Optimized for Accessibility", description: "Ensure your text meets accessibility standards, making your interface inclusive." }
+            { icon: UploadIcon, title: "Upload and Analyze Screenshots", description: "Upload your UI designs directly to our tool and let the AI work its magic." },
+            { icon: Sliders, title: "Customizable Tone and Voice", description: "Whether you want to sound professional, friendly, or playful, our AI adapts to your desired tone." },
+            { icon: Target, title: "Goal-Oriented Suggestions", description: "Define the purpose of your screen and ensure your copy aligns perfectly with your goals." },
+            { icon: Zap, title: "Real-Time Feedback", description: "Get instant insights and actionable feedback on your UI text." },
+            { icon: CheckCircle, title: "Optimized for Accessibility", description: "Ensure your text meets accessibility standards, making your interface inclusive." }
           ].map((feature, index) => (
             <Card key={index}>
               <CardHeader>
+                <feature.icon className="w-8 h-8 text-primary mb-2" />
                 <CardTitle className="text-lg">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
@@ -81,13 +85,14 @@ export const MarketingContent = () => {
         <h2 className="text-3xl font-bold text-center">How the UX Text Refinement Tool Works</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { title: "Upload Your UI Screenshot", description: "Easily drag and drop your design file into the tool." },
-            { title: "Define Your Parameters", description: "Set your target audience, emotional tone, and desired goals." },
-            { title: "Get AI-Powered Insights", description: "Receive refined copy suggestions tailored to your needs." },
-            { title: "Implement and Test", description: "Integrate the optimized text and improve your UX." }
+            { icon: Upload, title: "Upload Your UI Screenshot", description: "Easily drag and drop your design file into the tool." },
+            { icon: Settings2, title: "Define Your Parameters", description: "Set your target audience, emotional tone, and desired goals." },
+            { icon: Target, title: "Get AI-Powered Insights", description: "Receive refined copy suggestions tailored to your needs." },
+            { icon: CheckCircle, title: "Implement and Test", description: "Integrate the optimized text and improve your UX." }
           ].map((step, index) => (
             <Card key={index}>
               <CardHeader>
+                <step.icon className="w-8 h-8 text-primary mb-2" />
                 <CardTitle className="text-lg">Step {index + 1}: {step.title}</CardTitle>
               </CardHeader>
               <CardContent>
@@ -113,13 +118,14 @@ export const MarketingContent = () => {
         <h2 className="text-3xl font-bold text-center">Who Is This Tool For?</h2>
         <div className="grid md:grid-cols-2 gap-6">
           {[
-            { title: "UI/UX Designers", description: "Simplify the process of creating effective microcopy." },
-            { title: "Product Managers", description: "Ensure that your product messaging aligns with user needs." },
-            { title: "Marketers", description: "Craft compelling CTAs that drive action." },
-            { title: "Developers", description: "Improve clarity and usability without becoming a wordsmith." }
+            { icon: Users, title: "UI/UX Designers", description: "Simplify the process of creating effective microcopy." },
+            { icon: Target, title: "Product Managers", description: "Ensure that your product messaging aligns with user needs." },
+            { icon: BarChart, title: "Marketers", description: "Craft compelling CTAs that drive action." },
+            { icon: Code, title: "Developers", description: "Improve clarity and usability without becoming a wordsmith." }
           ].map((role, index) => (
             <Card key={index}>
               <CardHeader>
+                <role.icon className="w-8 h-8 text-primary mb-2" />
                 <CardTitle>{role.title}</CardTitle>
               </CardHeader>
               <CardContent>
